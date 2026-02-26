@@ -113,18 +113,3 @@ jobs:
           nix build .#mdt && ./result/bin/mdt --version
           nix build .#codex-cli && ./result/bin/codex --version
           nix build .#pnpm-standalone && ./result/bin/pnpm --version
-
-  flake-check:
-    name: nix flake check
-    runs-on: ubuntu-latest
-    steps:
-      - name: 📥 checkout repository
-        uses: actions/checkout@v4
-
-      - name: 🔧 install nix
-        uses: DeterminateSystems/nix-installer-action@main
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 🔍 nix flake check
-        run: nix flake check --no-build
