@@ -31,7 +31,12 @@ stdenv.mkDerivation {
 
   dontUnpack = true;
   dontBuild = true;
-  dontStrip = stdenv.isDarwin;
+
+  # The pnpm binary is a Node.js SEA (Single Executable Application) built
+  # with pkg. Any ELF modification (RPATH shrinking, stripping) corrupts the
+  # embedded payload, causing "Pkg: Error reading from file." at runtime.
+  dontStrip = true;
+  dontPatchELF = true;
 
   # autoPatchelfHook corrupts the embedded Node.js SEA payload on Linux,
   # causing "Pkg: Error reading from file." errors at runtime.
