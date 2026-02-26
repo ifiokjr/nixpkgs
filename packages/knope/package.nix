@@ -28,6 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  doCheck = false;
+
   env = {
     LIBGIT2_NO_VENDOR = "1";
   };

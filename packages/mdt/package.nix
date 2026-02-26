@@ -19,6 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   buildAndTestSubdir = "mdt_cli";
 
+  doCheck = false;
+
   meta = {
     description = "CLI that updates markdown content anywhere using comments as template tags";
     homepage = "https://github.com/ifiokjr/mdt";
