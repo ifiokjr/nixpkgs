@@ -1,6 +1,7 @@
 {
   stdenv,
   fetchurl,
+  makeWrapper,
   lib,
 }:
 
@@ -32,26 +33,37 @@ stdenv.mkDerivation {
   dontBuild = true;
 
   # The pnpm binary is a vercel/pkg binary with an embedded payload at a
-  # hardcoded offset (PAYLOAD_POSITION). It reads itself via /proc/self/exe
-  # on Linux. We must:
-  # - NOT use a wrapper (breaks /proc/self/exe resolution)
-  # - NOT strip (corrupts the embedded payload)
-  # - NOT shrink RPATHs (patchelf modifies the binary, breaking the payload)
-  # Only patchelf --set-interpreter is safe because it appends new data at
-  # the end of the file without shifting existing content, preserving the
-  # payload at its hardcoded offset.
+  # hardcoded offset. It reads itself via /proc/self/exe on Linux. We must:
+  # - NOT strip or shrink RPATHs (corrupts the embedded payload)
+  # - NOT use --set-rpath (modifies .dynamic section, shifts payload data)
+  # - Only --set-interpreter is safe (appends at end, no data shifting)
+  # A makeWrapper provides LD_LIBRARY_PATH for libstdc++; since makeWrapper
+  # uses exec, /proc/self/exe correctly resolves to the patched binary.
   dontStrip = true;
   dontPatchELF = true;
+
+  nativeBuildInputs = lib.optionals stdenv.isLinux [ makeWrapper ];
 
   installPhase = ''
     runHook preInstall
 
     mkdir -p $out/bin
-    install -m 755 $src $out/bin/pnpm
 
-    ${lib.optionalString stdenv.isLinux ''
-      patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" $out/bin/pnpm
-    ''}
+    ${
+      if stdenv.isLinux then
+        ''
+          mkdir -p $out/libexec
+          install -m 755 $src $out/libexec/pnpm
+          patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" $out/libexec/pnpm
+
+          makeWrapper $out/libexec/pnpm $out/bin/pnpm \
+            --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ stdenv.cc.cc.lib ]}"
+        ''
+      else
+        ''
+          install -m 755 $src $out/bin/pnpm
+        ''
+    }
 
     runHook postInstall
   '';
