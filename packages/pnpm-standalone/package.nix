@@ -50,10 +50,7 @@ stdenv.mkDerivation {
     install -m 755 $src $out/bin/pnpm
 
     ${lib.optionalString stdenv.isLinux ''
-      patchelf \
-        --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
-        --set-rpath "${lib.makeLibraryPath [ stdenv.cc.cc.lib ]}" \
-        $out/bin/pnpm
+      patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" $out/bin/pnpm
     ''}
 
     runHook postInstall
