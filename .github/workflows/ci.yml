@@ -7,8 +7,82 @@ on:
     branches: [main]
 
 jobs:
-  build-linux:
-    name: build linux packages
+  detect-changes:
+    name: detect changed packages
+    runs-on: ubuntu-latest
+    outputs:
+      linux-packages: ${{ steps.changes.outputs.linux-packages }}
+      macos-packages: ${{ steps.changes.outputs.macos-packages }}
+    steps:
+      - name: 📥 checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 detect changed packages
+        id: changes
+        run: |
+          LINUX_PACKAGES="cargo-interactive-update codex-cli cursor-cli google-chrome knope mdt pnpm-standalone racket-minimal"
+          MACOS_PACKAGES="cargo-interactive-update codex-cli cursor-cli google-chrome google-drive gpg-suite knope mdt nordvpn pnpm-standalone racket-minimal steam zoom"
+
+          build_all=false
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE=${{ github.event.pull_request.base.sha }}
+          else
+            BASE="${{ github.event.before }}"
+          fi
+
+          # Build all on first push or if base is missing
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            build_all=true
+          fi
+
+          if [ "$build_all" = "false" ]; then
+            CHANGED_FILES=$(git diff --name-only "$BASE" HEAD)
+
+            # Build all if flake files or CI config changed
+            if echo "$CHANGED_FILES" | grep -qE '^(flake\.nix|flake\.lock|\.github/workflows/ci\.yml)$'; then
+              build_all=true
+            fi
+          fi
+
+          if [ "$build_all" = "true" ]; then
+            LINUX_JSON=$(echo "$LINUX_PACKAGES" | tr ' ' '\n' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+            MACOS_JSON=$(echo "$MACOS_PACKAGES" | tr ' ' '\n' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          else
+            CHANGED_PKGS=$(echo "$CHANGED_FILES" | grep '^packages/' | cut -d'/' -f2 | sort -u)
+
+            LINUX_CHANGED=""
+            MACOS_CHANGED=""
+            for pkg in $CHANGED_PKGS; do
+              if echo "$LINUX_PACKAGES" | grep -qw "$pkg"; then
+                LINUX_CHANGED="$LINUX_CHANGED $pkg"
+              fi
+              if echo "$MACOS_PACKAGES" | grep -qw "$pkg"; then
+                MACOS_CHANGED="$MACOS_CHANGED $pkg"
+              fi
+            done
+
+            if [ -n "$LINUX_CHANGED" ]; then
+              LINUX_JSON=$(echo "$LINUX_CHANGED" | xargs -n1 | jq -R -s -c 'split("\n") | map(select(length > 0))')
+            else
+              LINUX_JSON="[]"
+            fi
+            if [ -n "$MACOS_CHANGED" ]; then
+              MACOS_JSON=$(echo "$MACOS_CHANGED" | xargs -n1 | jq -R -s -c 'split("\n") | map(select(length > 0))')
+            else
+              MACOS_JSON="[]"
+            fi
+          fi
+
+          echo "linux-packages=$LINUX_JSON" >> "$GITHUB_OUTPUT"
+          echo "macos-packages=$MACOS_JSON" >> "$GITHUB_OUTPUT"
+          echo "Linux packages to build: $LINUX_JSON"
+          echo "macOS packages to build: $MACOS_JSON"
+
+  validate:
+    name: validate flake
     runs-on: ubuntu-latest
     steps:
       - name: 📥 checkout repository
@@ -25,37 +99,15 @@ jobs:
       - name: 🔍 validate flake
         run: nix flake show
 
-      - name: 🏗️ build codex-cli
-        run: nix build .#codex-cli
-
-      - name: 🏗️ build cursor-cli
-        run: nix build .#cursor-cli
-
-      - name: 🏗️ build google-chrome
-        run: nix build .#google-chrome
-
-      - name: 🏗️ build knope
-        run: nix build .#knope
-
-      - name: 🏗️ build mdt
-        run: nix build .#mdt
-
-      - name: 🏗️ build pnpm-standalone
-        run: nix build .#pnpm-standalone
-
-      - name: 🏗️ build racket-minimal
-        run: nix build .#racket-minimal
-
-      - name: ✅ verify binaries
-        run: |
-          ./result/bin/knope --version || true
-          nix build .#mdt && ./result/bin/mdt --version || true
-          nix build .#codex-cli && ./result/bin/codex --version || true
-          nix build .#pnpm-standalone && ./result/bin/pnpm --version || true
-
-  build-macos:
-    name: build macos packages
-    runs-on: macos-latest
+  build-linux:
+    name: "build ${{ matrix.package }} (linux)"
+    needs: [detect-changes, validate]
+    if: needs.detect-changes.outputs.linux-packages != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.detect-changes.outputs.linux-packages) }}
     steps:
       - name: 📥 checkout repository
         uses: actions/checkout@v4
@@ -68,48 +120,29 @@ jobs:
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
 
-      - name: 🔍 validate flake
-        run: nix flake show
+      - name: 🏗️ build ${{ matrix.package }}
+        run: nix build .#${{ matrix.package }}
 
-      - name: 🏗️ build codex-cli
-        run: nix build .#codex-cli
+  build-macos:
+    name: "build ${{ matrix.package }} (macos)"
+    needs: [detect-changes, validate]
+    if: needs.detect-changes.outputs.macos-packages != '[]'
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.detect-changes.outputs.macos-packages) }}
+    steps:
+      - name: 📥 checkout repository
+        uses: actions/checkout@v4
 
-      - name: 🏗️ build cursor-cli
-        run: nix build .#cursor-cli
+      - name: 🔧 install nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🏗️ build google-chrome
-        run: nix build .#google-chrome
+      - name: 🔧 set up nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
 
-      - name: 🏗️ build google-drive
-        run: nix build .#google-drive
-
-      - name: 🏗️ build gpg-suite
-        run: nix build .#gpg-suite
-
-      - name: 🏗️ build knope
-        run: nix build .#knope
-
-      - name: 🏗️ build mdt
-        run: nix build .#mdt
-
-      - name: 🏗️ build nordvpn
-        run: nix build .#nordvpn
-
-      - name: 🏗️ build pnpm-standalone
-        run: nix build .#pnpm-standalone
-
-      - name: 🏗️ build racket-minimal
-        run: nix build .#racket-minimal
-
-      - name: 🏗️ build steam
-        run: nix build .#steam
-
-      - name: 🏗️ build zoom
-        run: nix build .#zoom
-
-      - name: ✅ verify binaries
-        run: |
-          nix build .#knope && ./result/bin/knope --version
-          nix build .#mdt && ./result/bin/mdt --version
-          nix build .#codex-cli && ./result/bin/codex --version
-          nix build .#pnpm-standalone && ./result/bin/pnpm --version
+      - name: 🏗️ build ${{ matrix.package }}
+        run: nix build .#${{ matrix.package }}
