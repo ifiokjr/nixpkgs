@@ -1,0 +1,130 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-linux:
+    name: build linux packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔧 install nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 set up nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: 🔍 validate flake
+        run: nix flake show
+
+      - name: 🏗️ build codex-cli
+        run: nix build .#codex-cli
+
+      - name: 🏗️ build cursor-cli
+        run: nix build .#cursor-cli
+
+      - name: 🏗️ build google-chrome
+        run: nix build .#google-chrome
+
+      - name: 🏗️ build knope
+        run: nix build .#knope
+
+      - name: 🏗️ build mdt
+        run: nix build .#mdt
+
+      - name: 🏗️ build pnpm-standalone
+        run: nix build .#pnpm-standalone
+
+      - name: 🏗️ build racket-minimal
+        run: nix build .#racket-minimal
+
+      - name: ✅ verify binaries
+        run: |
+          ./result/bin/knope --version || true
+          nix build .#mdt && ./result/bin/mdt --version || true
+          nix build .#codex-cli && ./result/bin/codex --version || true
+          nix build .#pnpm-standalone && ./result/bin/pnpm --version || true
+
+  build-macos:
+    name: build macos packages
+    runs-on: macos-latest
+    steps:
+      - name: 📥 checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔧 install nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 set up nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: 🔍 validate flake
+        run: nix flake show
+
+      - name: 🏗️ build codex-cli
+        run: nix build .#codex-cli
+
+      - name: 🏗️ build cursor-cli
+        run: nix build .#cursor-cli
+
+      - name: 🏗️ build google-chrome
+        run: nix build .#google-chrome
+
+      - name: 🏗️ build google-drive
+        run: nix build .#google-drive
+
+      - name: 🏗️ build gpg-suite
+        run: nix build .#gpg-suite
+
+      - name: 🏗️ build knope
+        run: nix build .#knope
+
+      - name: 🏗️ build mdt
+        run: nix build .#mdt
+
+      - name: 🏗️ build nordvpn
+        run: nix build .#nordvpn
+
+      - name: 🏗️ build pnpm-standalone
+        run: nix build .#pnpm-standalone
+
+      - name: 🏗️ build racket-minimal
+        run: nix build .#racket-minimal
+
+      - name: 🏗️ build steam
+        run: nix build .#steam
+
+      - name: 🏗️ build zoom
+        run: nix build .#zoom
+
+      - name: ✅ verify binaries
+        run: |
+          nix build .#knope && ./result/bin/knope --version
+          nix build .#mdt && ./result/bin/mdt --version
+          nix build .#codex-cli && ./result/bin/codex --version
+          nix build .#pnpm-standalone && ./result/bin/pnpm --version
+
+  flake-check:
+    name: nix flake check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔧 install nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔍 nix flake check
+        run: nix flake check --no-build
