@@ -1,7 +1,6 @@
 {
   stdenv,
   fetchurl,
-  makeWrapper,
   lib,
 }:
 
@@ -32,39 +31,31 @@ stdenv.mkDerivation {
   dontUnpack = true;
   dontBuild = true;
 
-  # The pnpm binary is a Node.js SEA (Single Executable Application) built
-  # with pkg. Any ELF modification (RPATH shrinking, stripping) corrupts the
-  # embedded payload, causing "Pkg: Error reading from file." at runtime.
+  # The pnpm binary is a vercel/pkg binary with an embedded payload at a
+  # hardcoded offset (PAYLOAD_POSITION). It reads itself via /proc/self/exe
+  # on Linux. We must:
+  # - NOT use a wrapper (breaks /proc/self/exe resolution)
+  # - NOT strip (corrupts the embedded payload)
+  # - NOT shrink RPATHs (patchelf modifies the binary, breaking the payload)
+  # Only patchelf --set-interpreter is safe because it appends new data at
+  # the end of the file without shifting existing content, preserving the
+  # payload at its hardcoded offset.
   dontStrip = true;
   dontPatchELF = true;
-
-  # autoPatchelfHook corrupts the embedded Node.js SEA payload on Linux,
-  # causing "Pkg: Error reading from file." errors at runtime.
-  # Instead, use the dynamic linker directly via a wrapper script.
-  nativeBuildInputs = lib.optionals stdenv.isLinux [ makeWrapper ];
 
   installPhase = ''
     runHook preInstall
 
     mkdir -p $out/bin
+    cp $src $out/bin/pnpm
+    chmod +x $out/bin/pnpm
 
-    ${
-      if stdenv.isLinux then
-        ''
-          mkdir -p $out/libexec
-          cp $src $out/libexec/pnpm
-          chmod +x $out/libexec/pnpm
-
-          makeWrapper "$(cat $NIX_CC/nix-support/dynamic-linker)" $out/bin/pnpm \
-            --add-flags "$out/libexec/pnpm" \
-            --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ stdenv.cc.cc.lib ]}"
-        ''
-      else
-        ''
-          cp $src $out/bin/pnpm
-          chmod +x $out/bin/pnpm
-        ''
-    }
+    ${lib.optionalString stdenv.isLinux ''
+      patchelf \
+        --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
+        --set-rpath "${lib.makeLibraryPath [ stdenv.cc.cc.lib ]}" \
+        $out/bin/pnpm
+    ''}
 
     runHook postInstall
   '';
