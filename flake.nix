@@ -16,6 +16,7 @@
       overlays.default =
         final: _prev:
         {
+          agave = final.callPackage ./packages/agave/package.nix { };
           cargo-interactive-update = final.callPackage ./packages/cargo-interactive-update/package.nix { };
           codex-cli = final.callPackage ./packages/codex-cli/package.nix { };
           cursor-cli = final.callPackage ./packages/cursor-cli/package.nix { };
@@ -28,6 +29,7 @@
           pnpm-standalone = final.callPackage ./packages/pnpm-standalone/package.nix { };
           racket-minimal = final.callPackage ./packages/racket-minimal/package.nix { };
           steam = final.callPackage ./packages/steam/package.nix { };
+          surfpool = final.callPackage ./packages/surfpool/package.nix { };
           zoom = final.callPackage ./packages/zoom/package.nix { };
         };
     }
@@ -41,6 +43,7 @@
         lib = pkgs.lib;
 
         packages = {
+          agave = pkgs.callPackage ./packages/agave/package.nix { };
           cargo-interactive-update = pkgs.callPackage ./packages/cargo-interactive-update/package.nix { };
           codex-cli = pkgs.callPackage ./packages/codex-cli/package.nix { };
           cursor-cli = pkgs.callPackage ./packages/cursor-cli/package.nix { };
@@ -53,6 +56,7 @@
           pnpm-standalone = pkgs.callPackage ./packages/pnpm-standalone/package.nix { };
           racket-minimal = pkgs.callPackage ./packages/racket-minimal/package.nix { };
           steam = pkgs.callPackage ./packages/steam/package.nix { };
+          surfpool = pkgs.callPackage ./packages/surfpool/package.nix { };
           zoom = pkgs.callPackage ./packages/zoom/package.nix { };
         };
 
