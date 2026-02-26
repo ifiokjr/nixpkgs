@@ -47,8 +47,7 @@ stdenv.mkDerivation {
     runHook preInstall
 
     mkdir -p $out/bin
-    cp $src $out/bin/pnpm
-    chmod +x $out/bin/pnpm
+    install -m 755 $src $out/bin/pnpm
 
     ${lib.optionalString stdenv.isLinux ''
       patchelf \
