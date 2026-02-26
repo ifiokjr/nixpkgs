@@ -1,7 +1,7 @@
 {
   stdenv,
   fetchurl,
-  autoPatchelfHook,
+  makeWrapper,
   lib,
 }:
 
@@ -33,17 +33,51 @@ stdenv.mkDerivation {
   dontBuild = true;
   dontStrip = stdenv.isDarwin;
 
-  nativeBuildInputs = lib.optionals stdenv.isLinux [ autoPatchelfHook ];
-  buildInputs = lib.optionals stdenv.isLinux [ stdenv.cc.cc.lib ];
+  # autoPatchelfHook corrupts the embedded Node.js SEA payload on Linux,
+  # causing "Pkg: Error reading from file." errors at runtime.
+  # Instead, use the dynamic linker directly via a wrapper script.
+  nativeBuildInputs = lib.optionals stdenv.isLinux [ makeWrapper ];
 
   installPhase = ''
     runHook preInstall
 
     mkdir -p $out/bin
-    cp $src $out/bin/pnpm
-    chmod +x $out/bin/pnpm
+
+    ${
+      if stdenv.isLinux then
+        ''
+          mkdir -p $out/libexec
+          cp $src $out/libexec/pnpm
+          chmod +x $out/libexec/pnpm
+
+          makeWrapper "$(cat $NIX_CC/nix-support/dynamic-linker)" $out/bin/pnpm \
+            --add-flags "$out/libexec/pnpm" \
+            --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ stdenv.cc.cc.lib ]}"
+        ''
+      else
+        ''
+          cp $src $out/bin/pnpm
+          chmod +x $out/bin/pnpm
+        ''
+    }
 
     runHook postInstall
+  '';
+
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+
+    echo "Checking pnpm version..."
+    $out/bin/pnpm --version
+
+    echo "Checking pnpm init works..."
+    WORK=$(mktemp -d)
+    cd "$WORK"
+    $out/bin/pnpm init
+    test -f package.json
+
+    runHook postInstallCheck
   '';
 
   meta = with lib; {
