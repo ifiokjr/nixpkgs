@@ -16,6 +16,7 @@
       overlays.default =
         final: _prev:
         {
+          cargo-interactive-update = final.callPackage ./packages/cargo-interactive-update/package.nix { };
           codex-cli = final.callPackage ./packages/codex-cli/package.nix { };
           cursor-cli = final.callPackage ./packages/cursor-cli/package.nix { };
           google-chrome = final.callPackage ./packages/google-chrome/package.nix { };
@@ -40,6 +41,7 @@
         lib = pkgs.lib;
 
         packages = {
+          cargo-interactive-update = pkgs.callPackage ./packages/cargo-interactive-update/package.nix { };
           codex-cli = pkgs.callPackage ./packages/codex-cli/package.nix { };
           cursor-cli = pkgs.callPackage ./packages/cursor-cli/package.nix { };
           google-chrome = pkgs.callPackage ./packages/google-chrome/package.nix { };
