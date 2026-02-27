@@ -6,7 +6,7 @@
 }:
 
 let
-  version = "0.104.0";
+  version = "0.106.0";
   tag = "rust-v${version}";
 
   platformSuffix =
@@ -19,10 +19,10 @@ let
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
   hashes = {
-    "aarch64-apple-darwin" = "sha256-twFR4DigVVJNTQAOgLS30VWGFluEdnSgwyFl0R2sJxE=";
-    "x86_64-apple-darwin" = "sha256-bKIkT4VgC8C7knRKSAezkALnN4xORzLQm6e7DteU1Ow=";
-    "aarch64-unknown-linux-musl" = "sha256-gUyqVfEBbDzOlQ6S4LreBOAOHII5VfbCsCCIPoYtGqY=";
-    "x86_64-unknown-linux-musl" = "sha256-4QloDXgyPo6Od7GyI6JXdv7qbgQOsG9QyKQ5D1k8spg=";
+    "aarch64-apple-darwin" = "sha256-QgNC9MB03zZXH58Bbfd89+WSatGRknZToVmObHqrJqw=";
+    "x86_64-apple-darwin" = "sha256-63VEp1hG6rwl0OvtwMitTttnDCucrbE5ehYQfwSYjB0=";
+    "aarch64-unknown-linux-musl" = "sha256-wgT8eIBSZBMP3WMN8/s4qSuWdihLgmQlEDdMNj1GefQ=";
+    "x86_64-unknown-linux-musl" = "sha256-FXoZ3DtN/9VfghfjB+BnrNWICDvLkRd8DRKqAojWudI=";
   };
 in
 stdenv.mkDerivation {
