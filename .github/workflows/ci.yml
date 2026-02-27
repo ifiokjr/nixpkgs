@@ -99,9 +99,31 @@ jobs:
       - name: 🔍 validate flake
         run: nix flake show
 
+  test-update-script:
+    name: "test update script (${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: 📥 checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔧 install nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 set up nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: 🧪 run update dry-run
+        run: nix shell nixpkgs#nushell -c nu scripts/update --dry-run
+
   build-linux:
     name: "build ${{ matrix.package }} (linux)"
-    needs: [detect-changes, validate]
+    needs: [detect-changes, validate, test-update-script]
     if: needs.detect-changes.outputs.linux-packages != '[]'
     runs-on: ubuntu-latest
     strategy:
@@ -125,7 +147,7 @@ jobs:
 
   build-macos:
     name: "build ${{ matrix.package }} (macos)"
-    needs: [detect-changes, validate]
+    needs: [detect-changes, validate, test-update-script]
     if: needs.detect-changes.outputs.macos-packages != '[]'
     runs-on: macos-latest
     strategy:

@@ -287,6 +287,22 @@ Zoom video conferencing client for macOS.
 
 ## updating packages
 
+Run the repo updater to check every package for new upstream releases and refresh all hashes:
+
+```bash
+# Preview updates without changing files
+./scripts/update --dry-run
+
+# Apply updates in-place
+./scripts/update
+```
+
+The script updates:
+- GitHub release packages (version + platform hashes)
+- Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
+- Rolling URL packages (`google-chrome`, `google-drive`, `steam`)
+- Rust packages (`cargo-interactive-update`, `knope`, `mdt`) including `cargoHash`
+
 ### binary packages (pre-built)
 
 For packages that use pre-built binaries (`fetchurl`), update the version and set the hash to `lib.fakeHash` (or `lib.fakeSha256`):
