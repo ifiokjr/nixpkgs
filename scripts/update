@@ -8,25 +8,70 @@
 # - Rolling URL packages (google-chrome, google-drive, steam)
 # - Rust packages with cargoHash refresh (cargo-interactive-update, knope, mdt)
 
-def log [level: string, message: string] {
-  print $"[($level)] ($message)"
+# ANSI helpers
+
+const RESET = "\e[0m"
+const BOLD  = "\e[1m"
+const DIM   = "\e[2m"
+const RED   = "\e[31m"
+const GREEN = "\e[32m"
+const YELLOW = "\e[33m"
+const BLUE  = "\e[34m"
+const CYAN  = "\e[36m"
+
+# Formatted output
+
+def print-header [] {
+  print ""
+  print $"  ($BOLD)($CYAN)nixpkgs updater($RESET)"
+  print $"  ($DIM)────────────────────────────────────────($RESET)"
 }
 
-def info [message: string] {
-  log "info" $message
+def print-footer [updated: int, failed: int, skipped: int, failed_names: list<string>] {
+  print $"  ($DIM)────────────────────────────────────────($RESET)"
+
+  let parts = [
+    (if $updated > 0 { $"($GREEN)($updated) updated($RESET)" } else { $"($DIM)0 updated($RESET)" })
+    (if $failed > 0 { $"($RED)($failed) failed($RESET)" } else { $"($DIM)0 failed($RESET)" })
+    (if $skipped > 0 { $"($DIM)($skipped) unchanged($RESET)" } else { $"($DIM)0 unchanged($RESET)" })
+  ]
+
+  print $"  ($parts | str join $' ($DIM)·($RESET) ')"
+
+  if ($failed_names | is-not-empty) {
+    print $"  ($RED)Failed:($RESET) ($DIM)($failed_names | str join ', ')($RESET)"
+  }
+  print ""
 }
 
-def ok [message: string] {
-  log "ok" $message
+def log-ok [name: string, message: string] {
+  let pad = ($name | fill -a l -w 28 -c ' ')
+  print $"  ($GREEN)✓($RESET)  ($BOLD)($pad)($RESET) ($DIM)($message)($RESET)"
 }
 
-def warn [message: string] {
-  log "warn" $message
+def log-update [name: string, message: string] {
+  let pad = ($name | fill -a l -w 28 -c ' ')
+  print $"  ($BLUE)→($RESET)  ($BOLD)($pad)($RESET) ($BLUE)($message)($RESET)"
+}
+
+def log-fail [name: string, message: string] {
+  let pad = ($name | fill -a l -w 28 -c ' ')
+  print $"  ($RED)✗($RESET)  ($BOLD)($pad)($RESET) ($DIM)($message)($RESET)"
+}
+
+def log-sub [message: string] {
+  print $"     ($DIM)◆ ($message)($RESET)"
+}
+
+def log-warn [message: string] {
+  print $"  ($YELLOW)!($RESET)  ($message)"
 }
 
 def fail [message: string] {
   error make { msg: $message }
 }
+
+# Parsing utilities
 
 def parse-capture [content: string, pattern: string] {
   try {
@@ -34,95 +79,6 @@ def parse-capture [content: string, pattern: string] {
   } catch {
     ""
   }
-}
-
-def prefetch-sri [url: string] {
-  let result = (^nix-prefetch-url $url | complete)
-  if $result.exit_code != 0 {
-    fail $"Failed to prefetch URL: ($url)\n($result.stderr)"
-  }
-
-  let hash = ($result.stdout | str trim)
-  if ($hash | is-empty) {
-    fail $"Prefetch returned an empty hash: ($url)"
-  }
-
-  let sri = (^nix hash convert --hash-algo sha256 --to sri $hash | complete)
-  if $sri.exit_code != 0 {
-    fail $"Failed to convert hash to SRI: ($sri.stderr)"
-  }
-
-  $sri.stdout | str trim
-}
-
-def prefetch-sri-unpack [url: string] {
-  let result = (^nix-prefetch-url --unpack $url | complete)
-  if $result.exit_code != 0 {
-    fail $"Failed to prefetch \(unpack\) URL: ($url)\n($result.stderr)"
-  }
-
-  let hash = ($result.stdout | str trim)
-  if ($hash | is-empty) {
-    fail $"Prefetch \(unpack\) returned an empty hash: ($url)"
-  }
-
-  let sri = (^nix hash convert --hash-algo sha256 --to sri $hash | complete)
-  if $sri.exit_code != 0 {
-    fail $"Failed to convert hash to SRI: ($sri.stderr)"
-  }
-
-  $sri.stdout | str trim
-}
-
-def github-latest-tag [owner: string, repo: string] {
-  try {
-    http get $"https://api.github.com/repos/($owner)/($repo)/releases/latest" | get tag_name
-  } catch {
-    fail $"Failed to fetch latest release tag for ($owner)/($repo)"
-  }
-}
-
-def github-latest-tag-with-prefix [owner: string, repo: string, prefix: string] {
-  let tags = try {
-    http get $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=100"
-  } catch {
-    fail $"Failed to fetch tags for ($owner)/($repo)"
-  }
-
-  let matched = (
-    $tags
-    | where {|tag| $tag.name | str starts-with $prefix }
-    | get -o 0.name
-    | default ""
-  )
-
-  if ($matched | is-empty) {
-    fail $"Could not find a tag with prefix \"($prefix)\" for ($owner)/($repo)"
-  }
-
-  $matched
-}
-
-def brew-cask-latest-version [cask: string] {
-  try {
-    http get $"https://formulae.brew.sh/api/cask/($cask).json" | get version
-  } catch {
-    fail $"Failed to fetch latest Homebrew cask version for ($cask)"
-  }
-}
-
-def cursor-latest-version [] {
-  let install_script = try {
-    http get "https://cursor.com/install"
-  } catch {
-    fail "Failed to fetch https://cursor.com/install"
-  }
-
-  let version = (parse-capture $install_script 'downloads\.cursor\.com/lab/([^/]+)/')
-  if ($version | is-empty) {
-    fail "Could not extract Cursor version from install script"
-  }
-  $version
 }
 
 def replace-version [content: string, version: string] {
@@ -183,8 +139,119 @@ def set-cargo-hash [content: string, cargo_hash: string] {
   $content | str replace --regex 'cargoHash = [^;]+;' $"cargoHash = \"($cargo_hash)\";"
 }
 
+# Network helpers
+
+def github-headers [] {
+  let token = ($env | get -o GITHUB_TOKEN | default "")
+  if ($token | is-not-empty) {
+    [Authorization $"token ($token)"]
+  } else {
+    []
+  }
+}
+
+def github-api-get [url: string] {
+  let headers = (github-headers)
+  if ($headers | is-empty) {
+    http get $url
+  } else {
+    http get -H $headers $url
+  }
+}
+
+def github-latest-tag [owner: string, repo: string] {
+  try {
+    github-api-get $"https://api.github.com/repos/($owner)/($repo)/releases/latest" | get tag_name
+  } catch {
+    fail $"Failed to fetch latest release for ($owner)/($repo)"
+  }
+}
+
+def github-latest-tag-with-prefix [owner: string, repo: string, prefix: string] {
+  let tags = try {
+    github-api-get $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=100"
+  } catch {
+    fail $"Failed to fetch tags for ($owner)/($repo)"
+  }
+
+  let matched = (
+    $tags
+    | where {|tag| $tag.name | str starts-with $prefix }
+    | get -o 0.name
+    | default ""
+  )
+
+  if ($matched | is-empty) {
+    fail $"No tag with prefix \"($prefix)\" for ($owner)/($repo)"
+  }
+
+  $matched
+}
+
+def brew-cask-latest-version [cask: string] {
+  try {
+    http get $"https://formulae.brew.sh/api/cask/($cask).json" | get version
+  } catch {
+    fail $"Failed to fetch cask version for ($cask)"
+  }
+}
+
+def cursor-latest-version [] {
+  let body = try {
+    http get "https://cursor.com/install"
+  } catch {
+    fail "Failed to fetch https://cursor.com/install"
+  }
+
+  let version = (parse-capture $body 'downloads\.cursor\.com/lab/([^/]+)/')
+  if ($version | is-empty) {
+    fail "Could not extract Cursor version from install page"
+  }
+  $version
+}
+
+# Prefetch helpers
+
+def prefetch-sri [url: string] {
+  let result = (^nix-prefetch-url $url | complete)
+  if $result.exit_code != 0 {
+    fail $"download failed for ($url | path basename)"
+  }
+
+  let hash = ($result.stdout | str trim)
+  if ($hash | is-empty) {
+    fail $"empty hash for ($url | path basename)"
+  }
+
+  let sri = (^nix hash convert --hash-algo sha256 --to sri $hash | complete)
+  if $sri.exit_code != 0 {
+    fail "hash conversion failed"
+  }
+
+  $sri.stdout | str trim
+}
+
+def prefetch-sri-unpack [url: string] {
+  let result = (^nix-prefetch-url --unpack $url | complete)
+  if $result.exit_code != 0 {
+    fail $"download failed for ($url | path basename)"
+  }
+
+  let hash = ($result.stdout | str trim)
+  if ($hash | is-empty) {
+    fail $"empty hash for ($url | path basename)"
+  }
+
+  let sri = (^nix hash convert --hash-algo sha256 --to sri $hash | complete)
+  if $sri.exit_code != 0 {
+    fail "hash conversion failed"
+  }
+
+  $sri.stdout | str trim
+}
+
 def derive-cargo-hash [repo_root: string, package: string] {
-  info $"Resolving cargoHash for ($package)..."
+  log-sub $"resolving cargoHash for ($package)..."
   let result = (^nix build $"($repo_root)#($package)" --no-link | complete)
   let output = $"($result.stdout)\n($result.stderr)"
 
@@ -202,11 +269,13 @@ def derive-cargo-hash [repo_root: string, package: string] {
   )
 
   if ($hashes | is-empty) {
-    fail $"Could not extract cargoHash for ($package). nix build exit code: ($result.exit_code)"
+    fail $"could not extract cargoHash for ($package)"
   }
 
   $hashes | last
 }
+
+# Generic update strategies
 
 def update-versioned-keyed-hashes [
   name: string,
@@ -216,34 +285,34 @@ def update-versioned-keyed-hashes [
   dry_run: bool,
 ] {
   if not ($file | path exists) {
-    fail $"Missing file: ($file)"
+    fail $"missing file: ($file)"
   }
 
   let content = (open $file --raw)
   let current_version = (parse-capture $content 'version = "([^"]+)"')
   if ($current_version | is-empty) {
-    fail $"Could not parse current version for ($name)"
+    fail $"could not parse version for ($name)"
   }
 
   if $current_version == $latest_version {
-    ok $"($name): up to date \(v($current_version)\)"
+    log-ok $name $"up to date \(v($current_version)\)"
     return false
   }
 
-  info $"($name): v($current_version) -> v($latest_version)"
+  log-update $name $"v($current_version) → v($latest_version)"
   if $dry_run {
     return true
   }
 
   mut updated = (replace-version $content $latest_version)
   for entry in $entries {
-    info $"  prefetching ($entry.key)..."
+    log-sub $"fetching ($entry.key)..."
     let new_hash = (prefetch-sri $entry.url)
     $updated = (replace-key-hash $updated $entry.key $new_hash)
   }
 
   $updated | save -f $file
-  ok $"($name): updated"
+  log-ok $name "updated"
   true
 }
 
@@ -255,25 +324,26 @@ def update-versioned-single-hash [
   dry_run: bool,
 ] {
   if not ($file | path exists) {
-    fail $"Missing file: ($file)"
+    fail $"missing file: ($file)"
   }
 
   let content = (open $file --raw)
   let current_version = (parse-capture $content 'version = "([^"]+)"')
   if ($current_version | is-empty) {
-    fail $"Could not parse current version for ($name)"
+    fail $"could not parse version for ($name)"
   }
 
   if $current_version == $latest_version {
-    ok $"($name): up to date \(v($current_version)\)"
+    log-ok $name $"up to date \(v($current_version)\)"
     return false
   }
 
-  info $"($name): v($current_version) -> v($latest_version)"
+  log-update $name $"v($current_version) → v($latest_version)"
   if $dry_run {
     return true
   }
 
+  log-sub "fetching hash..."
   let new_hash = (prefetch-sri $url)
   let updated = (
     replace-single-hash
@@ -282,7 +352,7 @@ def update-versioned-single-hash [
   )
 
   $updated | save -f $file
-  ok $"($name): updated"
+  log-ok $name "updated"
   true
 }
 
@@ -293,29 +363,30 @@ def update-rolling-single-hash [
   dry_run: bool,
 ] {
   if not ($file | path exists) {
-    fail $"Missing file: ($file)"
+    fail $"missing file: ($file)"
   }
 
   let content = (open $file --raw)
   let current_hash = (parse-single-hash $content)
   if ($current_hash | is-empty) {
-    fail $"Could not parse current hash for ($name)"
+    fail $"could not parse hash for ($name)"
   }
 
+  log-sub "checking hash..."
   let new_hash = (prefetch-sri $url)
   if $current_hash == $new_hash {
-    ok $"($name): hash up to date"
+    log-ok $name "hash up to date"
     return false
   }
 
-  info $"($name): rolling hash changed"
+  log-update $name "hash changed"
   if $dry_run {
     return true
   }
 
   let updated = (replace-single-hash $content $new_hash)
   $updated | save -f $file
-  ok $"($name): hash updated"
+  log-ok $name "hash updated"
   true
 }
 
@@ -323,22 +394,28 @@ def update-google-chrome [packages_dir: string, dry_run: bool] {
   let name = "google-chrome"
   let file = $"($packages_dir)/google-chrome/package.nix"
   if not ($file | path exists) {
-    fail $"Missing file: ($file)"
+    fail $"missing file: ($file)"
   }
 
   let content = (open $file --raw)
 
+  # Fetch all hashes upfront
+  log-sub "checking macOS DMG..."
+  let mac_hash = (prefetch-sri "https://dl.google.com/chrome/mac/universal/stable/GGRO/googlechrome.dmg")
+  log-sub "checking Linux deb..."
+  let linux_hash = (prefetch-sri "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb")
+
   let target_hashes = {
-    "x86_64-darwin": (prefetch-sri "https://dl.google.com/chrome/mac/universal/stable/GGRO/googlechrome.dmg"),
-    "aarch64-darwin": (prefetch-sri "https://dl.google.com/chrome/mac/universal/stable/GGRO/googlechrome.dmg"),
-    "x86_64-linux": (prefetch-sri "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"),
+    "x86_64-darwin": $mac_hash,
+    "aarch64-darwin": $mac_hash,
+    "x86_64-linux": $linux_hash,
   }
 
   mut changed = false
   for key in ($target_hashes | columns) {
     let current = (parse-block-hash $content $key)
     if ($current | is-empty) {
-      fail $"Could not parse current hash for ($name) key: ($key)"
+      fail $"could not parse hash for ($name) key: ($key)"
     }
     if $current != ($target_hashes | get $key) {
       $changed = true
@@ -346,11 +423,11 @@ def update-google-chrome [packages_dir: string, dry_run: bool] {
   }
 
   if not $changed {
-    ok $"($name): hashes up to date"
+    log-ok $name "hashes up to date"
     return false
   }
 
-  info $"($name): rolling hashes changed"
+  log-update $name "hashes changed"
   if $dry_run {
     return true
   }
@@ -361,81 +438,19 @@ def update-google-chrome [packages_dir: string, dry_run: bool] {
   }
   $updated | save -f $file
 
-  ok $"($name): hashes updated"
+  log-ok $name "hashes updated"
   true
 }
 
-def update-rust-package [
-  repo_root: string,
-  packages_dir: string,
-  package: string,
-  latest_version: string,
-  rev: string,
-  owner: string,
-  repo: string,
-  dry_run: bool,
-] {
-  let file = $"($packages_dir)/($package)/package.nix"
-  if not ($file | path exists) {
-    fail $"Missing file: ($file)"
-  }
-
-  let original = (open $file --raw)
-  let current_version = (parse-capture $original 'version = "([^"]+)"')
-  if ($current_version | is-empty) {
-    fail $"Could not parse current version for ($package)"
-  }
-
-  if $current_version == $latest_version {
-    ok $"($package): up to date \(v($current_version)\)"
-    return false
-  }
-
-  info $"($package): v($current_version) -> v($latest_version)"
-  if $dry_run {
-    return true
-  }
-
-  let source_url = $"https://github.com/($owner)/($repo)/archive/($rev).tar.gz"
-  let source_hash = (prefetch-sri-unpack $source_url)
-
-  let staged = (
-    set-cargo-hash-fake
-      (set-src-hash
-        (replace-version $original $latest_version)
-        $source_hash)
-  )
-
-  try {
-    $staged | save -f $file
-    let cargo_hash = (derive-cargo-hash $repo_root $package)
-    let final = (set-cargo-hash $staged $cargo_hash)
-    $final | save -f $file
-    ok $"($package): updated"
-    true
-  } catch {
-    warn $"($package): update failed, restoring original file"
-    $original | save -f $file
-    fail $"Failed to update ($package)"
-  }
-}
+# Per-package update definitions
 
 def update-agave [packages_dir: string, dry_run: bool] {
   let latest_version = (github-latest-tag "anza-xyz" "agave" | str replace --regex '^v' '')
   let file = $"($packages_dir)/agave/package.nix"
   let entries = [
-    {
-      key: "aarch64-apple-darwin"
-      url: $"https://github.com/anza-xyz/agave/releases/download/v($latest_version)/solana-release-aarch64-apple-darwin.tar.bz2"
-    }
-    {
-      key: "x86_64-apple-darwin"
-      url: $"https://github.com/anza-xyz/agave/releases/download/v($latest_version)/solana-release-x86_64-apple-darwin.tar.bz2"
-    }
-    {
-      key: "x86_64-unknown-linux-gnu"
-      url: $"https://github.com/anza-xyz/agave/releases/download/v($latest_version)/solana-release-x86_64-unknown-linux-gnu.tar.bz2"
-    }
+    { key: "aarch64-apple-darwin", url: $"https://github.com/anza-xyz/agave/releases/download/v($latest_version)/solana-release-aarch64-apple-darwin.tar.bz2" }
+    { key: "x86_64-apple-darwin", url: $"https://github.com/anza-xyz/agave/releases/download/v($latest_version)/solana-release-x86_64-apple-darwin.tar.bz2" }
+    { key: "x86_64-unknown-linux-gnu", url: $"https://github.com/anza-xyz/agave/releases/download/v($latest_version)/solana-release-x86_64-unknown-linux-gnu.tar.bz2" }
   ]
   update-versioned-keyed-hashes "agave" $file $latest_version $entries $dry_run
 }
@@ -444,29 +459,16 @@ def update-codex [packages_dir: string, dry_run: bool] {
   let tag = (github-latest-tag "openai" "codex")
   let latest_version = (parse-capture $tag 'rust-v(.+)')
   if ($latest_version | is-empty) {
-    fail $"Could not parse codex version from tag: ($tag)"
+    fail $"could not parse codex version from tag: ($tag)"
   }
 
   let file = $"($packages_dir)/codex-cli/package.nix"
   let entries = [
-    {
-      key: "aarch64-apple-darwin"
-      url: $"https://github.com/openai/codex/releases/download/rust-v($latest_version)/codex-aarch64-apple-darwin.tar.gz"
-    }
-    {
-      key: "x86_64-apple-darwin"
-      url: $"https://github.com/openai/codex/releases/download/rust-v($latest_version)/codex-x86_64-apple-darwin.tar.gz"
-    }
-    {
-      key: "aarch64-unknown-linux-musl"
-      url: $"https://github.com/openai/codex/releases/download/rust-v($latest_version)/codex-aarch64-unknown-linux-musl.tar.gz"
-    }
-    {
-      key: "x86_64-unknown-linux-musl"
-      url: $"https://github.com/openai/codex/releases/download/rust-v($latest_version)/codex-x86_64-unknown-linux-musl.tar.gz"
-    }
+    { key: "aarch64-apple-darwin", url: $"https://github.com/openai/codex/releases/download/rust-v($latest_version)/codex-aarch64-apple-darwin.tar.gz" }
+    { key: "x86_64-apple-darwin", url: $"https://github.com/openai/codex/releases/download/rust-v($latest_version)/codex-x86_64-apple-darwin.tar.gz" }
+    { key: "aarch64-unknown-linux-musl", url: $"https://github.com/openai/codex/releases/download/rust-v($latest_version)/codex-aarch64-unknown-linux-musl.tar.gz" }
+    { key: "x86_64-unknown-linux-musl", url: $"https://github.com/openai/codex/releases/download/rust-v($latest_version)/codex-x86_64-unknown-linux-musl.tar.gz" }
   ]
-
   update-versioned-keyed-hashes "codex-cli" $file $latest_version $entries $dry_run
 }
 
@@ -474,22 +476,10 @@ def update-cursor [packages_dir: string, dry_run: bool] {
   let latest_version = (cursor-latest-version)
   let file = $"($packages_dir)/cursor-cli/package.nix"
   let entries = [
-    {
-      key: "darwin-arm64"
-      url: $"https://downloads.cursor.com/lab/($latest_version)/darwin/arm64/agent-cli-package.tar.gz"
-    }
-    {
-      key: "darwin-x64"
-      url: $"https://downloads.cursor.com/lab/($latest_version)/darwin/x64/agent-cli-package.tar.gz"
-    }
-    {
-      key: "linux-x64"
-      url: $"https://downloads.cursor.com/lab/($latest_version)/linux/x64/agent-cli-package.tar.gz"
-    }
-    {
-      key: "linux-arm64"
-      url: $"https://downloads.cursor.com/lab/($latest_version)/linux/arm64/agent-cli-package.tar.gz"
-    }
+    { key: "darwin-arm64", url: $"https://downloads.cursor.com/lab/($latest_version)/darwin/arm64/agent-cli-package.tar.gz" }
+    { key: "darwin-x64", url: $"https://downloads.cursor.com/lab/($latest_version)/darwin/x64/agent-cli-package.tar.gz" }
+    { key: "linux-x64", url: $"https://downloads.cursor.com/lab/($latest_version)/linux/x64/agent-cli-package.tar.gz" }
+    { key: "linux-arm64", url: $"https://downloads.cursor.com/lab/($latest_version)/linux/arm64/agent-cli-package.tar.gz" }
   ]
   update-versioned-keyed-hashes "cursor-cli" $file $latest_version $entries $dry_run
 }
@@ -498,24 +488,11 @@ def update-pnpm [packages_dir: string, dry_run: bool] {
   let latest_version = (github-latest-tag "pnpm" "pnpm" | str replace --regex '^v' '')
   let file = $"($packages_dir)/pnpm-standalone/package.nix"
   let entries = [
-    {
-      key: "macos-arm64"
-      url: $"https://github.com/pnpm/pnpm/releases/download/v($latest_version)/pnpm-macos-arm64"
-    }
-    {
-      key: "macos-x64"
-      url: $"https://github.com/pnpm/pnpm/releases/download/v($latest_version)/pnpm-macos-x64"
-    }
-    {
-      key: "linux-arm64"
-      url: $"https://github.com/pnpm/pnpm/releases/download/v($latest_version)/pnpm-linux-arm64"
-    }
-    {
-      key: "linux-x64"
-      url: $"https://github.com/pnpm/pnpm/releases/download/v($latest_version)/pnpm-linux-x64"
-    }
+    { key: "macos-arm64", url: $"https://github.com/pnpm/pnpm/releases/download/v($latest_version)/pnpm-macos-arm64" }
+    { key: "macos-x64", url: $"https://github.com/pnpm/pnpm/releases/download/v($latest_version)/pnpm-macos-x64" }
+    { key: "linux-arm64", url: $"https://github.com/pnpm/pnpm/releases/download/v($latest_version)/pnpm-linux-arm64" }
+    { key: "linux-x64", url: $"https://github.com/pnpm/pnpm/releases/download/v($latest_version)/pnpm-linux-x64" }
   ]
-
   update-versioned-keyed-hashes "pnpm-standalone" $file $latest_version $entries $dry_run
 }
 
@@ -523,22 +500,10 @@ def update-racket [packages_dir: string, dry_run: bool] {
   let latest_version = (github-latest-tag "racket" "racket" | str replace --regex '^v' '')
   let file = $"($packages_dir)/racket-minimal/package.nix"
   let entries = [
-    {
-      key: "aarch64-macosx"
-      url: $"https://mirror.racket-lang.org/installers/($latest_version)/racket-minimal-($latest_version)-aarch64-macosx-cs.tgz"
-    }
-    {
-      key: "x86_64-macosx"
-      url: $"https://mirror.racket-lang.org/installers/($latest_version)/racket-minimal-($latest_version)-x86_64-macosx-cs.tgz"
-    }
-    {
-      key: "aarch64-linux-buster"
-      url: $"https://mirror.racket-lang.org/installers/($latest_version)/racket-minimal-($latest_version)-aarch64-linux-buster-cs.tgz"
-    }
-    {
-      key: "x86_64-linux-buster"
-      url: $"https://mirror.racket-lang.org/installers/($latest_version)/racket-minimal-($latest_version)-x86_64-linux-buster-cs.tgz"
-    }
+    { key: "aarch64-macosx", url: $"https://mirror.racket-lang.org/installers/($latest_version)/racket-minimal-($latest_version)-aarch64-macosx-cs.tgz" }
+    { key: "x86_64-macosx", url: $"https://mirror.racket-lang.org/installers/($latest_version)/racket-minimal-($latest_version)-x86_64-macosx-cs.tgz" }
+    { key: "aarch64-linux-buster", url: $"https://mirror.racket-lang.org/installers/($latest_version)/racket-minimal-($latest_version)-aarch64-linux-buster-cs.tgz" }
+    { key: "x86_64-linux-buster", url: $"https://mirror.racket-lang.org/installers/($latest_version)/racket-minimal-($latest_version)-x86_64-linux-buster-cs.tgz" }
   ]
   update-versioned-keyed-hashes "racket-minimal" $file $latest_version $entries $dry_run
 }
@@ -547,18 +512,9 @@ def update-surfpool [packages_dir: string, dry_run: bool] {
   let latest_version = (github-latest-tag "txtx" "surfpool" | str replace --regex '^v' '')
   let file = $"($packages_dir)/surfpool/package.nix"
   let entries = [
-    {
-      key: "darwin-arm64"
-      url: $"https://github.com/txtx/surfpool/releases/download/v($latest_version)/surfpool-darwin-arm64.tar.gz"
-    }
-    {
-      key: "darwin-x64"
-      url: $"https://github.com/txtx/surfpool/releases/download/v($latest_version)/surfpool-darwin-x64.tar.gz"
-    }
-    {
-      key: "linux-x64"
-      url: $"https://github.com/txtx/surfpool/releases/download/v($latest_version)/surfpool-linux-x64.tar.gz"
-    }
+    { key: "darwin-arm64", url: $"https://github.com/txtx/surfpool/releases/download/v($latest_version)/surfpool-darwin-arm64.tar.gz" }
+    { key: "darwin-x64", url: $"https://github.com/txtx/surfpool/releases/download/v($latest_version)/surfpool-darwin-x64.tar.gz" }
+    { key: "linux-x64", url: $"https://github.com/txtx/surfpool/releases/download/v($latest_version)/surfpool-linux-x64.tar.gz" }
   ]
   update-versioned-keyed-hashes "surfpool" $file $latest_version $entries $dry_run
 }
@@ -567,14 +523,8 @@ def update-zoom [packages_dir: string, dry_run: bool] {
   let latest_version = (brew-cask-latest-version "zoom")
   let file = $"($packages_dir)/zoom/package.nix"
   let entries = [
-    {
-      key: "aarch64"
-      url: $"https://cdn.zoom.us/prod/($latest_version)/arm64/zoomusInstallerFull.pkg"
-    }
-    {
-      key: "x86_64"
-      url: $"https://cdn.zoom.us/prod/($latest_version)/zoomusInstallerFull.pkg"
-    }
+    { key: "aarch64", url: $"https://cdn.zoom.us/prod/($latest_version)/arm64/zoomusInstallerFull.pkg" }
+    { key: "x86_64", url: $"https://cdn.zoom.us/prod/($latest_version)/zoomusInstallerFull.pkg" }
   ]
   update-versioned-keyed-hashes "zoom" $file $latest_version $entries $dry_run
 }
@@ -591,6 +541,61 @@ def update-nordvpn [packages_dir: string, dry_run: bool] {
   let file = $"($packages_dir)/nordvpn/package.nix"
   let url = $"https://downloads.nordcdn.com/apps/macos/generic/NordVPN-OpenVPN/($latest_version)/NordVPN.pkg"
   update-versioned-single-hash "nordvpn" $file $latest_version $url $dry_run
+}
+
+def update-rust-package [
+  repo_root: string,
+  packages_dir: string,
+  package: string,
+  latest_version: string,
+  rev: string,
+  owner: string,
+  repo: string,
+  dry_run: bool,
+] {
+  let file = $"($packages_dir)/($package)/package.nix"
+  if not ($file | path exists) {
+    fail $"missing file: ($file)"
+  }
+
+  let original = (open $file --raw)
+  let current_version = (parse-capture $original 'version = "([^"]+)"')
+  if ($current_version | is-empty) {
+    fail $"could not parse version for ($package)"
+  }
+
+  if $current_version == $latest_version {
+    log-ok $package $"up to date \(v($current_version)\)"
+    return false
+  }
+
+  log-update $package $"v($current_version) → v($latest_version)"
+  if $dry_run {
+    return true
+  }
+
+  log-sub "fetching source archive..."
+  let source_url = $"https://github.com/($owner)/($repo)/archive/($rev).tar.gz"
+  let source_hash = (prefetch-sri-unpack $source_url)
+
+  let staged = (
+    set-cargo-hash-fake
+      (set-src-hash
+        (replace-version $original $latest_version)
+        $source_hash)
+  )
+
+  try {
+    $staged | save -f $file
+    let cargo_hash = (derive-cargo-hash $repo_root $package)
+    let final_content = (set-cargo-hash $staged $cargo_hash)
+    $final_content | save -f $file
+    log-ok $package "updated"
+    true
+  } catch {|err|
+    $original | save -f $file
+    fail $"build failed, restored original \(($err.msg)\)"
+  }
 }
 
 def update-rust-cargo-interactive [repo_root: string, packages_dir: string, dry_run: bool] {
@@ -625,13 +630,7 @@ def update-rolling-steam [packages_dir: string, dry_run: bool] {
   update-rolling-single-hash "steam" $"($packages_dir)/steam/package.nix" "https://cdn.cloudflare.steamstatic.com/client/installer/steam.dmg" $dry_run
 }
 
-def check-deps [] {
-  for dep in [nix nix-prefetch-url] {
-    if (which $dep | is-empty) {
-      fail $"Missing dependency: ($dep)"
-    }
-  }
-}
+# Runner
 
 def run-step [name: string, updater: closure] {
   try {
@@ -641,13 +640,23 @@ def run-step [name: string, updater: closure] {
       failed: false,
     }
   } catch {|err|
-    warn $"($name): ($err.msg)"
+    log-fail $name $err.msg
     {
       changed: false,
       failed: true,
     }
   }
 }
+
+def check-deps [] {
+  for dep in [nix nix-prefetch-url] {
+    if (which $dep | is-empty) {
+      fail $"Missing dependency: ($dep)"
+    }
+  }
+}
+
+# Main
 
 def main [
   --repo-root: string = ".",
@@ -659,19 +668,30 @@ def main [
   let packages_dir = $"($root)/packages"
 
   if not ($packages_dir | path exists) {
-    fail $"Could not find packages directory at ($packages_dir)"
+    print $"($RED)error:($RESET) packages directory not found at ($packages_dir)"
+    exit 1
   }
   if not ($"($root)/flake.nix" | path exists) {
-    fail $"Could not find flake.nix at ($root)"
+    print $"($RED)error:($RESET) flake.nix not found at ($root)"
+    exit 1
   }
 
-  info $"Repository root: ($root)"
+  print-header
+
   if $dry_run {
-    info "Running in dry-run mode (no files will be modified)"
+    log-warn $"($DIM)dry-run mode — no files will be modified($RESET)"
+    print ""
   }
 
-  mut changed = 0
-  mut failed = []
+  # Show GitHub auth status
+  let gh_token = ($env | get -o GITHUB_TOKEN | default "")
+  if ($gh_token | is-not-empty) {
+    log-warn $"($DIM)using GITHUB_TOKEN for API requests($RESET)"
+    print ""
+  }
+
+  mut updated = 0
+  mut failed_names = []
 
   let steps = [
     { name: "agave", run: {|| update-agave $packages_dir $dry_run } }
@@ -691,25 +711,25 @@ def main [
     { name: "zoom", run: {|| update-zoom $packages_dir $dry_run } }
   ]
 
+  let total = ($steps | length)
+
   for step in $steps {
     let result = (run-step $step.name $step.run)
     if $result.changed {
-      $changed = ($changed + 1)
+      $updated = ($updated + 1)
     }
     if $result.failed {
-      $failed = ($failed | append $step.name)
+      $failed_names = ($failed_names | append $step.name)
     }
   }
 
-  print ""
-  if $dry_run {
-    info $"Dry-run complete. Packages with available updates: ($changed)"
-  } else {
-    info $"Update complete. Packages changed: ($changed)"
-  }
+  let failed_count = ($failed_names | length)
+  let skipped = $total - $updated - $failed_count
 
-  if ($failed | is-not-empty) {
-    warn $"Failed packages: ($failed | str join ', ')"
-    fail "One or more package updates failed."
+  print ""
+  print-footer $updated $failed_count $skipped $failed_names
+
+  if $failed_count > 0 {
+    exit 1
   }
 }
