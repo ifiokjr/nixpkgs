@@ -22,8 +22,8 @@ jobs:
       - name: 🔍 detect changed packages
         id: changes
         run: |
-          LINUX_PACKAGES="agave cargo-interactive-update codex-cli cursor-cli google-chrome knope mdt pnpm-standalone racket-minimal surfpool"
-          MACOS_PACKAGES="agave cargo-interactive-update codex-cli cursor-cli google-chrome google-drive gpg-suite knope mdt nordvpn pnpm-standalone racket-minimal steam surfpool zoom"
+          LINUX_PACKAGES="agave cargo-interactive-update codex-cli cursor-cli google-chrome knope mdt pina pnpm-standalone racket-minimal surfpool"
+          MACOS_PACKAGES="agave cargo-interactive-update codex-cli cursor-cli google-chrome google-drive gpg-suite knope mdt nordvpn pina pnpm-standalone racket-minimal steam surfpool zoom"
 
           build_all=false
 
@@ -120,6 +120,8 @@ jobs:
 
       - name: 🧪 run update dry-run
         run: nix shell nixpkgs#nushell -c nu scripts/update --dry-run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-linux:
     name: "build ${{ matrix.package }} (linux)"

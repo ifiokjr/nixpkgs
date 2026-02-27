@@ -18,6 +18,11 @@ const GREEN = "\e[32m"
 const YELLOW = "\e[33m"
 const BLUE  = "\e[34m"
 const CYAN  = "\e[36m"
+const BRIGHT_RED = "\e[91m"
+
+# Connection timeout settings
+const CONNECT_TIMEOUT_SECS = 30
+const CONNECT_WARNING_SECS = 5
 
 # Formatted output
 
@@ -212,7 +217,48 @@ def cursor-latest-version [] {
 
 # Prefetch helpers
 
+# Verify URL is reachable before starting a potentially long download.
+# Shows a spinner countdown; last 5 seconds flash red. Fails if the server
+# does not respond within CONNECT_TIMEOUT_SECS.
+def connect-or-timeout [url: string] {
+  let spinners = ['⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏']
+
+  for tick in 0..<$CONNECT_TIMEOUT_SECS {
+    let remaining = $CONNECT_TIMEOUT_SECS - $tick
+
+    if $remaining <= $CONNECT_WARNING_SECS {
+      # Flash red: alternate between bright and dim red
+      if ($tick mod 2) == 0 {
+        print -n $"\r     ($RED)● connecting... ($remaining)s($RESET)\e[K"
+      } else {
+        print -n $"\r     ($BRIGHT_RED)● connecting... ($remaining)s($RESET)\e[K"
+      }
+    } else {
+      let s = ($spinners | get ($tick mod ($spinners | length)))
+      print -n $"\r     ($DIM)($s) connecting...($RESET)\e[K"
+    }
+
+    try {
+      http head $url --max-time 1sec | ignore
+      print -n $"\r\e[K"
+      return
+    } catch {|err|
+      # If it's an HTTP error (not a timeout/connection error), the server
+      # is reachable — proceed with the download.
+      let msg = ($err.msg | str downcase)
+      if not (($msg | str contains "timeout") or ($msg | str contains "timed out") or ($msg | str contains "connect")) {
+        print -n $"\r\e[K"
+        return
+      }
+    }
+  }
+
+  print $"\r     ($RED)● request timed out($RESET)\e[K"
+  fail $"connection timed out after ($CONNECT_TIMEOUT_SECS)s"
+}
+
 def prefetch-sri [url: string] {
+  connect-or-timeout $url
   let result = (^nix-prefetch-url $url | complete)
   if $result.exit_code != 0 {
     fail $"download failed for ($url | path basename)"
@@ -232,6 +278,7 @@ def prefetch-sri [url: string] {
 }
 
 def prefetch-sri-unpack [url: string] {
+  connect-or-timeout $url
   let result = (^nix-prefetch-url --unpack $url | complete)
   if $result.exit_code != 0 {
     fail $"download failed for ($url | path basename)"
