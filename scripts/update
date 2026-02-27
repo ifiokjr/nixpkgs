@@ -715,6 +715,7 @@ def check-deps [] {
 def main [
   --repo-root: string = ".",
   --dry-run, # Check and print what would change without writing files.
+  --all, # Include all packages (e.g. google-chrome) that are skipped by default.
 ] {
   check-deps
 
@@ -747,12 +748,11 @@ def main [
   mut updated = 0
   mut failed_names = []
 
-  let steps = [
+  mut steps = [
     { name: "agave", run: {|| update-agave $packages_dir $dry_run } }
     { name: "cargo-interactive-update", run: {|| update-rust-cargo-interactive $root $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
     { name: "cursor-cli", run: {|| update-cursor $packages_dir $dry_run } }
-    { name: "google-chrome", run: {|| update-google-chrome $packages_dir $dry_run } }
     { name: "google-drive", run: {|| update-rolling-google-drive $packages_dir $dry_run } }
     { name: "gpg-suite", run: {|| update-gpg-suite $packages_dir $dry_run } }
     { name: "knope", run: {|| update-rust-knope $root $packages_dir $dry_run } }
@@ -765,6 +765,13 @@ def main [
     { name: "surfpool", run: {|| update-surfpool $packages_dir $dry_run } }
     { name: "zoom", run: {|| update-zoom $packages_dir $dry_run } }
   ]
+
+  if $all {
+    $steps = ($steps | prepend { name: "google-chrome", run: {|| update-google-chrome $packages_dir $dry_run } } | sort-by name)
+  } else {
+    log-warn $"($DIM)skipping google-chrome \(use --all to include\)($RESET)"
+    print ""
+  }
 
   let total = ($steps | length)
 

@@ -119,7 +119,7 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: 🧪 run update dry-run
-        run: nix shell nixpkgs#nushell -c nu scripts/update --dry-run
+        run: nix shell nixpkgs#nushell -c nu scripts/update --dry-run --all
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
