@@ -37,31 +37,41 @@ def parse-capture [content: string, pattern: string] {
 }
 
 def prefetch-sri [url: string] {
-  let hash = try {
-    ^nix-prefetch-url $url out+err>| lines | last | str trim
-  } catch {
-    fail $"Failed to prefetch URL: ($url)"
+  let result = (^nix-prefetch-url $url | complete)
+  if $result.exit_code != 0 {
+    fail $"Failed to prefetch URL: ($url)\n($result.stderr)"
   }
 
+  let hash = ($result.stdout | str trim)
   if ($hash | is-empty) {
     fail $"Prefetch returned an empty hash: ($url)"
   }
 
-  ^nix hash convert --hash-algo sha256 --to sri $hash | str trim
+  let sri = (^nix hash convert --hash-algo sha256 --to sri $hash | complete)
+  if $sri.exit_code != 0 {
+    fail $"Failed to convert hash to SRI: ($sri.stderr)"
+  }
+
+  $sri.stdout | str trim
 }
 
 def prefetch-sri-unpack [url: string] {
-  let hash = try {
-    ^nix-prefetch-url --unpack $url out+err>| lines | last | str trim
-  } catch {
-    fail $"Failed to prefetch (unpack) URL: ($url)"
+  let result = (^nix-prefetch-url --unpack $url | complete)
+  if $result.exit_code != 0 {
+    fail $"Failed to prefetch \(unpack\) URL: ($url)\n($result.stderr)"
   }
 
+  let hash = ($result.stdout | str trim)
   if ($hash | is-empty) {
-    fail $"Prefetch (unpack) returned an empty hash: ($url)"
+    fail $"Prefetch \(unpack\) returned an empty hash: ($url)"
   }
 
-  ^nix hash convert --hash-algo sha256 --to sri $hash | str trim
+  let sri = (^nix hash convert --hash-algo sha256 --to sri $hash | complete)
+  if $sri.exit_code != 0 {
+    fail $"Failed to convert hash to SRI: ($sri.stderr)"
+  }
+
+  $sri.stdout | str trim
 }
 
 def github-latest-tag [owner: string, repo: string] {
@@ -120,7 +130,8 @@ def replace-version [content: string, version: string] {
 }
 
 def parse-key-hash [content: string, key: string] {
-  parse-capture $content $"\"($key)\" = \"([^\"]+)\""
+  let pattern = '"' + $key + '" = "([^"]+)"'
+  parse-capture $content $pattern
 }
 
 def replace-key-hash [content: string, key: string, new_hash: string] {
@@ -215,7 +226,7 @@ def update-versioned-keyed-hashes [
   }
 
   if $current_version == $latest_version {
-    ok $"($name): up to date \((v($current_version))\)"
+    ok $"($name): up to date \(v($current_version)\)"
     return false
   }
 
@@ -254,7 +265,7 @@ def update-versioned-single-hash [
   }
 
   if $current_version == $latest_version {
-    ok $"($name): up to date \((v($current_version))\)"
+    ok $"($name): up to date \(v($current_version)\)"
     return false
   }
 
@@ -376,7 +387,7 @@ def update-rust-package [
   }
 
   if $current_version == $latest_version {
-    ok $"($package): up to date \((v($current_version))\)"
+    ok $"($package): up to date \(v($current_version)\)"
     return false
   }
 
@@ -623,17 +634,17 @@ def check-deps [] {
 }
 
 def run-step [name: string, updater: closure] {
-  let result = (do -i { do $updater })
-  if ($env.LAST_EXIT_CODE != 0) {
-    warn $"($name): failed"
-    {
-      changed: false,
-      failed: true,
-    }
-  } else {
+  try {
+    let result = (do $updater)
     {
       changed: ($result | default false),
       failed: false,
+    }
+  } catch {|err|
+    warn $"($name): ($err.msg)"
+    {
+      changed: false,
+      failed: true,
     }
   }
 }
