@@ -6,7 +6,7 @@
 # - Cursor CLI (version from install script)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (google-chrome, google-drive, steam)
-# - Rust packages with cargoHash refresh (cargo-interactive-update, knope, mdt)
+# - Rust packages with cargoHash refresh (cargo-interactive-update, knope, mdt, pina)
 
 # ANSI helpers
 
@@ -616,10 +616,17 @@ def update-rust-knope [repo_root: string, packages_dir: string, dry_run: bool] {
 }
 
 def update-rust-mdt [repo_root: string, packages_dir: string, dry_run: bool] {
-  let tag = (github-latest-tag-with-prefix "ifiokjr" "mdt" "mdt_cli/v")
-  let latest_version = ($tag | str replace "mdt_cli/v" "")
-  let rev = $"mdt_cli/v($latest_version)"
+  let tag = (github-latest-tag "ifiokjr" "mdt")
+  let latest_version = ($tag | str replace --regex '^v' '')
+  let rev = $"v($latest_version)"
   update-rust-package $repo_root $packages_dir "mdt" $latest_version $rev "ifiokjr" "mdt" $dry_run
+}
+
+def update-rust-pina [repo_root: string, packages_dir: string, dry_run: bool] {
+  let tag = (github-latest-tag "pina-rs" "pina")
+  let latest_version = ($tag | str replace --regex '^v' '')
+  let rev = $"v($latest_version)"
+  update-rust-package $repo_root $packages_dir "pina" $latest_version $rev "pina-rs" "pina" $dry_run
 }
 
 def update-rolling-google-drive [packages_dir: string, dry_run: bool] {
@@ -704,6 +711,7 @@ def main [
     { name: "knope", run: {|| update-rust-knope $root $packages_dir $dry_run } }
     { name: "mdt", run: {|| update-rust-mdt $root $packages_dir $dry_run } }
     { name: "nordvpn", run: {|| update-nordvpn $packages_dir $dry_run } }
+    { name: "pina", run: {|| update-rust-pina $root $packages_dir $dry_run } }
     { name: "pnpm-standalone", run: {|| update-pnpm $packages_dir $dry_run } }
     { name: "racket-minimal", run: {|| update-racket $packages_dir $dry_run } }
     { name: "steam", run: {|| update-rolling-steam $packages_dir $dry_run } }
