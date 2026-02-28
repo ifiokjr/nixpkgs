@@ -64,5 +64,10 @@ stdenv.mkDerivation {
     ];
     maintainers = [ ];
     mainProgram = "codex";
+    tags = [
+      "cli"
+      "dev-tool"
+      "ai"
+    ];
   };
 }

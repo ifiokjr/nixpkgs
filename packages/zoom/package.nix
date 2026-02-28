@@ -53,5 +53,10 @@ stdenv.mkDerivation {
     ];
     maintainers = [ ];
     sourceProvenance = [ sourceTypes.binaryNativeCode ];
+    tags = [
+      "gui"
+      "macos-app"
+      "communication"
+    ];
   };
 }

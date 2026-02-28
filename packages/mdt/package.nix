@@ -26,5 +26,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/ifiokjr/mdt";
     license = lib.licenses.unlicense;
     mainProgram = "mdt";
+    tags = [
+      "cli"
+      "dev-tool"
+    ];
   };
 })

@@ -26,5 +26,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://pina.rs";
     license = lib.licenses.asl20;
     mainProgram = "pina";
+    tags = [
+      "cli"
+      "dev-tool"
+      "solana"
+    ];
   };
 })
