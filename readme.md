@@ -4,20 +4,25 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 
 ## packages
 
-| Package                             | Version    | Platforms          | Description                                                          |
-| ----------------------------------- | ---------- | ------------------ | -------------------------------------------------------------------- |
-| [codex-cli](#codex-cli)             | 0.104.0    | linux, macos       | OpenAI Codex CLI - AI coding assistant for the terminal              |
-| [cursor-cli](#cursor-cli)           | 2026.02.13 | linux, macos       | Cursor AI CLI agent for terminal-based development                   |
-| [google-chrome](#google-chrome)     | latest     | linux (x64), macos | Google Chrome web browser                                            |
-| [google-drive](#google-drive)       | latest     | macos              | Google Drive desktop client for macOS                                |
-| [gpg-suite](#gpg-suite)             | 2023.3     | macos              | GPG Suite - encryption, signing, and key management                  |
-| [knope](#knope)                     | 0.22.3     | linux, macos       | Automate common development tasks (changelogs, releases, versioning) |
-| [mdt](#mdt)                         | 0.4.1      | linux, macos       | Update markdown content anywhere using comments as template tags     |
-| [nordvpn](#nordvpn)                 | 9.14.0     | macos              | NordVPN macOS client                                                 |
-| [pnpm-standalone](#pnpm-standalone) | 10.30.2    | linux, macos       | Fast, disk-space efficient package manager (no Node.js dependency)   |
-| [racket-minimal](#racket-minimal)   | 9.1        | linux, macos       | Racket programming language (minimal distribution, pre-built)        |
-| [steam](#steam)                     | 4.0        | macos              | Steam video game digital distribution service                        |
-| [zoom](#zoom)                       | 6.7.6      | macos              | Zoom video conferencing client                                       |
+| Package | Version | Platforms | Description |
+|---------|---------|-----------|-------------|
+| [agave](#agave) | 3.1.8 | linux (x64), macos | Solana validator client and CLI toolchain by Anza |
+| [cargo-interactive-update](#cargo-interactive-update) | 0.6.2 | linux, macos | A cargo extension to update direct dependencies interactively |
+| [codex-cli](#codex-cli) | 0.106.0 | linux, macos | OpenAI Codex CLI - AI coding assistant for the terminal |
+| [codexbar](#codexbar) | 0.17.0 | macos | macOS menu bar app showing AI coding tool usage and limits |
+| [cursor-cli](#cursor-cli) | 2026.02.27 | linux, macos | Cursor AI CLI agent for terminal-based development |
+| [google-chrome](#google-chrome) | latest | linux (x64), macos | Google Chrome web browser |
+| [google-drive](#google-drive) | latest | macos | Google Drive desktop client for macOS |
+| [gpg-suite](#gpg-suite) | 2023.3 | macos | GPG Suite - encryption, signing, and key management |
+| [knope](#knope) | 0.22.3 | linux, macos | Automate common development tasks (changelogs, releases, versioning) |
+| [mdt](#mdt) | 0.6.0 | linux, macos | Update markdown content anywhere using comments as template tags |
+| [nordvpn](#nordvpn) | 9.14.0 | macos | NordVPN macOS client |
+| [pina](#pina) | 0.6.0 | linux, macos | CLI for Pina, a performant Solana smart contract framework |
+| [pnpm-standalone](#pnpm-standalone) | 10.30.3 | linux, macos | Fast, disk-space efficient package manager (no Node.js dependency) |
+| [racket-minimal](#racket-minimal) | 9.1 | linux, macos | Racket programming language (minimal distribution, pre-built) |
+| [steam](#steam) | 4.0 | macos | Steam video game digital distribution service |
+| [surfpool](#surfpool) | 1.0.1 | linux (x64), macos | A drop-in replacement for solana-test-validator with mainnet state simulation |
+| [zoom](#zoom) | 6.7.6 | macos | Zoom video conferencing client |
 
 ## usage
 
@@ -192,6 +197,22 @@ in
 
 ## package details
 
+### agave
+
+Solana validator client and CLI toolchain by Anza. Pre-built binary from GitHub releases.
+
+- **Binary:** `solana`
+- **License:** Apache-2.0
+- **Source:** <https://github.com/anza-xyz/agave>
+
+### cargo-interactive-update
+
+A cargo extension to update direct dependencies interactively. Built from source using `rustPlatform.buildRustPackage`.
+
+- **Binary:** `cargo-interactive-update`
+- **License:** MIT
+- **Source:** <https://github.com/benjeau/cargo-interactive-update>
+
 ### codex-cli
 
 OpenAI Codex CLI for AI-assisted coding directly from the terminal. Pre-built binary from GitHub releases.
@@ -199,6 +220,14 @@ OpenAI Codex CLI for AI-assisted coding directly from the terminal. Pre-built bi
 - **Binary:** `codex`
 - **License:** Apache-2.0
 - **Source:** <https://github.com/openai/codex>
+
+### codexbar
+
+macOS menu bar app showing AI coding tool usage and limits. Pre-built `.app` bundle from GitHub releases.
+
+- **License:** MIT
+- **Source:** <https://github.com/steipete/CodexBar>
+- **Homepage:** <https://codexbar.app>
 
 ### cursor-cli
 
@@ -254,6 +283,15 @@ NordVPN macOS client. Installs the `.app` bundle from the official PKG.
 - **License:** Proprietary
 - **Source:** <https://nordvpn.com/>
 
+### pina
+
+CLI for Pina, a performant Solana smart contract framework. Built from source using `rustPlatform.buildRustPackage`.
+
+- **Binary:** `pina`
+- **License:** Apache-2.0
+- **Source:** <https://github.com/pina-rs/pina>
+- **Homepage:** <https://pina.rs>
+
 ### pnpm-standalone
 
 Standalone pnpm binary with no Node.js dependency. Downloaded directly from GitHub releases.
@@ -277,6 +315,14 @@ Steam video game digital distribution service for macOS.
 
 - **License:** Proprietary
 - **Source:** <https://store.steampowered.com/>
+
+### surfpool
+
+A drop-in replacement for solana-test-validator with mainnet state simulation. Pre-built binary from GitHub releases.
+
+- **Binary:** `surfpool`
+- **License:** Apache-2.0
+- **Source:** <https://github.com/txtx/surfpool>
 
 ### zoom
 
@@ -302,7 +348,7 @@ The script updates:
 - GitHub release packages (version + platform hashes)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
 - Rolling URL packages (`google-chrome`, `google-drive`, `steam`)
-- Rust packages (`cargo-interactive-update`, `knope`, `mdt`) including `cargoHash`
+- Rust packages (`cargo-interactive-update`, `knope`, `mdt`, `pina`) including `cargoHash`
 
 ### binary packages (pre-built)
 
