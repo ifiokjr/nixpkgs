@@ -101,6 +101,24 @@ jobs:
       - name: 🔍 validate flake
         run: nix flake show
 
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔧 install nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 set up nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: 🔍 lint
+        run: nix shell nixpkgs#dprint nixpkgs#nixfmt-rfc-style nixpkgs#shfmt -c dprint check
+
   test-update-script:
     name: "test update script (${{ matrix.os }})"
     runs-on: ${{ matrix.os }}

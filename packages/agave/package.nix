@@ -38,11 +38,10 @@ stdenv.mkDerivation {
   dontBuild = true;
   dontStrip = stdenv.isDarwin;
 
-  nativeBuildInputs =
-    lib.optionals stdenv.isLinux [
-      autoPatchelfHook
-      makeWrapper
-    ];
+  nativeBuildInputs = lib.optionals stdenv.isLinux [
+    autoPatchelfHook
+    makeWrapper
+  ];
 
   buildInputs = lib.optionals stdenv.isLinux [
     stdenv.cc.cc.lib

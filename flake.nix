@@ -13,27 +13,25 @@
       flake-utils,
     }:
     {
-      overlays.default =
-        final: _prev:
-        {
-          agave = final.callPackage ./packages/agave/package.nix { };
-          cargo-interactive-update = final.callPackage ./packages/cargo-interactive-update/package.nix { };
-          codex-cli = final.callPackage ./packages/codex-cli/package.nix { };
-          codexbar = final.callPackage ./packages/codexbar/package.nix { };
-          cursor-cli = final.callPackage ./packages/cursor-cli/package.nix { };
-          google-chrome = final.callPackage ./packages/google-chrome/package.nix { };
-          google-drive = final.callPackage ./packages/google-drive/package.nix { };
-          gpg-suite = final.callPackage ./packages/gpg-suite/package.nix { };
-          knope = final.callPackage ./packages/knope/package.nix { };
-          mdt = final.callPackage ./packages/mdt/package.nix { };
-          nordvpn = final.callPackage ./packages/nordvpn/package.nix { };
-          pina = final.callPackage ./packages/pina/package.nix { };
-          pnpm-standalone = final.callPackage ./packages/pnpm-standalone/package.nix { };
-          racket-minimal = final.callPackage ./packages/racket-minimal/package.nix { };
-          steam = final.callPackage ./packages/steam/package.nix { };
-          surfpool = final.callPackage ./packages/surfpool/package.nix { };
-          zoom = final.callPackage ./packages/zoom/package.nix { };
-        };
+      overlays.default = final: _prev: {
+        agave = final.callPackage ./packages/agave/package.nix { };
+        cargo-interactive-update = final.callPackage ./packages/cargo-interactive-update/package.nix { };
+        codex-cli = final.callPackage ./packages/codex-cli/package.nix { };
+        codexbar = final.callPackage ./packages/codexbar/package.nix { };
+        cursor-cli = final.callPackage ./packages/cursor-cli/package.nix { };
+        google-chrome = final.callPackage ./packages/google-chrome/package.nix { };
+        google-drive = final.callPackage ./packages/google-drive/package.nix { };
+        gpg-suite = final.callPackage ./packages/gpg-suite/package.nix { };
+        knope = final.callPackage ./packages/knope/package.nix { };
+        mdt = final.callPackage ./packages/mdt/package.nix { };
+        nordvpn = final.callPackage ./packages/nordvpn/package.nix { };
+        pina = final.callPackage ./packages/pina/package.nix { };
+        pnpm-standalone = final.callPackage ./packages/pnpm-standalone/package.nix { };
+        racket-minimal = final.callPackage ./packages/racket-minimal/package.nix { };
+        steam = final.callPackage ./packages/steam/package.nix { };
+        surfpool = final.callPackage ./packages/surfpool/package.nix { };
+        zoom = final.callPackage ./packages/zoom/package.nix { };
+      };
     }
     // flake-utils.lib.eachDefaultSystem (
       system:
