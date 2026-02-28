@@ -125,5 +125,10 @@ stdenv.mkDerivation {
     ];
     maintainers = [ ];
     mainProgram = "pnpm";
+    tags = [
+      "cli"
+      "dev-tool"
+      "package-manager"
+    ];
   };
 }

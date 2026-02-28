@@ -59,5 +59,10 @@ stdenv.mkDerivation {
       "aarch64-darwin"
     ];
     mainProgram = "surfpool";
+    tags = [
+      "cli"
+      "dev-tool"
+      "solana"
+    ];
   };
 }

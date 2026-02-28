@@ -76,5 +76,9 @@ stdenv.mkDerivation {
       "aarch64-linux"
     ];
     mainProgram = "racket";
+    tags = [
+      "cli"
+      "dev-tool"
+    ];
   };
 }

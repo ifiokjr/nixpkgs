@@ -29,5 +29,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/benjeau/cargo-interactive-update";
     license = lib.licenses.mit;
     mainProgram = "cargo-interactive-update";
+    tags = [
+      "cli"
+      "dev-tool"
+    ];
   };
 })

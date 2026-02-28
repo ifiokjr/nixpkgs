@@ -38,11 +38,10 @@ stdenv.mkDerivation {
   dontBuild = true;
   dontStrip = stdenv.isDarwin;
 
-  nativeBuildInputs =
-    lib.optionals stdenv.isLinux [
-      autoPatchelfHook
-      makeWrapper
-    ];
+  nativeBuildInputs = lib.optionals stdenv.isLinux [
+    autoPatchelfHook
+    makeWrapper
+  ];
 
   buildInputs = lib.optionals stdenv.isLinux [
     stdenv.cc.cc.lib
@@ -79,5 +78,10 @@ stdenv.mkDerivation {
       "aarch64-darwin"
     ];
     mainProgram = "solana";
+    tags = [
+      "cli"
+      "dev-tool"
+      "solana"
+    ];
   };
 }

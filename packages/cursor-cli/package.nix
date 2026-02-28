@@ -68,5 +68,10 @@ stdenv.mkDerivation {
     ];
     maintainers = [ ];
     mainProgram = "cursor-agent";
+    tags = [
+      "cli"
+      "dev-tool"
+      "ai"
+    ];
   };
 }

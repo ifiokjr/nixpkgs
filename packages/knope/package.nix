@@ -39,5 +39,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://knope.tech";
     license = lib.licenses.mit;
     mainProgram = "knope";
+    tags = [
+      "cli"
+      "dev-tool"
+    ];
   };
 })
