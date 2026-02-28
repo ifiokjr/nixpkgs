@@ -2,6 +2,7 @@
 # Update packages in this repo to latest available versions and refresh hashes.
 #
 # The script covers:
+# - Flake inputs (nix flake update → flake.lock)
 # - Versioned GitHub release packages (agave, codex-cli, surfpool, etc.)
 # - Cursor CLI (version from install script)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
@@ -676,6 +677,35 @@ def update-rust-pina [repo_root: string, packages_dir: string, dry_run: bool] {
   update-rust-package $repo_root $packages_dir "pina" $latest_version $rev "pina-rs" "pina" $dry_run
 }
 
+def update-flake-lock [repo_root: string, dry_run: bool] {
+  let lock_file = $"($repo_root)/flake.lock"
+  if not ($lock_file | path exists) {
+    fail "flake.lock not found"
+  }
+
+  let before = (open $lock_file --raw)
+
+  if $dry_run {
+    log-ok "flake.lock" "would run nix flake update"
+    return false
+  }
+
+  log-sub "running nix flake update..."
+  let result = (^nix flake update --flake $repo_root | complete)
+  if $result.exit_code != 0 {
+    fail $"nix flake update failed: ($result.stderr | str trim)"
+  }
+
+  let after = (open $lock_file --raw)
+  if $before == $after {
+    log-ok "flake.lock" "up to date"
+    return false
+  }
+
+  log-update "flake.lock" "inputs updated"
+  true
+}
+
 def update-rolling-google-drive [packages_dir: string, dry_run: bool] {
   update-rolling-single-hash "google-drive" $"($packages_dir)/google-drive/package.nix" "https://dl.google.com/drive-file-stream/5-percent/GoogleDrive.dmg" $dry_run
 }
@@ -747,6 +777,15 @@ def main [
 
   mut updated = 0
   mut failed_names = []
+
+  # Update flake.lock before packages so builds use latest nixpkgs
+  let flake_result = (run-step "flake.lock" {|| update-flake-lock $root $dry_run })
+  if $flake_result.changed {
+    $updated = ($updated + 1)
+  }
+  if $flake_result.failed {
+    $failed_names = ($failed_names | append "flake.lock")
+  }
 
   mut steps = [
     { name: "agave", run: {|| update-agave $packages_dir $dry_run } }
