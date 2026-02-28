@@ -4,25 +4,25 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 
 ## packages
 
-| Package | Version | Platforms | Description |
-|---------|---------|-----------|-------------|
-| [agave](#agave) | 3.1.8 | linux (x64), macos | Solana validator client and CLI toolchain by Anza |
-| [cargo-interactive-update](#cargo-interactive-update) | 0.6.2 | linux, macos | A cargo extension to update direct dependencies interactively |
-| [codex-cli](#codex-cli) | 0.106.0 | linux, macos | OpenAI Codex CLI - AI coding assistant for the terminal |
-| [codexbar](#codexbar) | 0.17.0 | macos | macOS menu bar app showing AI coding tool usage and limits |
-| [cursor-cli](#cursor-cli) | 2026.02.27 | linux, macos | Cursor AI CLI agent for terminal-based development |
-| [google-chrome](#google-chrome) | latest | linux (x64), macos | Google Chrome web browser |
-| [google-drive](#google-drive) | latest | macos | Google Drive desktop client for macOS |
-| [gpg-suite](#gpg-suite) | 2023.3 | macos | GPG Suite - encryption, signing, and key management |
-| [knope](#knope) | 0.22.3 | linux, macos | Automate common development tasks (changelogs, releases, versioning) |
-| [mdt](#mdt) | 0.6.0 | linux, macos | Update markdown content anywhere using comments as template tags |
-| [nordvpn](#nordvpn) | 9.14.0 | macos | NordVPN macOS client |
-| [pina](#pina) | 0.6.0 | linux, macos | CLI for Pina, a performant Solana smart contract framework |
-| [pnpm-standalone](#pnpm-standalone) | 10.30.3 | linux, macos | Fast, disk-space efficient package manager (no Node.js dependency) |
-| [racket-minimal](#racket-minimal) | 9.1 | linux, macos | Racket programming language (minimal distribution, pre-built) |
-| [steam](#steam) | 4.0 | macos | Steam video game digital distribution service |
-| [surfpool](#surfpool) | 1.0.1 | linux (x64), macos | A drop-in replacement for solana-test-validator with mainnet state simulation |
-| [zoom](#zoom) | 6.7.6 | macos | Zoom video conferencing client |
+| Package                                               | Version    | Platforms          | Description                                                                   |
+| ----------------------------------------------------- | ---------- | ------------------ | ----------------------------------------------------------------------------- |
+| [agave](#agave)                                       | 3.1.8      | linux (x64), macos | Solana validator client and CLI toolchain by Anza                             |
+| [cargo-interactive-update](#cargo-interactive-update) | 0.6.2      | linux, macos       | A cargo extension to update direct dependencies interactively                 |
+| [codex-cli](#codex-cli)                               | 0.106.0    | linux, macos       | OpenAI Codex CLI - AI coding assistant for the terminal                       |
+| [codexbar](#codexbar)                                 | 0.17.0     | macos              | macOS menu bar app showing AI coding tool usage and limits                    |
+| [cursor-cli](#cursor-cli)                             | 2026.02.27 | linux, macos       | Cursor AI CLI agent for terminal-based development                            |
+| [google-chrome](#google-chrome)                       | latest     | linux (x64), macos | Google Chrome web browser                                                     |
+| [google-drive](#google-drive)                         | latest     | macos              | Google Drive desktop client for macOS                                         |
+| [gpg-suite](#gpg-suite)                               | 2023.3     | macos              | GPG Suite - encryption, signing, and key management                           |
+| [knope](#knope)                                       | 0.22.3     | linux, macos       | Automate common development tasks (changelogs, releases, versioning)          |
+| [mdt](#mdt)                                           | 0.6.0      | linux, macos       | Update markdown content anywhere using comments as template tags              |
+| [nordvpn](#nordvpn)                                   | 9.14.0     | macos              | NordVPN macOS client                                                          |
+| [pina](#pina)                                         | 0.6.0      | linux, macos       | CLI for Pina, a performant Solana smart contract framework                    |
+| [pnpm-standalone](#pnpm-standalone)                   | 10.30.3    | linux, macos       | Fast, disk-space efficient package manager (no Node.js dependency)            |
+| [racket-minimal](#racket-minimal)                     | 9.1        | linux, macos       | Racket programming language (minimal distribution, pre-built)                 |
+| [steam](#steam)                                       | 4.0        | macos              | Steam video game digital distribution service                                 |
+| [surfpool](#surfpool)                                 | 1.0.1      | linux (x64), macos | A drop-in replacement for solana-test-validator with mainnet state simulation |
+| [zoom](#zoom)                                         | 6.7.6      | macos              | Zoom video conferencing client                                                |
 
 ## usage
 
