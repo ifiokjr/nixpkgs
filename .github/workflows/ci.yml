@@ -23,7 +23,7 @@ jobs:
         id: changes
         run: |
           LINUX_PACKAGES="agave cargo-interactive-update codex-cli cursor-cli google-chrome knope mdt pina pnpm-standalone racket-minimal surfpool"
-          MACOS_PACKAGES="agave cargo-interactive-update codex-cli cursor-cli google-chrome google-drive gpg-suite knope mdt nordvpn pina pnpm-standalone racket-minimal steam surfpool zoom"
+          MACOS_PACKAGES="agave cargo-interactive-update codex-cli codexbar cursor-cli google-chrome google-drive gpg-suite knope mdt nordvpn pina pnpm-standalone racket-minimal steam surfpool zoom"
 
           build_all=false
 
@@ -41,8 +41,10 @@ jobs:
           if [ "$build_all" = "false" ]; then
             CHANGED_FILES=$(git diff --name-only "$BASE" HEAD)
 
-            # Build all if flake files or CI config changed
-            if echo "$CHANGED_FILES" | grep -qE '^(flake\.nix|flake\.lock|\.github/workflows/ci\.yml)$'; then
+            # Build all if flake lock or CI config changed (flake.nix is excluded
+            # since it typically only changes to register new packages, which are
+            # already detected via the packages/ directory)
+            if echo "$CHANGED_FILES" | grep -qE '^(flake\.lock|\.github/workflows/ci\.yml)$'; then
               build_all=true
             fi
           fi
