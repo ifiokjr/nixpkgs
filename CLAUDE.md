@@ -23,6 +23,10 @@ Scope is optional. When used, it should be the package name (e.g., `feat(pnpm-st
 - `.github/workflows/ci.yml` — CI with change detection and matrix builds
 - `scripts/update` — nushell script to update all packages to latest versions
 
+## Formatting
+
+Always run `dprint fmt` before pushing to ensure all files are properly formatted. If `dprint fmt` makes changes, commit them before pushing.
+
 ## Nushell
 
 The `scripts/update` script is written in nushell. When writing `$"..."` interpolated strings, remember that `(...)` inside them is always treated as interpolation. Use `\(` and `\)` to produce literal parentheses.
