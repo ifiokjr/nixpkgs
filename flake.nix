@@ -19,6 +19,7 @@
           agave = final.callPackage ./packages/agave/package.nix { };
           cargo-interactive-update = final.callPackage ./packages/cargo-interactive-update/package.nix { };
           codex-cli = final.callPackage ./packages/codex-cli/package.nix { };
+          codexbar = final.callPackage ./packages/codexbar/package.nix { };
           cursor-cli = final.callPackage ./packages/cursor-cli/package.nix { };
           google-chrome = final.callPackage ./packages/google-chrome/package.nix { };
           google-drive = final.callPackage ./packages/google-drive/package.nix { };
@@ -47,6 +48,7 @@
           agave = pkgs.callPackage ./packages/agave/package.nix { };
           cargo-interactive-update = pkgs.callPackage ./packages/cargo-interactive-update/package.nix { };
           codex-cli = pkgs.callPackage ./packages/codex-cli/package.nix { };
+          codexbar = pkgs.callPackage ./packages/codexbar/package.nix { };
           cursor-cli = pkgs.callPackage ./packages/cursor-cli/package.nix { };
           google-chrome = pkgs.callPackage ./packages/google-chrome/package.nix { };
           google-drive = pkgs.callPackage ./packages/google-drive/package.nix { };
