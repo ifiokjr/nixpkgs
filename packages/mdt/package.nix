@@ -6,16 +6,16 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "mdt";
-  version = "0.6.0";
+  version = "0.7.0";
 
   src = fetchFromGitHub {
     owner = "ifiokjr";
     repo = "mdt";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-nUTrlD4g6/ZPqVVDnqIALUvUzstCsiV5Xyxy4oVhHTQ=";
+    hash = "sha256-x31WDYHzD1MOr2CEnCwe43HrEg5clJXJtWiFVKJs2fY=";
   };
 
-  cargoHash = "sha256-MquG3JgJ5pCgj71WxL9Dw2fqXe/OQGUy8ATfqU4/fm8=";
+  cargoHash = "sha256-rFN5SiYk7qfUF2uJ+PDSmVtVmiAHn7hu1eqApaJN+0Y=";
 
   buildAndTestSubdir = "mdt_cli";
 
