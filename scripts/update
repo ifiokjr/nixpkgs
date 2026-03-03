@@ -792,7 +792,6 @@ def main [
     { name: "cargo-interactive-update", run: {|| update-rust-cargo-interactive $root $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
     { name: "cursor-cli", run: {|| update-cursor $packages_dir $dry_run } }
-    { name: "google-drive", run: {|| update-rolling-google-drive $packages_dir $dry_run } }
     { name: "gpg-suite", run: {|| update-gpg-suite $packages_dir $dry_run } }
     { name: "knope", run: {|| update-rust-knope $root $packages_dir $dry_run } }
     { name: "mdt", run: {|| update-rust-mdt $root $packages_dir $dry_run } }
@@ -806,9 +805,12 @@ def main [
   ]
 
   if $all {
-    $steps = ($steps | prepend { name: "google-chrome", run: {|| update-google-chrome $packages_dir $dry_run } } | sort-by name)
+    $steps = ($steps | append [
+      { name: "google-chrome", run: {|| update-google-chrome $packages_dir $dry_run } }
+      { name: "google-drive", run: {|| update-rolling-google-drive $packages_dir $dry_run } }
+    ] | sort-by name)
   } else {
-    log-warn $"($DIM)skipping google-chrome \(use --all to include\)($RESET)"
+    log-warn $"($DIM)skipping google-chrome, google-drive \(use --all to include\)($RESET)"
     print ""
   }
 
