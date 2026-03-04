@@ -5,11 +5,11 @@
 }:
 
 let
-  version = "6.7.6.75444";
+  version = "6.7.7.76486";
 
   hashes = {
-    "aarch64" = "sha256-MS7hQ43UOAcfogDN6zBpOaLjcTZMJP2dSkAxlkpfVMY=";
-    "x86_64" = "sha256-MDNyJ/w7YA2faBbvRwQ+ANrD6PCjKQZk1WLY/2FBsA8=";
+    "aarch64" = "sha256-Wl8nghOfwGYxwzVjCScMeuiowhKLPYV04cagOpnzGUs=";
+    "x86_64" = "sha256-DsLM7ILqbjoqvsXtv0NspqP/FvxXK9SEbMrkU75Oqcw=";
   };
 
   arch = if stdenv.isAarch64 then "aarch64" else "x86_64";

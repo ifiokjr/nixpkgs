@@ -39,15 +39,15 @@ let
   sources = {
     "x86_64-darwin" = {
       url = "https://dl.google.com/chrome/mac/universal/stable/GGRO/googlechrome.dmg";
-      hash = "sha256-tEZQk64nIU9cgvKwOwBIn4pLv0mTT9vSgmqLEYqCyAg=";
+      hash = "sha256-M8/T3zG9v4cu2NSdCi4tDhJblBOVVwaXIqIKr/2CRuM=";
     };
     "aarch64-darwin" = {
       url = "https://dl.google.com/chrome/mac/universal/stable/GGRO/googlechrome.dmg";
-      hash = "sha256-tEZQk64nIU9cgvKwOwBIn4pLv0mTT9vSgmqLEYqCyAg=";
+      hash = "sha256-M8/T3zG9v4cu2NSdCi4tDhJblBOVVwaXIqIKr/2CRuM=";
     };
     "x86_64-linux" = {
       url = "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb";
-      hash = "sha256-lGMopGtpLp3g0PVIfRIACNP6yRarzQDIsuctNbiqCCo=";
+      hash = "sha256-xi7xUT9BSvF7g690gaEsubTwAN181Y08FSPD2+pFJdk=";
     };
   };
 
