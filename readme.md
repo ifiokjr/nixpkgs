@@ -13,7 +13,6 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [codex-cli](#codex-cli)                               | 0.106.0    | linux, macos       | OpenAI Codex CLI - AI coding assistant for the terminal                       |
 | [codexbar](#codexbar)                                 | 0.17.0     | macos              | macOS menu bar app showing AI coding tool usage and limits                    |
 | [cursor-cli](#cursor-cli)                             | 2026.02.27 | linux, macos       | Cursor AI CLI agent for terminal-based development                            |
-| [google-chrome](#google-chrome)                       | latest     | linux (x64), macos | Google Chrome web browser                                                     |
 | [google-drive](#google-drive)                         | latest     | macos              | Google Drive desktop client for macOS                                         |
 | [gpg-suite](#gpg-suite)                               | 2023.3     | macos              | GPG Suite - encryption, signing, and key management                           |
 | [knope](#knope)                                       | 0.22.3     | linux, macos       | Automate common development tasks (changelogs, releases, versioning)          |
@@ -147,7 +146,6 @@ in
         modules = [
           {
             environment.systemPackages = [
-              extra.google-chrome
               extra.google-drive
               extra.gpg-suite
               extra.nordvpn
@@ -238,14 +236,6 @@ Cursor AI CLI agent for terminal-based AI development workflows. Pre-built binar
 - **Binary:** `cursor-agent`
 - **License:** Proprietary
 - **Source:** <https://cursor.com/cli>
-
-### google-chrome
-
-Google Chrome web browser. On macOS, installs the `.app` bundle from the universal DMG. On Linux (x64), installs from the official `.deb` with all runtime libraries patched.
-
-- **Binary:** `google-chrome-stable` (Linux)
-- **License:** Proprietary
-- **Source:** <https://www.google.com/chrome/>
 
 ### google-drive
 
@@ -349,7 +339,7 @@ The script updates:
 
 - GitHub release packages (version + platform hashes)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
-- Rolling URL packages (`google-chrome`, `google-drive`, `steam`)
+- Rolling URL packages (`google-drive`, `steam`)
 - Rust packages (`cargo-interactive-update`, `knope`, `mdt`, `pina`) including `cargoHash`
 
 ### binary packages (pre-built)

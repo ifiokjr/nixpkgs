@@ -6,7 +6,7 @@
 # - Versioned GitHub release packages (agave, codex-cli, surfpool, etc.)
 # - Cursor CLI (version from install script)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
-# - Rolling URL packages (google-chrome, google-drive, steam)
+# - Rolling URL packages (google-drive, steam)
 # - Rust packages with cargoHash refresh (cargo-interactive-update, knope, mdt, pina)
 
 # ANSI helpers
@@ -438,58 +438,6 @@ def update-rolling-single-hash [
   true
 }
 
-def update-google-chrome [packages_dir: string, dry_run: bool] {
-  let name = "google-chrome"
-  let file = $"($packages_dir)/google-chrome/package.nix"
-  if not ($file | path exists) {
-    fail $"missing file: ($file)"
-  }
-
-  let content = (open $file --raw)
-
-  # Fetch all hashes upfront
-  log-sub "checking macOS DMG..."
-  let mac_hash = (prefetch-sri "https://dl.google.com/chrome/mac/universal/stable/GGRO/googlechrome.dmg")
-  log-sub "checking Linux deb..."
-  let linux_hash = (prefetch-sri "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb")
-
-  let target_hashes = {
-    "x86_64-darwin": $mac_hash,
-    "aarch64-darwin": $mac_hash,
-    "x86_64-linux": $linux_hash,
-  }
-
-  mut changed = false
-  for key in ($target_hashes | columns) {
-    let current = (parse-block-hash $content $key)
-    if ($current | is-empty) {
-      fail $"could not parse hash for ($name) key: ($key)"
-    }
-    if $current != ($target_hashes | get $key) {
-      $changed = true
-    }
-  }
-
-  if not $changed {
-    log-ok $name "hashes up to date"
-    return false
-  }
-
-  log-update $name "hashes changed"
-  if $dry_run {
-    return true
-  }
-
-  mut updated = $content
-  for key in ($target_hashes | columns) {
-    $updated = (replace-block-hash $updated $key ($target_hashes | get $key))
-  }
-  $updated | save -f $file
-
-  log-ok $name "hashes updated"
-  true
-}
-
 # Per-package update definitions
 
 def update-agave [packages_dir: string, dry_run: bool] {
@@ -745,7 +693,7 @@ def check-deps [] {
 def main [
   --repo-root: string = ".",
   --dry-run, # Check and print what would change without writing files.
-  --all, # Include all packages (e.g. google-chrome) that are skipped by default.
+  --all, # Include all packages (e.g. google-drive) that are skipped by default.
 ] {
   check-deps
 
@@ -806,11 +754,10 @@ def main [
 
   if $all {
     $steps = ($steps | append [
-      { name: "google-chrome", run: {|| update-google-chrome $packages_dir $dry_run } }
       { name: "google-drive", run: {|| update-rolling-google-drive $packages_dir $dry_run } }
     ] | sort-by name)
   } else {
-    log-warn $"($DIM)skipping google-chrome, google-drive \(use --all to include\)($RESET)"
+    log-warn $"($DIM)skipping google-drive \(use --all to include\)($RESET)"
     print ""
   }
 

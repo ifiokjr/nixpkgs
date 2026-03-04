@@ -22,8 +22,8 @@ jobs:
       - name: 🔍 detect changed packages
         id: changes
         run: |
-          LINUX_PACKAGES="agave cargo-interactive-update codex-cli cursor-cli google-chrome knope mdt pina pnpm-standalone racket-minimal surfpool"
-          MACOS_PACKAGES="agave cargo-interactive-update codex-cli codexbar cursor-cli google-chrome google-drive gpg-suite knope mdt nordvpn pina pnpm-standalone racket-minimal steam surfpool zoom"
+          LINUX_PACKAGES="agave cargo-interactive-update codex-cli cursor-cli knope mdt pina pnpm-standalone racket-minimal surfpool"
+          MACOS_PACKAGES="agave cargo-interactive-update codex-cli codexbar cursor-cli google-drive gpg-suite knope mdt nordvpn pina pnpm-standalone racket-minimal steam surfpool zoom"
 
           build_all=false
 

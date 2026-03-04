@@ -19,7 +19,6 @@
         codex-cli = final.callPackage ./packages/codex-cli/package.nix { };
         codexbar = final.callPackage ./packages/codexbar/package.nix { };
         cursor-cli = final.callPackage ./packages/cursor-cli/package.nix { };
-        google-chrome = final.callPackage ./packages/google-chrome/package.nix { };
         google-drive = final.callPackage ./packages/google-drive/package.nix { };
         gpg-suite = final.callPackage ./packages/gpg-suite/package.nix { };
         knope = final.callPackage ./packages/knope/package.nix { };
@@ -48,7 +47,6 @@
           codex-cli = pkgs.callPackage ./packages/codex-cli/package.nix { };
           codexbar = pkgs.callPackage ./packages/codexbar/package.nix { };
           cursor-cli = pkgs.callPackage ./packages/cursor-cli/package.nix { };
-          google-chrome = pkgs.callPackage ./packages/google-chrome/package.nix { };
           google-drive = pkgs.callPackage ./packages/google-drive/package.nix { };
           gpg-suite = pkgs.callPackage ./packages/gpg-suite/package.nix { };
           knope = pkgs.callPackage ./packages/knope/package.nix { };
