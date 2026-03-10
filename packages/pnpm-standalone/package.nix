@@ -6,16 +6,16 @@
 }:
 
 let
-  version = "10.31.0";
+  version = "10.32.0";
 
   platform = if stdenv.isDarwin then "macos" else "linux";
   arch = if stdenv.isAarch64 then "arm64" else "x64";
 
   hashes = {
-    "macos-arm64" = "sha256-byp/Ufqgu+4BP8rZvi8NUD46d9hyyPlVGGYoXGS5jNI=";
-    "macos-x64" = "sha256-Ho5A4MEnJIMAl1/8UN6dfUn63ni1UkDKsdsCqTJPZdY=";
-    "linux-arm64" = "sha256-Xo9bP8j8AJY2hqhQLd9YgmgbKdz+OSZxM2tmD3gScVI=";
-    "linux-x64" = "sha256-IfmcjrMClnr4IM5XWkhxfQFyAyaZFvky409f+GM0AI0=";
+    "macos-arm64" = "sha256-RiAochgk90f7RLQj+CS81lvg14a8tRoW0cQtisE0Z6g=";
+    "macos-x64" = "sha256-ZpKzH2cwjDb2nrfp+ibGMEBVhZq3BQDqyEVLd0+hFhg=";
+    "linux-arm64" = "sha256-W0EzL38UXe8zHS/d12vl+lbT7wVqDLqiu5L/JTeS3Oo=";
+    "linux-x64" = "sha256-BBfRnrJW6LmXHCgaglw6s7PisHtG/3jpd/FJM1vbSVU=";
   };
 
   platformKey = "${platform}-${arch}";
