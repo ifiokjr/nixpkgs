@@ -297,12 +297,46 @@ CLI for Pina, a performant Solana smart contract framework. Built from source us
 
 ### pnpm-standalone
 
-Standalone pnpm binary with no Node.js dependency. Downloaded directly from GitHub releases.
+Standalone pnpm binary with no Node.js dependency. Downloaded directly from GitHub releases. Includes `pnpm-activate-env` to read `useNodeVersion` from `pnpm-workspace.yaml`, install that Node.js version with `pnpm env add --global`, and emit PATH export commands.
 
-- **Binary:** `pnpm`
+- **Binary:** `pnpm`, `pnpm-activate-env`
+- **Activate workspace Node version:** `eval "$(pnpm-activate-env)"`
 - **License:** MIT
 - **Source:** <https://github.com/pnpm/pnpm>
 - **Homepage:** <https://pnpm.io/>
+
+Nushell auto-activate example (`config.nu`):
+
+```nu
+def --env pnpm_auto_activate [] {
+  let res = (^pnpm-activate-env | complete)
+
+  if $res.exit_code != 0 { return }
+  if ($res.stdout | str trim) == "" { return }
+
+  let first = ($res.stdout | lines | first | default "")
+  let node_bin = (
+    $first
+    | parse "__pnpm_activate_node_bin='{bin}'"
+    | get 0.bin?
+    | default ""
+  )
+
+  if $node_bin == "" { return }
+
+  if ($env.PATH | any {|p| $p == $node_bin }) == false {
+    $env.PATH = ($env.PATH | prepend $node_bin)
+  }
+}
+
+$env.config.hooks.env_change.PWD = (
+  $env.config.hooks.env_change.PWD?
+  | default []
+  | append { |before, after| pnpm_auto_activate }
+)
+
+pnpm_auto_activate
+```
 
 ### racket-minimal
 

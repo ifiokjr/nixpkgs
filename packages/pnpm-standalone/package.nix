@@ -94,23 +94,134 @@ stdenv.mkDerivation {
         ''
     }
 
+    install -m 755 ${./pnpm-activate-env.sh} $out/bin/pnpm-activate-env
+    patchShebangs $out/bin/pnpm-activate-env
+
     runHook postInstall
   '';
 
   doInstallCheck = true;
   installCheckPhase = ''
-    runHook preInstallCheck
+        runHook preInstallCheck
 
-    echo "Checking pnpm version..."
-    $out/bin/pnpm --version
+        echo "Checking pnpm version..."
+        $out/bin/pnpm --version
 
-    echo "Checking pnpm init works..."
-    WORK=$(mktemp -d)
-    cd "$WORK"
-    $out/bin/pnpm init
-    test -f package.json
+        echo "Checking pnpm init works..."
+        WORK=$(mktemp -d)
+        cd "$WORK"
+        $out/bin/pnpm init
+        test -f package.json
 
-    runHook postInstallCheck
+        echo "Checking pnpm-activate-env helper..."
+        TEST_ROOT=$(mktemp -d)
+        TEST_PNPM_HOME="$TEST_ROOT/pnpm-home"
+        TEST_LOG="$TEST_ROOT/pnpm.log"
+        : > "$TEST_LOG"
+
+        FAKE_PNPM="$TEST_ROOT/fake-pnpm"
+        cat > "$FAKE_PNPM" <<'EOF'
+    #!/usr/bin/env bash
+    set -eu
+
+    case "''${1-} ''${2-} ''${3-}" in
+      "bin -g ")
+        printf '%s\n' "''${TEST_PNPM_HOME:?}"
+        ;;
+      "env add --global")
+        version="''${4:?missing version}"
+        printf 'env add %s\n' "$version" >> "''${TEST_LOG:?}"
+        mkdir -p "''${TEST_PNPM_HOME:?}/nodejs/$version/bin"
+        : > "''${TEST_PNPM_HOME:?}/nodejs/$version/bin/node"
+        chmod +x "''${TEST_PNPM_HOME:?}/nodejs/$version/bin/node"
+        ;;
+      *)
+        printf 'unexpected fake pnpm args: %s\n' "$*" >&2
+        exit 1
+        ;;
+    esac
+    EOF
+        chmod +x "$FAKE_PNPM"
+
+        mkdir -p "$TEST_ROOT/no-workspace"
+        (
+          cd "$TEST_ROOT/no-workspace"
+          test -z "$($out/bin/pnpm-activate-env)"
+        )
+
+        mkdir -p "$TEST_ROOT/typo-workspace"
+        cat > "$TEST_ROOT/typo-workspace/pnpm-workspace-yaml" <<'EOF'
+    useNodeVersion: "20.11.1"
+    EOF
+
+        (
+          cd "$TEST_ROOT/typo-workspace"
+          export PNPM_ACTIVATE_PNPM_BIN="$FAKE_PNPM"
+          export TEST_PNPM_HOME TEST_LOG
+          export PNPM_HOME="$TEST_PNPM_HOME"
+          before_lines=$(wc -l < "$TEST_LOG" | tr -d '[:space:]')
+          test -z "$($out/bin/pnpm-activate-env)"
+          after_lines=$(wc -l < "$TEST_LOG" | tr -d '[:space:]')
+          test "$before_lines" -eq "$after_lines"
+        )
+
+        mkdir -p "$TEST_ROOT/ws/packages/app"
+        cat > "$TEST_ROOT/ws/pnpm-workspace.yaml" <<'EOF'
+    packages:
+      - "packages/*"
+    useNodeVersion: "20.11.1"
+    EOF
+
+        (
+          cd "$TEST_ROOT/ws/packages/app"
+          export PNPM_ACTIVATE_PNPM_BIN="$FAKE_PNPM"
+          export TEST_PNPM_HOME TEST_LOG
+          export PNPM_HOME="$TEST_PNPM_HOME"
+          EXPORTS="$($out/bin/pnpm-activate-env)"
+          test -n "$EXPORTS"
+          eval "$EXPORTS"
+          case ":$PATH:" in
+            *":$TEST_PNPM_HOME/nodejs/20.11.1/bin:"*) ;;
+            *)
+              echo "pnpm-activate-env did not add Node bin path to PATH" >&2
+              exit 1
+              ;;
+          esac
+        )
+
+        (
+          cd "$TEST_ROOT/ws/packages/app"
+          export PNPM_ACTIVATE_PNPM_BIN="$FAKE_PNPM"
+          export TEST_PNPM_HOME TEST_LOG
+          export PNPM_HOME="$TEST_PNPM_HOME"
+          . "$out/bin/pnpm-activate-env"
+          case ":$PATH:" in
+            *":$TEST_PNPM_HOME/nodejs/20.11.1/bin:"*) ;;
+            *)
+              echo "sourcing pnpm-activate-env did not add Node bin path to PATH" >&2
+              exit 1
+              ;;
+          esac
+        )
+
+        grep -q '^env add 20.11.1$' "$TEST_LOG"
+
+        cat > "$TEST_ROOT/ws/pnpm-workspace.yaml" <<'EOF'
+    useNodeVersion: lts
+    EOF
+
+        (
+          cd "$TEST_ROOT/ws/packages/app"
+          export PNPM_ACTIVATE_PNPM_BIN="$FAKE_PNPM"
+          export TEST_PNPM_HOME TEST_LOG
+          export PNPM_HOME="$TEST_PNPM_HOME"
+          before_lines=$(wc -l < "$TEST_LOG" | tr -d '[:space:]')
+          test -z "$($out/bin/pnpm-activate-env)"
+          after_lines=$(wc -l < "$TEST_LOG" | tr -d '[:space:]')
+          test "$before_lines" -eq "$after_lines"
+        )
+
+        runHook postInstallCheck
   '';
 
   meta = with lib; {
