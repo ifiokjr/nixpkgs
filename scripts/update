@@ -199,11 +199,27 @@ def github-api-get [url: string] {
 }
 
 def github-latest-tag [owner: string, repo: string] {
-  try {
-    github-api-get $"https://api.github.com/repos/($owner)/($repo)/releases/latest" | get tag_name
+  let latest = (try {
+    github-api-get $"https://api.github.com/repos/($owner)/($repo)/releases/latest" | get -o tag_name | default ""
   } catch {
-    fail $"Failed to fetch latest release for ($owner)/($repo)"
+    ""
+  })
+
+  if ($latest | is-not-empty) {
+    return $latest
   }
+
+  let fallback = (try {
+    github-api-get $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=1" | get -o 0.name | default ""
+  } catch {
+    ""
+  })
+
+  if ($fallback | is-empty) {
+    fail $"Failed to fetch latest release/tag for ($owner)/($repo)"
+  }
+
+  $fallback
 }
 
 def github-latest-tag-with-prefix [owner: string, repo: string, prefix: string] {
