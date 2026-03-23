@@ -158,11 +158,44 @@ def github-headers [] {
 
 def github-api-get [url: string] {
   let headers = (github-headers)
-  if ($headers | is-empty) {
-    http get $url
-  } else {
-    http get -H $headers $url
+  let request = {||
+    if ($headers | is-empty) {
+      http get $url
+    } else {
+      http get -H $headers $url
+    }
   }
+
+  let first = (try {
+    { ok: true, data: (do $request), err: "" }
+  } catch {|err|
+    { ok: false, data: null, err: ($err.msg | default "unknown error") }
+  })
+  if $first.ok {
+    return $first.data
+  }
+
+  sleep 1sec
+  let second = (try {
+    { ok: true, data: (do $request), err: "" }
+  } catch {|err|
+    { ok: false, data: null, err: ($err.msg | default "unknown error") }
+  })
+  if $second.ok {
+    return $second.data
+  }
+
+  sleep 2sec
+  let third = (try {
+    { ok: true, data: (do $request), err: "" }
+  } catch {|err|
+    { ok: false, data: null, err: ($err.msg | default "unknown error") }
+  })
+  if $third.ok {
+    return $third.data
+  }
+
+  fail $"GitHub API request failed after retries for ($url): ($third.err)"
 }
 
 def github-latest-tag [owner: string, repo: string] {
