@@ -3,7 +3,7 @@
 #
 # The script covers:
 # - Flake inputs (nix flake update → flake.lock)
-# - Versioned GitHub release packages (agave, codex-cli, surfpool, etc.)
+# - Versioned GitHub release packages (agave, codex-cli, godot, surfpool, etc.)
 # - Cursor CLI (version from install script)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (google-drive, steam)
@@ -192,6 +192,41 @@ def github-latest-tag-with-prefix [owner: string, repo: string, prefix: string] 
   }
 
   $matched
+}
+
+def godot-latest-stable-tag [] {
+  let releases = try {
+    github-api-get "https://api.github.com/repos/godotengine/godot/releases?per_page=100"
+  } catch {
+    fail "Failed to fetch releases for godotengine/godot"
+  }
+
+  let candidates = (
+    $releases
+    | where {|release| (not $release.draft) and (not $release.prerelease) and ($release.tag_name | str ends-with "-stable") }
+    | each {|release|
+        let base = ($release.tag_name | str replace --regex '-stable$' '')
+        let parts = ($base | split row ".")
+
+        if (($parts | length) != 3) {
+          null
+        } else {
+          {
+            tag: $release.tag_name
+            major: ($parts | get 0 | into int)
+            minor: ($parts | get 1 | into int)
+            patch: ($parts | get 2 | into int)
+          }
+        }
+      }
+    | where {|candidate| $candidate != null }
+  )
+
+  if ($candidates | is-empty) {
+    fail "No stable release tag found for godotengine/godot"
+  }
+
+  $candidates | sort-by major minor patch | last | get tag
 }
 
 def brew-cask-latest-version [cask: string] {
@@ -480,6 +515,17 @@ def update-cursor [packages_dir: string, dry_run: bool] {
   update-versioned-keyed-hashes "cursor-cli" $file $latest_version $entries $dry_run
 }
 
+def update-godot [packages_dir: string, dry_run: bool] {
+  let latest_version = (godot-latest-stable-tag)
+  let file = $"($packages_dir)/godot/package.nix"
+  let entries = [
+    { key: "linux.arm64", url: $"https://github.com/godotengine/godot/releases/download/($latest_version)/Godot_v($latest_version)_linux.arm64.zip" }
+    { key: "linux.x86_64", url: $"https://github.com/godotengine/godot/releases/download/($latest_version)/Godot_v($latest_version)_linux.x86_64.zip" }
+    { key: "macos.universal", url: $"https://github.com/godotengine/godot/releases/download/($latest_version)/Godot_v($latest_version)_macos.universal.zip" }
+  ]
+  update-versioned-keyed-hashes "godot" $file $latest_version $entries $dry_run
+}
+
 def update-pnpm [packages_dir: string, dry_run: bool] {
   let latest_version = (github-latest-tag "pnpm" "pnpm" | str replace --regex '^v' '')
   let file = $"($packages_dir)/pnpm-standalone/package.nix"
@@ -740,6 +786,7 @@ def main [
     { name: "cargo-interactive-update", run: {|| update-rust-cargo-interactive $root $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
     { name: "cursor-cli", run: {|| update-cursor $packages_dir $dry_run } }
+    { name: "godot", run: {|| update-godot $packages_dir $dry_run } }
     { name: "gpg-suite", run: {|| update-gpg-suite $packages_dir $dry_run } }
     { name: "knope", run: {|| update-rust-knope $root $packages_dir $dry_run } }
     { name: "mdt", run: {|| update-rust-mdt $root $packages_dir $dry_run } }
