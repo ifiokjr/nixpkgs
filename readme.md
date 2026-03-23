@@ -8,7 +8,13 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 
 | Package                                               | Version      | Platforms          | Description                                                                   |
 | ----------------------------------------------------- | ------------ | ------------------ | ----------------------------------------------------------------------------- |
-| [agave](#agave)                                       | 3.1.8        | linux (x64), macos | Solana validator client and CLI toolchain by Anza                             |
+| [agave](#agave)                                       | 3.1.11       | linux (x64), macos | Solana validator client and CLI toolchain by Anza (latest 3.1.x track)        |
+| [agave-3_1](#agave)                                   | 3.1.11       | linux (x64), macos | Agave pinned to the latest 3.1.x release                                      |
+| [agave-3_0](#agave)                                   | 3.0.14       | linux (x64), macos | Agave pinned to the latest 3.0.x release                                      |
+| [agave-2_3](#agave)                                   | 2.3.13       | linux (x64), macos | Agave pinned to the latest 2.3.x release                                      |
+| [agave-2_2](#agave)                                   | 2.2.20       | linux (x64), macos | Agave pinned to the latest 2.2.x release                                      |
+| [agave-2_1](#agave)                                   | 2.1.21       | linux (x64), macos | Agave pinned to the latest 2.1.x release                                      |
+| [agave-2_0](#agave)                                   | 2.0.25       | linux (x64), macos | Agave pinned to the latest 2.0.x release                                      |
 | [cargo-interactive-update](#cargo-interactive-update) | 0.6.2        | linux, macos       | A cargo extension to update direct dependencies interactively                 |
 | [codex-cli](#codex-cli)                               | 0.106.0      | linux, macos       | OpenAI Codex CLI - AI coding assistant for the terminal                       |
 | [codexbar](#codexbar)                                 | 0.17.0       | macos              | macOS menu bar app showing AI coding tool usage and limits                    |
@@ -206,6 +212,22 @@ Solana validator client and CLI toolchain by Anza. Pre-built binary from GitHub 
 - **Binary:** `solana`
 - **License:** Apache-2.0
 - **Source:** <https://github.com/anza-xyz/agave>
+- **Tracks:**
+  - `agave` (latest 3.1.x)
+  - `agave-3_1`
+  - `agave-3_0`
+  - `agave-2_3`
+  - `agave-2_2`
+  - `agave-2_1`
+  - `agave-2_0`
+
+Examples:
+
+```bash
+nix run github:ifiokjr/nixpkgs#agave -- --version
+nix run github:ifiokjr/nixpkgs#agave-3_0 -- --version
+nix run github:ifiokjr/nixpkgs#agave-2_1 -- --version
+```
 
 ### cargo-interactive-update
 

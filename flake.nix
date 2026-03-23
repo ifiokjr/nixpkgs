@@ -13,8 +13,14 @@
       flake-utils,
     }:
     {
-      overlays.default = final: _prev: {
+      overlays.default = final: _prev: rec {
         agave = final.callPackage ./packages/agave/package.nix { };
+        agave-2_0 = final.callPackage ./packages/agave-2_0/package.nix { };
+        agave-2_1 = final.callPackage ./packages/agave-2_1/package.nix { };
+        agave-2_2 = final.callPackage ./packages/agave-2_2/package.nix { };
+        agave-2_3 = final.callPackage ./packages/agave-2_3/package.nix { };
+        agave-3_0 = final.callPackage ./packages/agave-3_0/package.nix { };
+        agave-3_1 = agave;
         cargo-interactive-update = final.callPackage ./packages/cargo-interactive-update/package.nix { };
         codex-cli = final.callPackage ./packages/codex-cli/package.nix { };
         codexbar = final.callPackage ./packages/codexbar/package.nix { };
@@ -42,8 +48,14 @@
         };
         lib = pkgs.lib;
 
-        packages = {
+        packages = rec {
           agave = pkgs.callPackage ./packages/agave/package.nix { };
+          agave-2_0 = pkgs.callPackage ./packages/agave-2_0/package.nix { };
+          agave-2_1 = pkgs.callPackage ./packages/agave-2_1/package.nix { };
+          agave-2_2 = pkgs.callPackage ./packages/agave-2_2/package.nix { };
+          agave-2_3 = pkgs.callPackage ./packages/agave-2_3/package.nix { };
+          agave-3_0 = pkgs.callPackage ./packages/agave-3_0/package.nix { };
+          agave-3_1 = agave;
           cargo-interactive-update = pkgs.callPackage ./packages/cargo-interactive-update/package.nix { };
           codex-cli = pkgs.callPackage ./packages/codex-cli/package.nix { };
           codexbar = pkgs.callPackage ./packages/codexbar/package.nix { };

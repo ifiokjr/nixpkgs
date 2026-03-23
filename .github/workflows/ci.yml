@@ -22,8 +22,8 @@ jobs:
       - name: 🔍 detect changed packages
         id: changes
         run: |
-          LINUX_PACKAGES="agave cargo-interactive-update codex-cli cursor-cli godot knope mdt pina pnpm-standalone racket-minimal surfpool"
-          MACOS_PACKAGES="agave cargo-interactive-update codex-cli codexbar cursor-cli godot google-drive gpg-suite knope mdt nordvpn pina pnpm-standalone racket-minimal steam surfpool zoom"
+          LINUX_PACKAGES="agave agave-2_0 agave-2_1 agave-2_2 agave-2_3 agave-3_0 agave-3_1 cargo-interactive-update codex-cli cursor-cli godot knope mdt pina pnpm-standalone racket-minimal surfpool"
+          MACOS_PACKAGES="agave agave-2_0 agave-2_1 agave-2_2 agave-2_3 agave-3_0 agave-3_1 cargo-interactive-update codex-cli codexbar cursor-cli godot google-drive gpg-suite knope mdt nordvpn pina pnpm-standalone racket-minimal steam surfpool zoom"
 
           build_all=false
 
