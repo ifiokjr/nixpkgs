@@ -600,8 +600,15 @@ def update-racket [packages_dir: string, dry_run: bool] {
 }
 
 def update-surfpool [packages_dir: string, dry_run: bool] {
-  let latest_version = (github-latest-tag "txtx" "surfpool" | str replace --regex '^v' '')
   let file = $"($packages_dir)/surfpool/package.nix"
+  let current_version = (parse-capture (open $file --raw) 'version = "([^"]+)"')
+  let latest_version = (try {
+    github-latest-tag "txtx" "surfpool" | str replace --regex '^v' ''
+  } catch {
+    log-warn $"($DIM)surfpool lookup failed, using current version v($current_version)($RESET)"
+    $current_version
+  })
+
   let entries = [
     { key: "darwin-arm64", url: $"https://github.com/txtx/surfpool/releases/download/v($latest_version)/surfpool-darwin-arm64.tar.gz" }
     { key: "darwin-x64", url: $"https://github.com/txtx/surfpool/releases/download/v($latest_version)/surfpool-darwin-x64.tar.gz" }
