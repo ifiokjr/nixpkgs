@@ -327,6 +327,29 @@ Standalone pnpm binary with no Node.js dependency. Downloaded directly from GitH
 - **Source:** <https://github.com/pnpm/pnpm>
 - **Homepage:** <https://pnpm.io/>
 
+Bash auto-activate example (`~/.bashrc`):
+
+```bash
+pnpm_auto_activate() {
+  eval "$(pnpm-activate-env 2>/dev/null || true)"
+}
+
+PROMPT_COMMAND="pnpm_auto_activate${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
+pnpm_auto_activate
+```
+
+Zsh auto-activate example (`~/.zshrc`):
+
+```zsh
+autoload -U add-zsh-hook
+pnpm_auto_activate() {
+  eval "$(pnpm-activate-env 2>/dev/null || true)"
+}
+
+add-zsh-hook chpwd pnpm_auto_activate
+pnpm_auto_activate
+```
+
 Nushell auto-activate example (`config.nu`):
 
 ```nu
