@@ -120,8 +120,8 @@ stdenv.mkDerivation {
         : > "$TEST_LOG"
 
         FAKE_PNPM="$TEST_ROOT/fake-pnpm"
-        cat > "$FAKE_PNPM" <<'EOF'
-    #!/usr/bin/env bash
+        printf '#!%s\n' "$(command -v bash)" > "$FAKE_PNPM"
+    cat >> "$FAKE_PNPM" <<'EOF'
     set -eu
 
     case "''${1-} ''${2-} ''${3-}" in
@@ -142,7 +142,6 @@ stdenv.mkDerivation {
     esac
     EOF
         chmod +x "$FAKE_PNPM"
-        patchShebangs "$FAKE_PNPM"
 
         mkdir -p "$TEST_ROOT/no-workspace"
         (
