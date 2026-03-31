@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Extract package versions from package.nix files as JSON.
+# Used by mdt to keep readme.md version table in sync.
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+echo "{"
+first=true
+for pkg_dir in packages/*/; do
+	[ -d "$pkg_dir" ] || continue
+	pkg=$(basename "$pkg_dir")
+	file="$pkg_dir/package.nix"
+	[ -f "$file" ] || continue
+	version=$(grep -m1 'version = "' "$file" | sed 's/.*version = "\([^"]*\)".*/\1/')
+	[ -n "$version" ] || continue
+	$first || printf ",\n"
+	first=false
+	key=$(echo "$pkg" | tr '-' '_')
+	printf '  "%s": "%s"' "$key" "$version"
+done
+echo ""
+echo "}"
