@@ -142,6 +142,7 @@ stdenv.mkDerivation {
     esac
     EOF
         chmod +x "$FAKE_PNPM"
+        patchShebangs "$FAKE_PNPM"
 
         mkdir -p "$TEST_ROOT/no-workspace"
         (

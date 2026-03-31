@@ -119,6 +119,9 @@ jobs:
       - name: 🔍 lint
         run: nix shell nixpkgs#dprint nixpkgs#nixfmt-rfc-style nixpkgs#shfmt -c dprint check
 
+      - name: 🔍 check mdt blocks
+        run: nix run .#mdt -- check
+
   test-update-script:
     name: "test update script (${{ matrix.os }})"
     runs-on: ${{ matrix.os }}
