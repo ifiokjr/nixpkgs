@@ -879,6 +879,19 @@ def main [
   let failed_count = ($failed_names | length)
   let skipped = $total - $updated - $failed_count
 
+  # Sync README versions via mdt after package updates
+  if not $dry_run {
+    log-sub "syncing readme versions via mdt..."
+    let mdt_result = (^nix run $"($root)#mdt" -- update --path $root | complete)
+    if $mdt_result.exit_code != 0 {
+      log-fail "mdt update" $"failed to sync readme versions: ($mdt_result.stderr | str trim)"
+    } else {
+      log-ok "mdt update" "readme versions synced"
+    }
+  } else {
+    log-ok "mdt update" "would sync readme versions"
+  }
+
   print ""
   print-footer $updated $failed_count $skipped $failed_names
 
