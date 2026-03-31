@@ -79,7 +79,7 @@ stdenv.mkDerivation {
       if stdenv.isLinux then
         ''
           mkdir -p $out/libexec
-          install -m 444 $src $out/libexec/pnpm
+          install -m 555 $src $out/libexec/pnpm
 
           INTERP=$(cat $NIX_CC/nix-support/dynamic-linker)
           makeWrapper "$INTERP" $out/bin/pnpm \
