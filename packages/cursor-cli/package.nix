@@ -7,16 +7,16 @@
 }:
 
 let
-  version = "2026.03.25-933d5a6";
+  version = "2026.03.30-a5d3e17";
 
   os = if stdenv.isDarwin then "darwin" else "linux";
   arch = if stdenv.isAarch64 then "arm64" else "x64";
 
   hashes = {
-    "darwin-arm64" = "sha256-1QTjO99QvdviRsos5pvOrfR2L1fwj6nBh0nPqcY1qnI=";
-    "darwin-x64" = "sha256-JDUMpdFEnPgYJWjXXIsdqOVbkw6DbcahbcCVYjbqKxo=";
-    "linux-x64" = "sha256-sLNUNy95Ro953X4tha0fPj/M8DRN4Txn34m2kWa/J/U=";
-    "linux-arm64" = "sha256-+Gk7XDf294AxHYwig2s7h4DSgy2Sf5F5Va+c5ufDbtw=";
+    "darwin-arm64" = "sha256-+l5f/W38rJlbOzrmsBdad+PX6MuzHaQxvhIwdgEDKrQ=";
+    "darwin-x64" = "sha256-9z4nTSikG/WTksC0KvgK1m1gZqUjtNQ3sXOAJzikWEg=";
+    "linux-x64" = "sha256-4NS2EdsRHS2+dkdDhicb/z4duyzG3fUn+dXVgBss4qA=";
+    "linux-arm64" = "sha256-dRBud1TlTcCoZ2naQ94D/FzUpEuS5lxvpowYbHtXgSU=";
   };
 
   platformKey = "${os}-${arch}";
