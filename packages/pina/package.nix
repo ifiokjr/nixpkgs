@@ -6,16 +6,16 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "pina";
-  version = "0.7.0";
+  version = "0.8.0";
 
   src = fetchFromGitHub {
     owner = "pina-rs";
     repo = "pina";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-k+gnn8QwzgCqVNuSAPdfdmceOa8pjYhhtS6UY0KA7Ns=";
+    hash = "sha256-srg1y6XwjNjr75tVOtb7vM8HIInzk6ka0+Vn88mqZwM=";
   };
 
-  cargoHash = "sha256-oROqXsn3ZYTUlsEEU0yqAnuylWBld2LXnwhJQIX4M/M=";
+  cargoHash = "sha256-sx5X/VqOOcMmHiBTVDK/J4kFlMwQCWptyPdm4AydywM=";
 
   buildAndTestSubdir = "crates/pina_cli";
 
