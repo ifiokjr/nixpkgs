@@ -127,9 +127,32 @@ resolve_pnpm_bin() {
 	return 1
 }
 
+resolve_home_dir() {
+	local user=""
+	local home_dir=""
+
+	if [ -n "${HOME:-}" ]; then
+		printf '%s\n' "$HOME"
+		return 0
+	fi
+
+	user="$(id -un 2>/dev/null || true)"
+	if [ -n "$user" ]; then
+		home_dir="$(eval printf '%s' "~$user" 2>/dev/null || true)"
+		if [ -n "$home_dir" ] && [ "$home_dir" != "~$user" ]; then
+			printf '%s\n' "$home_dir"
+			return 0
+		fi
+	fi
+
+	echo "pnpm-activate-env: could not determine home directory; set HOME or PNPM_HOME" >&2
+	return 1
+}
+
 resolve_pnpm_home() {
 	local pnpm_bin="$1"
 	local global_bin=""
+	local home_dir=""
 
 	if [ -n "${PNPM_HOME:-}" ]; then
 		printf '%s\n' "$PNPM_HOME"
@@ -144,12 +167,14 @@ resolve_pnpm_home() {
 		return 0
 	fi
 
+	home_dir="$(resolve_home_dir)"
+
 	case "$(uname -s)" in
 	Darwin)
-		printf '%s\n' "${HOME}/Library/pnpm"
+		printf '%s\n' "${home_dir}/Library/pnpm"
 		;;
 	*)
-		printf '%s\n' "${HOME}/.local/share/pnpm"
+		printf '%s\n' "${home_dir}/.local/share/pnpm"
 		;;
 	esac
 }
