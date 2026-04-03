@@ -143,6 +143,21 @@ stdenv.mkDerivation {
     EOF
         chmod +x "$FAKE_PNPM"
 
+        mkdir -p "$TEST_ROOT/home-fallback/ws/packages/app"
+        cat > "$TEST_ROOT/home-fallback/ws/pnpm-workspace.yaml" <<'EOF'
+    useNodeVersion: "20.11.1"
+    EOF
+
+        (
+          cd "$TEST_ROOT/home-fallback/ws/packages/app"
+          export PNPM_ACTIVATE_PNPM_BIN="$FAKE_PNPM"
+          export TEST_PNPM_HOME TEST_LOG
+          export PNPM_HOME="$TEST_PNPM_HOME"
+          unset HOME
+          EXPORTS="$($out/bin/pnpm-activate-env)"
+          test -n "$EXPORTS"
+        )
+
         mkdir -p "$TEST_ROOT/no-workspace"
         (
           cd "$TEST_ROOT/no-workspace"
