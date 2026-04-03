@@ -180,23 +180,39 @@ resolve_pnpm_home() {
 }
 
 emit_export_script() {
-	local node_bin="$1"
-	local quoted
+	local pnpm_home="$1"
+	local node_bin="$2"
+	local quoted_pnpm_home
+	local quoted_node_bin
 
-	quoted="$(shell_quote "$node_bin")"
+	quoted_pnpm_home="$(shell_quote "$pnpm_home")"
+	quoted_node_bin="$(shell_quote "$node_bin")"
 
-	printf '__pnpm_activate_node_bin=%s\n' "$quoted"
+	printf '__pnpm_activate_pnpm_home=%s\n' "$quoted_pnpm_home"
+	printf '__pnpm_activate_node_bin=%s\n' "$quoted_node_bin"
 	cat <<'EOF'
+export PNPM_HOME="${__pnpm_activate_pnpm_home}"
+case ":$PATH:" in
+  *":${__pnpm_activate_pnpm_home}:"*) ;;
+  *) export PATH="${__pnpm_activate_pnpm_home}:$PATH" ;;
+esac
 case ":$PATH:" in
   *":${__pnpm_activate_node_bin}:"*) ;;
   *) export PATH="${__pnpm_activate_node_bin}:$PATH" ;;
 esac
-unset __pnpm_activate_node_bin
+unset __pnpm_activate_pnpm_home __pnpm_activate_node_bin
 EOF
 }
 
 apply_path() {
-	local node_bin="$1"
+	local pnpm_home="$1"
+	local node_bin="$2"
+
+	export PNPM_HOME="$pnpm_home"
+
+	if ! path_has_entry "$PATH" "$pnpm_home"; then
+		export PATH="${pnpm_home}:$PATH"
+	fi
 
 	if ! path_has_entry "$PATH" "$node_bin"; then
 		export PATH="${node_bin}:$PATH"
@@ -270,7 +286,7 @@ main() {
 
 	node_bin="${pnpm_home}/nodejs/${version}/bin"
 	if [ ! -x "${node_bin}/node" ]; then
-		PATH="$run_path" "$pnpm_bin" env add --global "$version" >&2
+		PNPM_HOME="$pnpm_home" PATH="$run_path" "$pnpm_bin" env add --global "$version" >&2
 	fi
 
 	if [ ! -x "${node_bin}/node" ]; then
@@ -279,14 +295,14 @@ main() {
 	fi
 
 	if [ "$print_export" -eq 1 ]; then
-		emit_export_script "$node_bin"
+		emit_export_script "$pnpm_home" "$node_bin"
 		return 0
 	fi
 
 	if is_sourced; then
-		apply_path "$node_bin"
+		apply_path "$pnpm_home" "$node_bin"
 	else
-		emit_export_script "$node_bin"
+		emit_export_script "$pnpm_home" "$node_bin"
 	fi
 }
 
