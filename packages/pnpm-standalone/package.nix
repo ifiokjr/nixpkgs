@@ -124,16 +124,18 @@ stdenv.mkDerivation {
     cat >> "$FAKE_PNPM" <<'EOF'
     set -eu
 
+    effective_pnpm_home="''${PNPM_HOME:-''${TEST_PNPM_HOME:?}}"
+
     case "''${1-} ''${2-} ''${3-}" in
       "bin -g ")
-        printf '%s\n' "''${TEST_PNPM_HOME:?}"
+        printf '%s\n' "$effective_pnpm_home"
         ;;
       "env add --global")
         version="''${4:?missing version}"
         printf 'env add %s\n' "$version" >> "''${TEST_LOG:?}"
-        mkdir -p "''${TEST_PNPM_HOME:?}/nodejs/$version/bin"
-        : > "''${TEST_PNPM_HOME:?}/nodejs/$version/bin/node"
-        chmod +x "''${TEST_PNPM_HOME:?}/nodejs/$version/bin/node"
+        mkdir -p "$effective_pnpm_home/nodejs/$version/bin"
+        : > "$effective_pnpm_home/nodejs/$version/bin/node"
+        chmod +x "$effective_pnpm_home/nodejs/$version/bin/node"
         ;;
       *)
         printf 'unexpected fake pnpm args: %s\n' "$*" >&2
@@ -143,19 +145,20 @@ stdenv.mkDerivation {
     EOF
         chmod +x "$FAKE_PNPM"
 
-        mkdir -p "$TEST_ROOT/home-fallback/ws/packages/app"
-        cat > "$TEST_ROOT/home-fallback/ws/pnpm-workspace.yaml" <<'EOF'
+        mkdir -p "$TEST_ROOT/unset-home/ws/packages/app"
+        cat > "$TEST_ROOT/unset-home/ws/pnpm-workspace.yaml" <<'EOF'
     useNodeVersion: "20.11.1"
     EOF
 
         (
-          cd "$TEST_ROOT/home-fallback/ws/packages/app"
+          cd "$TEST_ROOT/unset-home/ws/packages/app"
           export PNPM_ACTIVATE_PNPM_BIN="$FAKE_PNPM"
           export TEST_PNPM_HOME TEST_LOG
-          export PNPM_HOME="$TEST_PNPM_HOME"
-          unset HOME
+          unset HOME PNPM_HOME
           EXPORTS="$($out/bin/pnpm-activate-env)"
           test -n "$EXPORTS"
+          eval "$EXPORTS"
+          test "$PNPM_HOME" = "$TEST_PNPM_HOME"
         )
 
         mkdir -p "$TEST_ROOT/no-workspace"
