@@ -29,7 +29,7 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [pnpm-standalone](#pnpm-standalone)                   | <!-- {~v_pnpm_standalone:"{{ v.pnpm_standalone }}"} -->10.33.0<!-- {/v_pnpm_standalone} -->                          | linux, macos       | Fast, disk-space efficient package manager (no Node.js dependency)            |
 | [racket-minimal](#racket-minimal)                     | <!-- {~v_racket_minimal:"{{ v.racket_minimal }}"} -->9.1<!-- {/v_racket_minimal} -->                                 | linux, macos       | Racket programming language (minimal distribution, pre-built)                 |
 | [steam](#steam)                                       | <!-- {~v_steam:"{{ v.steam }}"} -->4.0<!-- {/v_steam} -->                                                            | macos              | Steam video game digital distribution service                                 |
-| [surfpool](#surfpool)                                 | <!-- {~v_surfpool:"{{ v.surfpool }}"} -->1.1.1<!-- {/v_surfpool} -->                                                 | linux (x64), macos | A drop-in replacement for solana-test-validator with mainnet state simulation |
+| [surfpool](#surfpool)                                 | <!-- {~v_surfpool:"{{ v.surfpool }}"} -->1.1.2<!-- {/v_surfpool} -->                                                 | linux (x64), macos | A drop-in replacement for solana-test-validator with mainnet state simulation |
 | [zoom](#zoom)                                         | <!-- {~v_zoom:"{{ v.zoom }}"} -->7.0.0.77593<!-- {/v_zoom} -->                                                       | macos              | Zoom video conferencing client                                                |
 
 ## usage
