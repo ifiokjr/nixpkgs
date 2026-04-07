@@ -53,11 +53,13 @@ stdenv.mkDerivation {
     find bin -maxdepth 1 -type f -exec cp {} $out/bin/ \;
     chmod +x $out/bin/*
 
-    # Include the platform tools SDK for cargo-build-sbf / cargo-test-sbf
-    if [ -d bin/platform-tools-sdk ]; then
-      mkdir -p $out/lib
-      cp -r bin/platform-tools-sdk $out/lib/
-    fi
+    for dir in platform-tools-sdk deps; do
+      if [ -d "bin/$dir" ]; then
+        cp -r "bin/$dir" $out/bin/
+      fi
+    done
+
+    find $out/bin/platform-tools-sdk -type f -name '*.sh' -exec chmod +x {} \; 2>/dev/null || true
 
     runHook postInstall
   '';
