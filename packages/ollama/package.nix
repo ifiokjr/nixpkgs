@@ -4,6 +4,7 @@
   unzip,
   zstd,
   autoPatchelfHook,
+  zlib,
   lib,
 }:
 
@@ -53,7 +54,12 @@ stdenv.mkDerivation {
       autoPatchelfHook
       zstd
     ];
-  buildInputs = lib.optionals stdenv.isLinux [ stdenv.cc.cc.lib ];
+  buildInputs = lib.optionals stdenv.isLinux [
+    stdenv.cc.cc.lib
+    zlib
+  ];
+
+  autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.isLinux [ "libcuda.so.1" ];
 
   installPhase = ''
     runHook preInstall
