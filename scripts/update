@@ -524,15 +524,63 @@ def update-rolling-single-hash [
 
 # Per-package update definitions
 
-def update-agave [packages_dir: string, dry_run: bool] {
-  let latest_version = (github-latest-tag "anza-xyz" "agave" | str replace --regex '^v' '')
-  let file = $"($packages_dir)/agave/package.nix"
+def update-agave-package [packages_dir: string, package_name: string, latest_version: string, dry_run: bool] {
+  let file = $"($packages_dir)/($package_name)/package.nix"
   let entries = [
     { key: "aarch64-apple-darwin", url: $"https://github.com/anza-xyz/agave/releases/download/v($latest_version)/solana-release-aarch64-apple-darwin.tar.bz2" }
     { key: "x86_64-apple-darwin", url: $"https://github.com/anza-xyz/agave/releases/download/v($latest_version)/solana-release-x86_64-apple-darwin.tar.bz2" }
     { key: "x86_64-unknown-linux-gnu", url: $"https://github.com/anza-xyz/agave/releases/download/v($latest_version)/solana-release-x86_64-unknown-linux-gnu.tar.bz2" }
   ]
-  update-versioned-keyed-hashes "agave" $file $latest_version $entries $dry_run
+  update-versioned-keyed-hashes $package_name $file $latest_version $entries $dry_run
+}
+
+def update-agave-track [packages_dir: string, package_name: string, version_prefix: string, dry_run: bool] {
+  let latest_version = (
+    github-latest-tag-with-prefix "anza-xyz" "agave" $"v($version_prefix)."
+    | str replace --regex '^v' ''
+  )
+  update-agave-package $packages_dir $package_name $latest_version $dry_run
+}
+
+def update-agave-beta-track [packages_dir: string, package_name: string, version_prefix: string, dry_run: bool] {
+  let latest_version = (
+    github-latest-tag-with-prefix "anza-xyz" "agave" $"v($version_prefix).0-beta."
+    | str replace --regex '^v' ''
+  )
+  update-agave-package $packages_dir $package_name $latest_version $dry_run
+}
+
+def update-agave [packages_dir: string, dry_run: bool] {
+  let latest_version = (github-latest-tag "anza-xyz" "agave" | str replace --regex '^v' '')
+  update-agave-package $packages_dir "agave" $latest_version $dry_run
+}
+
+def update-agave-4-0 [packages_dir: string, dry_run: bool] {
+  update-agave-beta-track $packages_dir "agave-4_0" "4.0" $dry_run
+}
+
+def update-agave-3-1 [packages_dir: string, dry_run: bool] {
+  update-agave-track $packages_dir "agave-3_1" "3.1" $dry_run
+}
+
+def update-agave-3-0 [packages_dir: string, dry_run: bool] {
+  update-agave-track $packages_dir "agave-3_0" "3.0" $dry_run
+}
+
+def update-agave-2-3 [packages_dir: string, dry_run: bool] {
+  update-agave-track $packages_dir "agave-2_3" "2.3" $dry_run
+}
+
+def update-agave-2-2 [packages_dir: string, dry_run: bool] {
+  update-agave-track $packages_dir "agave-2_2" "2.2" $dry_run
+}
+
+def update-agave-2-1 [packages_dir: string, dry_run: bool] {
+  update-agave-track $packages_dir "agave-2_1" "2.1" $dry_run
+}
+
+def update-agave-2-0 [packages_dir: string, dry_run: bool] {
+  update-agave-track $packages_dir "agave-2_0" "2.0" $dry_run
 }
 
 def update-codex [packages_dir: string, dry_run: bool] {
@@ -850,6 +898,13 @@ def main [
 
   mut steps = [
     { name: "agave", run: {|| update-agave $packages_dir $dry_run } }
+    { name: "agave-2_0", run: {|| update-agave-2-0 $packages_dir $dry_run } }
+    { name: "agave-2_1", run: {|| update-agave-2-1 $packages_dir $dry_run } }
+    { name: "agave-2_2", run: {|| update-agave-2-2 $packages_dir $dry_run } }
+    { name: "agave-2_3", run: {|| update-agave-2-3 $packages_dir $dry_run } }
+    { name: "agave-3_0", run: {|| update-agave-3-0 $packages_dir $dry_run } }
+    { name: "agave-3_1", run: {|| update-agave-3-1 $packages_dir $dry_run } }
+    { name: "agave-4_0", run: {|| update-agave-4-0 $packages_dir $dry_run } }
     { name: "cargo-interactive-update", run: {|| update-rust-cargo-interactive $root $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
     { name: "cursor-cli", run: {|| update-cursor $packages_dir $dry_run } }
