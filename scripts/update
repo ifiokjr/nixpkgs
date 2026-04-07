@@ -3,7 +3,7 @@
 #
 # The script covers:
 # - Flake inputs (nix flake update → flake.lock)
-# - Versioned GitHub release packages (agave, codex-cli, godot, surfpool, etc.)
+# - Versioned GitHub release packages (agave, codex-cli, godot, ollama, surfpool, etc.)
 # - Cursor CLI (version from install script)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (google-drive, steam)
@@ -575,6 +575,17 @@ def update-godot [packages_dir: string, dry_run: bool] {
   update-versioned-keyed-hashes "godot" $file $latest_version $entries $dry_run
 }
 
+def update-ollama [packages_dir: string, dry_run: bool] {
+  let latest_version = (github-latest-tag "ollama" "ollama" | str replace --regex '^v' '')
+  let file = $"($packages_dir)/ollama/package.nix"
+  let entries = [
+    { key: "darwin", url: $"https://github.com/ollama/ollama/releases/download/v($latest_version)/Ollama-darwin.zip" }
+    { key: "linux-amd64", url: $"https://github.com/ollama/ollama/releases/download/v($latest_version)/ollama-linux-amd64.tar.zst" }
+    { key: "linux-arm64", url: $"https://github.com/ollama/ollama/releases/download/v($latest_version)/ollama-linux-arm64.tar.zst" }
+  ]
+  update-versioned-keyed-hashes "ollama" $file $latest_version $entries $dry_run
+}
+
 def update-pnpm [packages_dir: string, dry_run: bool] {
   let latest_version = (github-latest-tag "pnpm" "pnpm" | str replace --regex '^v' '')
   let file = $"($packages_dir)/pnpm-standalone/package.nix"
@@ -847,6 +858,7 @@ def main [
     { name: "knope", run: {|| update-rust-knope $root $packages_dir $dry_run } }
     { name: "mdt", run: {|| update-rust-mdt $root $packages_dir $dry_run } }
     { name: "nordvpn", run: {|| update-nordvpn $packages_dir $dry_run } }
+    { name: "ollama", run: {|| update-ollama $packages_dir $dry_run } }
     { name: "pina", run: {|| update-rust-pina $root $packages_dir $dry_run } }
     { name: "pnpm-standalone", run: {|| update-pnpm $packages_dir $dry_run } }
     { name: "racket-minimal", run: {|| update-racket $packages_dir $dry_run } }

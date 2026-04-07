@@ -31,6 +31,7 @@
         knope = final.callPackage ./packages/knope/package.nix { };
         mdt = final.callPackage ./packages/mdt/package.nix { };
         nordvpn = final.callPackage ./packages/nordvpn/package.nix { };
+        ollama = final.callPackage ./packages/ollama/package.nix { };
         pina = final.callPackage ./packages/pina/package.nix { };
         pnpm-standalone = final.callPackage ./packages/pnpm-standalone/package.nix { };
         racket-minimal = final.callPackage ./packages/racket-minimal/package.nix { };
@@ -66,6 +67,7 @@
           knope = pkgs.callPackage ./packages/knope/package.nix { };
           mdt = pkgs.callPackage ./packages/mdt/package.nix { };
           nordvpn = pkgs.callPackage ./packages/nordvpn/package.nix { };
+          ollama = pkgs.callPackage ./packages/ollama/package.nix { };
           pina = pkgs.callPackage ./packages/pina/package.nix { };
           pnpm-standalone = pkgs.callPackage ./packages/pnpm-standalone/package.nix { };
           racket-minimal = pkgs.callPackage ./packages/racket-minimal/package.nix { };
