@@ -25,6 +25,7 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [knope](#knope)                                       | <!-- {~v_knope:"{{ v.knope }}"} -->0.22.4<!-- {/v_knope} -->                                                         | linux, macos       | Automate common development tasks (changelogs, releases, versioning)          |
 | [mdt](#mdt)                                           | <!-- {~v_mdt:"{{ v.mdt }}"} -->0.7.0<!-- {/v_mdt} -->                                                                | linux, macos       | Update markdown content anywhere using comments as template tags              |
 | [nordvpn](#nordvpn)                                   | <!-- {~v_nordvpn:"{{ v.nordvpn }}"} -->9.15.0<!-- {/v_nordvpn} -->                                                   | macos              | NordVPN macOS client                                                          |
+| [ollama](#ollama)                                     | <!-- {~v_ollama:"{{ v.ollama }}"} -->0.20.3<!-- {/v_ollama} -->                                                      | linux, macos       | Run local LLMs with Ollama via CLI and desktop app                            |
 | [pina](#pina)                                         | <!-- {~v_pina:"{{ v.pina }}"} -->0.8.0<!-- {/v_pina} -->                                                             | linux, macos       | CLI for Pina, a performant Solana smart contract framework                    |
 | [pnpm-standalone](#pnpm-standalone)                   | <!-- {~v_pnpm_standalone:"{{ v.pnpm_standalone }}"} -->10.33.0<!-- {/v_pnpm_standalone} -->                          | linux, macos       | Fast, disk-space efficient package manager (no Node.js dependency)            |
 | [racket-minimal](#racket-minimal)                     | <!-- {~v_racket_minimal:"{{ v.racket_minimal }}"} -->9.1<!-- {/v_racket_minimal} -->                                 | linux, macos       | Racket programming language (minimal distribution, pre-built)                 |
@@ -42,6 +43,7 @@ nix run github:ifiokjr/nixpkgs#mdt
 nix run github:ifiokjr/nixpkgs#pnpm-standalone
 nix run github:ifiokjr/nixpkgs#codex-cli
 nix run github:ifiokjr/nixpkgs#godot
+nix run github:ifiokjr/nixpkgs#ollama
 ```
 
 ### add to your flake
@@ -307,6 +309,15 @@ NordVPN macOS client. Installs the `.app` bundle from the official PKG.
 
 - **License:** Proprietary
 - **Source:** <https://nordvpn.com/>
+
+### ollama
+
+Ollama for running local LLMs. On macOS this installs `Ollama.app` plus the bundled `ollama` CLI. On Linux it installs the official upstream release bundle and provides `ollama` plus an `ollama-app` launcher alias for `nix run` and desktop-style usage.
+
+- **Binary:** `ollama`, `ollama-app`
+- **License:** MIT
+- **Source:** <https://github.com/ollama/ollama>
+- **Homepage:** <https://ollama.com/>
 
 ### pina
 
