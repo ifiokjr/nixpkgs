@@ -21,7 +21,7 @@ let
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
   assets = {
-    darwin = {
+    "darwin" = {
       url = "https://github.com/ollama/ollama/releases/download/v${version}/Ollama-darwin.zip";
       hash = "sha256-BlOb85m1cz5kwNACe3eJIWkqpUvGH1oMVAvKwda+3R8=";
     };
