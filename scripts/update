@@ -117,7 +117,7 @@ def replace-single-hash [content: string, new_hash: string] {
 }
 
 def parse-block-hash [content: string, key: string] {
-  let re = [$"\"($key)\" = \\{[^}]*hash = " '"([^"]*)"'] | str join
+  let re = ('(?s)"' + $key + '" = \{.*?hash = "([^"]*)"')
   parse-capture $content $re
 }
 
@@ -126,7 +126,9 @@ def replace-block-hash [content: string, key: string, new_hash: string] {
   if ($current | is-empty) {
     fail $"Could not parse block hash for key \"($key)\""
   }
-  $content | str replace $"hash = \"($current)\"" $"hash = \"($new_hash)\""
+
+  let pattern = ('(?s)("' + $key + '" = \{.*?hash = ")([^"]*)(".*?\})')
+  $content | str replace --regex $pattern $"${1}($new_hash)${3}"
 }
 
 def set-src-hash [content: string, new_hash: string] {
@@ -344,7 +346,19 @@ def connect-or-timeout [url: string] {
 
 def prefetch-sri [url: string] {
   connect-or-timeout $url
-  let result = (^nix-prefetch-url $url | complete)
+
+  mut result = { exit_code: 1, stdout: "", stderr: "" }
+  for attempt in [1 2 3] {
+    $result = (^nix-prefetch-url $url | complete)
+    if $result.exit_code == 0 {
+      break
+    }
+
+    if $attempt < 3 {
+      sleep (($attempt * 2) | into duration --unit sec)
+    }
+  }
+
   if $result.exit_code != 0 {
     fail $"download failed for ($url | path basename)"
   }
@@ -364,7 +378,19 @@ def prefetch-sri [url: string] {
 
 def prefetch-sri-unpack [url: string] {
   connect-or-timeout $url
-  let result = (^nix-prefetch-url --unpack $url | complete)
+
+  mut result = { exit_code: 1, stdout: "", stderr: "" }
+  for attempt in [1 2 3] {
+    $result = (^nix-prefetch-url --unpack $url | complete)
+    if $result.exit_code == 0 {
+      break
+    }
+
+    if $attempt < 3 {
+      sleep (($attempt * 2) | into duration --unit sec)
+    }
+  }
+
   if $result.exit_code != 0 {
     fail $"download failed for ($url | path basename)"
   }
@@ -441,6 +467,45 @@ def update-versioned-keyed-hashes [
     log-sub $"fetching ($entry.key)..."
     let new_hash = (prefetch-sri $entry.url)
     $updated = (replace-key-hash $updated $entry.key $new_hash)
+  }
+
+  $updated | save -f $file
+  log-ok $name "updated"
+  true
+}
+
+def update-versioned-block-hashes [
+  name: string,
+  file: string,
+  latest_version: string,
+  entries: list<record<key: string, url: string>>,
+  dry_run: bool,
+] {
+  if not ($file | path exists) {
+    fail $"missing file: ($file)"
+  }
+
+  let content = (open $file --raw)
+  let current_version = (parse-capture $content 'version = "([^"]+)"')
+  if ($current_version | is-empty) {
+    fail $"could not parse version for ($name)"
+  }
+
+  if $current_version == $latest_version {
+    log-ok $name $"up to date \(v($current_version)\)"
+    return false
+  }
+
+  log-update $name $"v($current_version) → v($latest_version)"
+  if $dry_run {
+    return true
+  }
+
+  mut updated = (replace-version $content $latest_version)
+  for entry in $entries {
+    log-sub $"fetching ($entry.key)..."
+    let new_hash = (prefetch-sri $entry.url)
+    $updated = (replace-block-hash $updated $entry.key $new_hash)
   }
 
   $updated | save -f $file
@@ -631,7 +696,7 @@ def update-ollama [packages_dir: string, dry_run: bool] {
     { key: "linux-amd64", url: $"https://github.com/ollama/ollama/releases/download/v($latest_version)/ollama-linux-amd64.tar.zst" }
     { key: "linux-arm64", url: $"https://github.com/ollama/ollama/releases/download/v($latest_version)/ollama-linux-arm64.tar.zst" }
   ]
-  update-versioned-keyed-hashes "ollama" $file $latest_version $entries $dry_run
+  update-versioned-block-hashes "ollama" $file $latest_version $entries $dry_run
 }
 
 def update-pnpm [packages_dir: string, dry_run: bool] {
