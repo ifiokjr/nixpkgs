@@ -2,6 +2,7 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
+  openssl,
   lib,
 }:
 
@@ -34,7 +35,10 @@ stdenv.mkDerivation {
   dontStrip = stdenv.isDarwin;
 
   nativeBuildInputs = lib.optionals stdenv.isLinux [ autoPatchelfHook ];
-  buildInputs = lib.optionals stdenv.isLinux [ stdenv.cc.cc.lib ];
+  buildInputs = lib.optionals stdenv.isLinux [
+    stdenv.cc.cc.lib
+    openssl
+  ];
 
   installPhase = ''
     runHook preInstall
