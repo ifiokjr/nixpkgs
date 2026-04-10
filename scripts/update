@@ -741,6 +741,16 @@ def update-surfpool [packages_dir: string, dry_run: bool] {
   update-versioned-keyed-hashes "surfpool" $file $latest_version $entries $dry_run
 }
 
+def update-wait-for-them [packages_dir: string, dry_run: bool] {
+  let latest_version = (github-latest-tag "shenek" "wait-for-them" | str replace --regex '^v' '')
+  let file = $"($packages_dir)/wait-for-them/package.nix"
+  let entries = [
+    { key: "linux", url: $"https://github.com/shenek/wait-for-them/releases/download/v($latest_version)/wait-for-them-linux" }
+    { key: "macos", url: $"https://github.com/shenek/wait-for-them/releases/download/v($latest_version)/wait-for-them-macos" }
+  ]
+  update-versioned-keyed-hashes "wait-for-them" $file $latest_version $entries $dry_run
+}
+
 def update-zoom [packages_dir: string, dry_run: bool] {
   let latest_version = (brew-cask-latest-version "zoom")
   let file = $"($packages_dir)/zoom/package.nix"
@@ -984,6 +994,7 @@ def main [
     { name: "racket-minimal", run: {|| update-racket $packages_dir $dry_run } }
     { name: "steam", run: {|| update-rolling-steam $packages_dir $dry_run } }
     { name: "surfpool", run: {|| update-surfpool $packages_dir $dry_run } }
+    { name: "wait-for-them", run: {|| update-wait-for-them $packages_dir $dry_run } }
     { name: "zoom", run: {|| update-zoom $packages_dir $dry_run } }
   ]
 

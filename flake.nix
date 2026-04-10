@@ -38,6 +38,7 @@
         racket-minimal = final.callPackage ./packages/racket-minimal/package.nix { };
         steam = final.callPackage ./packages/steam/package.nix { };
         surfpool = final.callPackage ./packages/surfpool/package.nix { };
+        wait-for-them = final.callPackage ./packages/wait-for-them/package.nix { };
         zoom = final.callPackage ./packages/zoom/package.nix { };
       };
     }
@@ -75,6 +76,7 @@
           racket-minimal = pkgs.callPackage ./packages/racket-minimal/package.nix { };
           steam = pkgs.callPackage ./packages/steam/package.nix { };
           surfpool = pkgs.callPackage ./packages/surfpool/package.nix { };
+          wait-for-them = pkgs.callPackage ./packages/wait-for-them/package.nix { };
           zoom = pkgs.callPackage ./packages/zoom/package.nix { };
         };
 
