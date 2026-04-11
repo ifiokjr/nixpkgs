@@ -20,7 +20,6 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [codexbar](#codexbar)                                 | <!-- {~v_codexbar:"{{ v.codexbar }}"} -->0.17.0<!-- {/v_codexbar} -->                                                | macos                    | macOS menu bar app showing AI coding tool usage and limits                    |
 | [cursor-cli](#cursor-cli)                             | <!-- {~v_cursor_cli:"{{ v.cursor_cli }}"} -->2026.04.08-a41fba1<!-- {/v_cursor_cli} -->                              | linux, macos             | Cursor AI CLI agent for terminal-based development                            |
 | [godot](#godot)                                       | <!-- {~v_godot:"{{ v.godot }}"} -->4.6.2-stable<!-- {/v_godot} -->                                                   | linux, macos             | Free and open-source 2D and 3D game engine                                    |
-| [google-drive](#google-drive)                         | <!-- {~v_google_drive:"{{ v.google_drive }}"} -->latest<!-- {/v_google_drive} -->                                    | macos                    | Google Drive desktop client for macOS                                         |
 | [gpg-suite](#gpg-suite)                               | <!-- {~v_gpg_suite:"{{ v.gpg_suite }}"} -->2023.3<!-- {/v_gpg_suite} -->                                             | macos                    | GPG Suite - encryption, signing, and key management                           |
 | [knope](#knope)                                       | <!-- {~v_knope:"{{ v.knope }}"} -->0.22.4<!-- {/v_knope} -->                                                         | linux, macos             | Automate common development tasks (changelogs, releases, versioning)          |
 | [mdt](#mdt)                                           | <!-- {~v_mdt:"{{ v.mdt }}"} -->0.7.0<!-- {/v_mdt} -->                                                                | linux, macos             | Update markdown content anywhere using comments as template tags              |
@@ -157,7 +156,6 @@ in
         modules = [
           {
             environment.systemPackages = [
-              extra.google-drive
               extra.gpg-suite
               extra.nordvpn
               extra.steam
@@ -272,13 +270,6 @@ Free and open-source 2D and 3D game engine. Installs pre-built editor binaries f
 - **License:** MIT
 - **Source:** <https://github.com/godotengine/godot>
 - **Homepage:** <https://godotengine.org/>
-
-### google-drive
-
-Google Drive desktop client for macOS. Installs the `.app` bundle from the official DMG/PKG.
-
-- **License:** Proprietary
-- **Source:** <https://www.google.com/drive/>
 
 ### gpg-suite
 
@@ -449,7 +440,7 @@ The script updates:
 
 - GitHub release packages (version + platform hashes)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
-- Rolling URL packages (`google-drive`, `steam`)
+- Rolling URL packages (`steam`)
 - Rust packages (`cargo-interactive-update`, `knope`, `mdt`, `pina`) including `cargoHash`
 
 ### binary packages (pre-built)
