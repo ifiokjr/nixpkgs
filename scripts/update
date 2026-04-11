@@ -6,7 +6,7 @@
 # - Versioned GitHub release packages (agave, codex-cli, godot, ollama, surfpool, etc.)
 # - Cursor CLI (version from install script)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
-# - Rolling URL packages (google-drive, steam)
+# - Rolling URL packages (steam)
 # - Rust packages with cargoHash refresh (cargo-interactive-update, knope, mdt, pina)
 
 # ANSI helpers
@@ -890,10 +890,6 @@ def update-flake-lock [repo_root: string, dry_run: bool] {
   true
 }
 
-def update-rolling-google-drive [packages_dir: string, dry_run: bool] {
-  update-rolling-single-hash "google-drive" $"($packages_dir)/google-drive/package.nix" "https://dl.google.com/drive-file-stream/5-percent/GoogleDrive.dmg" $dry_run
-}
-
 def update-rolling-steam [packages_dir: string, dry_run: bool] {
   update-rolling-single-hash "steam" $"($packages_dir)/steam/package.nix" "https://cdn.cloudflare.steamstatic.com/client/installer/steam.dmg" $dry_run
 }
@@ -929,7 +925,6 @@ def check-deps [] {
 def main [
   --repo-root: string = ".",
   --dry-run, # Check and print what would change without writing files.
-  --all, # Include all packages (e.g. google-drive) that are skipped by default.
 ] {
   check-deps
 
@@ -997,15 +992,6 @@ def main [
     { name: "wait-for-them", run: {|| update-wait-for-them $packages_dir $dry_run } }
     { name: "zoom", run: {|| update-zoom $packages_dir $dry_run } }
   ]
-
-  if $all {
-    $steps = ($steps | append [
-      { name: "google-drive", run: {|| update-rolling-google-drive $packages_dir $dry_run } }
-    ] | sort-by name)
-  } else {
-    log-warn $"($DIM)skipping google-drive \(use --all to include\)($RESET)"
-    print ""
-  }
 
   let total = ($steps | length)
 

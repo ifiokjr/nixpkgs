@@ -11,7 +11,6 @@ v = { command = "./scripts/versions", format = "json", watch = [
 	"packages/codexbar/package.nix",
 	"packages/cursor-cli/package.nix",
 	"packages/godot/package.nix",
-	"packages/google-drive/package.nix",
 	"packages/gpg-suite/package.nix",
 	"packages/knope/package.nix",
 	"packages/mdt/package.nix",

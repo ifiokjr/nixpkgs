@@ -27,7 +27,6 @@
         codexbar = final.callPackage ./packages/codexbar/package.nix { };
         cursor-cli = final.callPackage ./packages/cursor-cli/package.nix { };
         godot = final.callPackage ./packages/godot/package.nix { };
-        google-drive = final.callPackage ./packages/google-drive/package.nix { };
         gpg-suite = final.callPackage ./packages/gpg-suite/package.nix { };
         knope = final.callPackage ./packages/knope/package.nix { };
         mdt = final.callPackage ./packages/mdt/package.nix { };
@@ -65,7 +64,6 @@
           codexbar = pkgs.callPackage ./packages/codexbar/package.nix { };
           cursor-cli = pkgs.callPackage ./packages/cursor-cli/package.nix { };
           godot = pkgs.callPackage ./packages/godot/package.nix { };
-          google-drive = pkgs.callPackage ./packages/google-drive/package.nix { };
           gpg-suite = pkgs.callPackage ./packages/gpg-suite/package.nix { };
           knope = pkgs.callPackage ./packages/knope/package.nix { };
           mdt = pkgs.callPackage ./packages/mdt/package.nix { };

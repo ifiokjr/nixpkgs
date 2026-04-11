@@ -23,7 +23,7 @@ jobs:
         id: changes
         run: |
           LINUX_PACKAGES="agave agave-2_0 agave-2_1 agave-2_2 agave-2_3 agave-3_0 agave-3_1 cargo-interactive-update codex-cli cursor-cli godot knope mdt ollama pina pnpm-standalone racket-minimal surfpool wait-for-them"
-          MACOS_PACKAGES="agave agave-2_0 agave-2_1 agave-2_2 agave-2_3 agave-3_0 agave-3_1 cargo-interactive-update codex-cli codexbar cursor-cli godot google-drive gpg-suite knope mdt nordvpn ollama pina pnpm-standalone racket-minimal steam surfpool zoom"
+          MACOS_PACKAGES="agave agave-2_0 agave-2_1 agave-2_2 agave-2_3 agave-3_0 agave-3_1 cargo-interactive-update codex-cli codexbar cursor-cli godot gpg-suite knope mdt nordvpn ollama pina pnpm-standalone racket-minimal steam surfpool zoom"
 
           build_all=false
 
@@ -142,7 +142,7 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: 🧪 run update dry-run
-        run: nix shell nixpkgs#nushell -c nu scripts/update --dry-run --all
+        run: nix shell nixpkgs#nushell -c nu scripts/update --dry-run
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
