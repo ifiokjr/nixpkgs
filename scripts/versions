@@ -13,7 +13,7 @@ for pkg_dir in packages/*/; do
 	pkg=$(basename "$pkg_dir")
 	file="$pkg_dir/package.nix"
 	[ -f "$file" ] || continue
-	version=$(grep -m1 'version = "' "$file" | sed 's/.*version = "\([^"]*\)".*/\1/')
+	version=$(grep -m1 'version = "' "$file" 2>/dev/null | sed 's/.*version = "\([^"]*\)".*/\1/' || true)
 	[ -n "$version" ] || continue
 	$first || printf ",\n"
 	first=false
