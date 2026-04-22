@@ -699,16 +699,89 @@ def update-ollama [packages_dir: string, dry_run: bool] {
   update-versioned-block-hashes "ollama" $file $latest_version $entries $dry_run
 }
 
+def npm-dist-tag [pkg: string, tag: string] {
+  let url = $"https://registry.npmjs.org/($pkg)"
+  let data = (try {
+    http get $url
+  } catch {
+    fail $"Failed to fetch npm registry for ($pkg)"
+  })
+  let version = ($data | get -o "dist-tags" | get -o $tag | default "")
+  if ($version | is-empty) {
+    fail $"npm dist-tag \"($tag)\" not found for ($pkg)"
+  }
+  $version
+}
+
 def update-pnpm [packages_dir: string, dry_run: bool] {
-  let latest_version = (github-latest-tag "pnpm" "pnpm" | str replace --regex '^v' '')
-  let file = $"($packages_dir)/pnpm-standalone/package.nix"
+  let latest_version = (npm-dist-tag "pnpm" "latest")
+  let file = $"($packages_dir)/pnpm/package.nix"
   let entries = [
-    { key: "macos-arm64", url: $"https://github.com/pnpm/pnpm/releases/download/v($latest_version)/pnpm-macos-arm64" }
-    { key: "macos-x64", url: $"https://github.com/pnpm/pnpm/releases/download/v($latest_version)/pnpm-macos-x64" }
-    { key: "linux-arm64", url: $"https://github.com/pnpm/pnpm/releases/download/v($latest_version)/pnpm-linux-arm64" }
-    { key: "linux-x64", url: $"https://github.com/pnpm/pnpm/releases/download/v($latest_version)/pnpm-linux-x64" }
+    { key: "x86_64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-x64/-/linux-x64-($latest_version).tgz" }
+    { key: "aarch64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-arm64/-/linux-arm64-($latest_version).tgz" }
+    { key: "x86_64-darwin", url: $"https://registry.npmjs.org/@pnpm/macos-x64/-/macos-x64-($latest_version).tgz" }
+    { key: "aarch64-darwin", url: $"https://registry.npmjs.org/@pnpm/macos-arm64/-/macos-arm64-($latest_version).tgz" }
   ]
-  update-versioned-keyed-hashes "pnpm-standalone" $file $latest_version $entries $dry_run
+  update-versioned-keyed-hashes "pnpm" $file $latest_version $entries $dry_run
+}
+
+def update-pnpm-10 [packages_dir: string, dry_run: bool] {
+  let latest_version = (npm-dist-tag "pnpm" "latest-10")
+  let file = $"($packages_dir)/pnpm-10/package.nix"
+  let entries = [
+    { key: "x86_64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-x64/-/linux-x64-($latest_version).tgz" }
+    { key: "aarch64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-arm64/-/linux-arm64-($latest_version).tgz" }
+    { key: "x86_64-darwin", url: $"https://registry.npmjs.org/@pnpm/macos-x64/-/macos-x64-($latest_version).tgz" }
+    { key: "aarch64-darwin", url: $"https://registry.npmjs.org/@pnpm/macos-arm64/-/macos-arm64-($latest_version).tgz" }
+  ]
+  update-versioned-keyed-hashes "pnpm-10" $file $latest_version $entries $dry_run
+}
+
+def update-pnpm-11 [packages_dir: string, dry_run: bool] {
+  let latest_version = (npm-dist-tag "pnpm" "next-11")
+  let file = $"($packages_dir)/pnpm-11/package.nix"
+  let content = (open $file --raw)
+  let current_version = (parse-capture $content 'version = "([^"]+)"')
+  if ($current_version | is-empty) {
+    fail "could not parse version for pnpm-11"
+  }
+
+  if $current_version == $latest_version {
+    log-ok "pnpm-11" $"up to date \(v($current_version)\)"
+    return false
+  }
+
+  log-update "pnpm-11" $"v($current_version) → v($latest_version)"
+  if $dry_run {
+    return true
+  }
+
+  mut updated = (replace-version $content $latest_version)
+
+  let platform_entries = [
+    { key: "x86_64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-x64/-/linux-x64-($latest_version).tgz" }
+    { key: "aarch64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-arm64/-/linux-arm64-($latest_version).tgz" }
+    { key: "x86_64-darwin", url: $"https://registry.npmjs.org/@pnpm/macos-x64/-/macos-x64-($latest_version).tgz" }
+    { key: "aarch64-darwin", url: $"https://registry.npmjs.org/@pnpm/macos-arm64/-/macos-arm64-($latest_version).tgz" }
+  ]
+  for entry in $platform_entries {
+    log-sub $"fetching ($entry.key)..."
+    let new_hash = (prefetch-sri $entry.url)
+    $updated = (replace-key-hash $updated $entry.key $new_hash)
+  }
+
+  log-sub "fetching exe..."
+  let exe_url = $"https://registry.npmjs.org/@pnpm/exe/-/exe-($latest_version).tgz"
+  let exe_hash = (prefetch-sri $exe_url)
+  let current_exe_hash = (parse-capture $updated 'exeHash = "([^"]+)"')
+  if ($current_exe_hash | is-empty) {
+    fail "could not find exeHash entry for pnpm-11"
+  }
+  $updated = ($updated | str replace $"exeHash = \"($current_exe_hash)\"" $"exeHash = \"($exe_hash)\"")
+
+  $updated | save -f $file
+  log-ok "pnpm-11" "updated"
+  true
 }
 
 def update-racket [packages_dir: string, dry_run: bool] {
@@ -985,7 +1058,9 @@ def main [
     { name: "nordvpn", run: {|| update-nordvpn $packages_dir $dry_run } }
     { name: "ollama", run: {|| update-ollama $packages_dir $dry_run } }
     { name: "pina", run: {|| update-rust-pina $root $packages_dir $dry_run } }
-    { name: "pnpm-standalone", run: {|| update-pnpm $packages_dir $dry_run } }
+    { name: "pnpm", run: {|| update-pnpm $packages_dir $dry_run } }
+    { name: "pnpm-10", run: {|| update-pnpm-10 $packages_dir $dry_run } }
+    { name: "pnpm-11", run: {|| update-pnpm-11 $packages_dir $dry_run } }
     { name: "racket-minimal", run: {|| update-racket $packages_dir $dry_run } }
     { name: "steam", run: {|| update-rolling-steam $packages_dir $dry_run } }
     { name: "surfpool", run: {|| update-surfpool $packages_dir $dry_run } }

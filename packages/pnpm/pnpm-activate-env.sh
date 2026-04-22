@@ -29,7 +29,7 @@ path_has_entry() {
 	local path_value="$1"
 	local entry="$2"
 	case ":${path_value}:" in
-	*":${entry}:"*) return 0 ;;
+	*":${entry}:") return 0 ;;
 	*) return 1 ;;
 	esac
 }

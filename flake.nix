@@ -33,7 +33,10 @@
         nordvpn = final.callPackage ./packages/nordvpn/package.nix { };
         ollama = final.callPackage ./packages/ollama/package.nix { };
         pina = final.callPackage ./packages/pina/package.nix { };
-        pnpm-standalone = final.callPackage ./packages/pnpm-standalone/package.nix { };
+        pnpm = final.callPackage ./packages/pnpm/package.nix { };
+        pnpm-10 = final.callPackage ./packages/pnpm-10/package.nix { };
+        pnpm-11 = final.callPackage ./packages/pnpm-11/package.nix { };
+        pnpm-standalone = final.callPackage ./packages/pnpm-standalone/package.nix { inherit pnpm; };
         racket-minimal = final.callPackage ./packages/racket-minimal/package.nix { };
         steam = final.callPackage ./packages/steam/package.nix { };
         surfpool = final.callPackage ./packages/surfpool/package.nix { };
@@ -70,7 +73,10 @@
           nordvpn = pkgs.callPackage ./packages/nordvpn/package.nix { };
           ollama = pkgs.callPackage ./packages/ollama/package.nix { };
           pina = pkgs.callPackage ./packages/pina/package.nix { };
-          pnpm-standalone = pkgs.callPackage ./packages/pnpm-standalone/package.nix { };
+          pnpm = pkgs.callPackage ./packages/pnpm/package.nix { };
+          pnpm-10 = pkgs.callPackage ./packages/pnpm-10/package.nix { };
+          pnpm-11 = pkgs.callPackage ./packages/pnpm-11/package.nix { };
+          pnpm-standalone = pkgs.callPackage ./packages/pnpm-standalone/package.nix { inherit pnpm; };
           racket-minimal = pkgs.callPackage ./packages/racket-minimal/package.nix { };
           steam = pkgs.callPackage ./packages/steam/package.nix { };
           surfpool = pkgs.callPackage ./packages/surfpool/package.nix { };
