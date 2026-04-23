@@ -148,11 +148,9 @@ jobs:
               arm64) NU_ARCH="aarch64-apple-darwin" ;;
               x86_64) NU_ARCH="x86_64-apple-darwin" ;;
             esac
-            NU_VER="$(curl -s https://api.github.com/repos/nushell/nushell/releases/latest | grep '"tag_name":' | sed -E 's/.*"tag_name": "([^"]+)".*/\1/')"
-            NU_VER="${NU_VER:-0.102.0}"
-            echo "Installing nushell ${NU_VER} (${NU_ARCH})..."
-            curl -fsSL "https://github.com/nushell/nushell/releases/download/${NU_VER}/nu-${NU_VER}-${NU_ARCH}.tar.gz" | tar xz
-            "./nu-${NU_VER}-${NU_ARCH}/nu" scripts/update --dry-run
+            echo "Installing nushell 0.112.1 (${NU_ARCH})..."
+            curl -fsSL "https://github.com/nushell/nushell/releases/download/0.112.1/nu-0.112.1-${NU_ARCH}.tar.gz" | tar xz
+            "./nu-0.112.1-${NU_ARCH}/nu" scripts/update --dry-run
           else
             nix shell nixpkgs#nushell -c nu scripts/update --dry-run
           fi
