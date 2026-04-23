@@ -15,7 +15,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-srg1y6XwjNjr75tVOtb7vM8HIInzk6ka0+Vn88mqZwM=";
   };
 
-  cargoHash = "sha256-sx5X/VqOOcMmHiBTVDK/J4kFlMwQCWptyPdm4AydywM=";
+  cargoLock = {
+    lockFile = "${finalAttrs.src}/Cargo.lock";
+  };
 
   buildAndTestSubdir = "crates/pina_cli";
 
