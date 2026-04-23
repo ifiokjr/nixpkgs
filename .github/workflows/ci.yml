@@ -22,8 +22,8 @@ jobs:
       - name: 🔍 detect changed packages
         id: changes
         run: |
-          LINUX_PACKAGES="agave agave-2_0 agave-2_1 agave-2_2 agave-2_3 agave-3_0 agave-3_1 cargo-dylint cargo-interactive-update codex-cli cursor-cli dylint-link godot knope mdt ollama pina pnpm pnpm-10 pnpm-11 pnpm-standalone racket-minimal surfpool wait-for-them"
-          MACOS_PACKAGES="agave agave-2_0 agave-2_1 agave-2_2 agave-2_3 agave-3_0 agave-3_1 cargo-dylint cargo-interactive-update codex-cli codexbar cursor-cli dylint-link godot gpg-suite knope mdt nordvpn ollama pina pnpm pnpm-10 pnpm-11 pnpm-standalone racket-minimal steam surfpool zoom"
+          LINUX_PACKAGES="agave agave-2_0 agave-2_1 agave-2_2 agave-2_3 agave-3_0 agave-3_1 cargo-dylint cargo-interactive-update codex-cli dylint-link godot knope mdt ollama pina pnpm pnpm-10 pnpm-11 pnpm-standalone racket-minimal surfpool wait-for-them"
+          MACOS_PACKAGES="agave agave-2_0 agave-2_1 agave-2_2 agave-2_3 agave-3_0 agave-3_1 cargo-dylint cargo-interactive-update codex-cli codexbar dylint-link godot gpg-suite knope mdt nordvpn ollama pina pnpm pnpm-10 pnpm-11 pnpm-standalone racket-minimal steam surfpool zoom"
 
           build_all=false
 

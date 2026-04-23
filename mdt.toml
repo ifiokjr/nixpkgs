@@ -10,7 +10,6 @@ v = { command = "./scripts/versions", format = "json", watch = [
 	"packages/cargo-interactive-update/package.nix",
 	"packages/codex-cli/package.nix",
 	"packages/codexbar/package.nix",
-	"packages/cursor-cli/package.nix",
 	"packages/dylint-link/package.nix",
 	"packages/godot/package.nix",
 	"packages/gpg-suite/package.nix",

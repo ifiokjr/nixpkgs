@@ -19,7 +19,6 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [cargo-interactive-update](#cargo-interactive-update) | <!-- {~v_cargo_interactive_update:"{{ v.cargo_interactive_update }}"} -->0.6.2<!-- {/v_cargo_interactive_update} --> | linux, macos             | A cargo extension to update direct dependencies interactively                 |
 | [codex-cli](#codex-cli)                               | <!-- {~v_codex_cli:"{{ v.codex_cli }}"} -->0.123.0<!-- {/v_codex_cli} -->                                            | linux, macos             | OpenAI Codex CLI - AI coding assistant for the terminal                       |
 | [codexbar](#codexbar)                                 | <!-- {~v_codexbar:"{{ v.codexbar }}"} -->0.17.0<!-- {/v_codexbar} -->                                                | macos                    | macOS menu bar app showing AI coding tool usage and limits                    |
-| [cursor-cli](#cursor-cli)                             | <!-- {~v_cursor_cli:"{{ v.cursor_cli }}"} -->2026.04.17-787b533<!-- {/v_cursor_cli} -->                              | linux, macos             | Cursor AI CLI agent for terminal-based development                            |
 | [dylint-link](#dylint-link)                           | <!-- {~v_dylint_link:"{{ v.dylint_link }}"} -->5.0.0<!-- {/v_dylint_link} -->                                        | linux, macos             | A linker wrapper for building Dylint libraries                                |
 | [godot](#godot)                                       | <!-- {~v_godot:"{{ v.godot }}"} -->4.6.2-stable<!-- {/v_godot} -->                                                   | linux, macos             | Free and open-source 2D and 3D game engine                                    |
 | [gpg-suite](#gpg-suite)                               | <!-- {~v_gpg_suite:"{{ v.gpg_suite }}"} -->2023.3<!-- {/v_gpg_suite} -->                                             | macos                    | GPG Suite - encryption, signing, and key management                           |
@@ -71,7 +70,6 @@ nix run github:ifiokjr/nixpkgs#ollama
           extra.mdt
           extra.pnpm-standalone
           extra.codex-cli
-          extra.cursor-cli
         ];
       };
     };
@@ -263,14 +261,6 @@ macOS menu bar app showing AI coding tool usage and limits. Pre-built `.app` bun
 - **License:** MIT
 - **Source:** <https://github.com/steipete/CodexBar>
 - **Homepage:** <https://codexbar.app>
-
-### cursor-cli
-
-Cursor AI CLI agent for terminal-based AI development workflows. Pre-built binary from Cursor's CDN.
-
-- **Binary:** `cursor-agent`
-- **License:** Proprietary
-- **Source:** <https://cursor.com/cli>
 
 ### dylint-link
 

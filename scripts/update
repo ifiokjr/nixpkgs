@@ -4,7 +4,7 @@
 # The script covers:
 # - Flake inputs (nix flake update → flake.lock)
 # - Versioned GitHub release packages (agave, codex-cli, godot, ollama, surfpool, etc.)
-# - Cursor CLI (version from install script)
+# 
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (steam)
 # - Rust packages built from source (cargo-dylint, cargo-interactive-update, dylint-link, knope, mdt, pina)
@@ -288,19 +288,6 @@ def brew-cask-latest-version [cask: string] {
   }
 }
 
-def cursor-latest-version [] {
-  let body = try {
-    http get "https://cursor.com/install"
-  } catch {
-    fail "Failed to fetch https://cursor.com/install"
-  }
-
-  let version = (parse-capture $body 'downloads\.cursor\.com/lab/([^/]+)/')
-  if ($version | is-empty) {
-    fail "Could not extract Cursor version from install page"
-  }
-  $version
-}
 
 # Prefetch helpers
 
@@ -665,17 +652,6 @@ def update-codex [packages_dir: string, dry_run: bool] {
   update-versioned-keyed-hashes "codex-cli" $file $latest_version $entries $dry_run
 }
 
-def update-cursor [packages_dir: string, dry_run: bool] {
-  let latest_version = (cursor-latest-version)
-  let file = $"($packages_dir)/cursor-cli/package.nix"
-  let entries = [
-    { key: "darwin-arm64", url: $"https://downloads.cursor.com/lab/($latest_version)/darwin/arm64/agent-cli-package.tar.gz" }
-    { key: "darwin-x64", url: $"https://downloads.cursor.com/lab/($latest_version)/darwin/x64/agent-cli-package.tar.gz" }
-    { key: "linux-x64", url: $"https://downloads.cursor.com/lab/($latest_version)/linux/x64/agent-cli-package.tar.gz" }
-    { key: "linux-arm64", url: $"https://downloads.cursor.com/lab/($latest_version)/linux/arm64/agent-cli-package.tar.gz" }
-  ]
-  update-versioned-keyed-hashes "cursor-cli" $file $latest_version $entries $dry_run
-}
 
 def update-godot [packages_dir: string, dry_run: bool] {
   let latest_version = (godot-latest-stable-tag)
@@ -1110,7 +1086,6 @@ def main [
     { name: "cargo-dylint", run: {|| update-rust-cargo-dylint $packages_dir $dry_run } }
     { name: "cargo-interactive-update", run: {|| update-rust-cargo-interactive $root $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
-    { name: "cursor-cli", run: {|| update-cursor $packages_dir $dry_run } }
     { name: "dylint-link", run: {|| update-rust-dylint-link $packages_dir $dry_run } }
     { name: "godot", run: {|| update-godot $packages_dir $dry_run } }
     { name: "gpg-suite", run: {|| update-gpg-suite $packages_dir $dry_run } }

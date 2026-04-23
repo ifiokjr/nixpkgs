@@ -26,7 +26,6 @@
         cargo-interactive-update = final.callPackage ./packages/cargo-interactive-update/package.nix { };
         codex-cli = final.callPackage ./packages/codex-cli/package.nix { };
         codexbar = final.callPackage ./packages/codexbar/package.nix { };
-        cursor-cli = final.callPackage ./packages/cursor-cli/package.nix { };
         dylint-link = final.callPackage ./packages/dylint-link/package.nix { };
         godot = final.callPackage ./packages/godot/package.nix { };
         gpg-suite = final.callPackage ./packages/gpg-suite/package.nix { };
@@ -68,7 +67,6 @@
           cargo-interactive-update = pkgs.callPackage ./packages/cargo-interactive-update/package.nix { };
           codex-cli = pkgs.callPackage ./packages/codex-cli/package.nix { };
           codexbar = pkgs.callPackage ./packages/codexbar/package.nix { };
-          cursor-cli = pkgs.callPackage ./packages/cursor-cli/package.nix { };
           dylint-link = pkgs.callPackage ./packages/dylint-link/package.nix { };
           godot = pkgs.callPackage ./packages/godot/package.nix { };
           gpg-suite = pkgs.callPackage ./packages/gpg-suite/package.nix { };
