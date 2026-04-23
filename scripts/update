@@ -7,7 +7,7 @@
 # - Cursor CLI (version from install script)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (steam)
-# - Rust packages with cargoHash refresh (cargo-interactive-update, knope, mdt, pina)
+# - Rust packages built from source (cargo-dylint, cargo-interactive-update, dylint-link, knope, mdt, pina)
 
 # ANSI helpers
 
@@ -903,10 +903,69 @@ def update-rust-package [
   }
 }
 
+def update-rust-cargo-lock-package [
+  packages_dir: string,
+  package: string,
+  latest_version: string,
+  rev: string,
+  owner: string,
+  repo: string,
+  dry_run: bool,
+] {
+  let file = $"($packages_dir)/($package)/package.nix"
+  if not ($file | path exists) {
+    fail $"missing file: ($file)"
+  }
+
+  let original = (open $file --raw)
+  let current_version = (parse-capture $original 'version = "([^"]+)"')
+  if ($current_version | is-empty) {
+    fail $"could not parse version for ($package)"
+  }
+
+  if $current_version == $latest_version {
+    log-ok $package $"up to date \(v($current_version)\)"
+    return false
+  }
+
+  log-update $package $"v($current_version) → v($latest_version)"
+  if $dry_run {
+    return true
+  }
+
+  log-sub "fetching source archive..."
+  let source_url = $"https://github.com/($owner)/($repo)/archive/($rev).tar.gz"
+  let source_hash = (prefetch-sri-unpack $source_url)
+
+  let updated = (
+    set-src-hash
+      (replace-version $original $latest_version)
+      $source_hash
+  )
+
+  $updated | save -f $file
+  log-ok $package "updated"
+  true
+}
+
+def update-rust-cargo-dylint [packages_dir: string, dry_run: bool] {
+  let tag = (github-latest-tag "trailofbits" "dylint")
+  let latest_version = ($tag | str replace --regex '^v' '')
+  let rev = $"v($latest_version)"
+  update-rust-cargo-lock-package $packages_dir "cargo-dylint" $latest_version $rev "trailofbits" "dylint" $dry_run
+}
+
 def update-rust-cargo-interactive [repo_root: string, packages_dir: string, dry_run: bool] {
   let tag = (github-latest-tag "benjeau" "cargo-interactive-update")
   let latest_version = ($tag | str replace --regex '^v' '')
   update-rust-package $repo_root $packages_dir "cargo-interactive-update" $latest_version $latest_version "benjeau" "cargo-interactive-update" $dry_run
+}
+
+def update-rust-dylint-link [packages_dir: string, dry_run: bool] {
+  let tag = (github-latest-tag "trailofbits" "dylint")
+  let latest_version = ($tag | str replace --regex '^v' '')
+  let rev = $"v($latest_version)"
+  update-rust-cargo-lock-package $packages_dir "dylint-link" $latest_version $rev "trailofbits" "dylint" $dry_run
 }
 
 def update-rust-knope [repo_root: string, packages_dir: string, dry_run: bool] {
@@ -1048,9 +1107,11 @@ def main [
     { name: "agave-3_0", run: {|| update-agave-3-0 $packages_dir $dry_run } }
     { name: "agave-3_1", run: {|| update-agave-3-1 $packages_dir $dry_run } }
     { name: "agave-4_0", run: {|| update-agave-4-0 $packages_dir $dry_run } }
+    { name: "cargo-dylint", run: {|| update-rust-cargo-dylint $packages_dir $dry_run } }
     { name: "cargo-interactive-update", run: {|| update-rust-cargo-interactive $root $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
     { name: "cursor-cli", run: {|| update-cursor $packages_dir $dry_run } }
+    { name: "dylint-link", run: {|| update-rust-dylint-link $packages_dir $dry_run } }
     { name: "godot", run: {|| update-godot $packages_dir $dry_run } }
     { name: "gpg-suite", run: {|| update-gpg-suite $packages_dir $dry_run } }
     { name: "knope", run: {|| update-rust-knope $root $packages_dir $dry_run } }

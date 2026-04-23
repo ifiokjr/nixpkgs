@@ -15,10 +15,12 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [agave-2_2](#agave)                                   | <!-- {~v_agave_2_2:"{{ v.agave_2_2 }}"} -->2.2.20<!-- {/v_agave_2_2} -->                                             | linux (x64), macos       | Agave pinned to the latest 2.2.x release                                      |
 | [agave-2_1](#agave)                                   | <!-- {~v_agave_2_1:"{{ v.agave_2_1 }}"} -->2.1.21<!-- {/v_agave_2_1} -->                                             | linux (x64), macos       | Agave pinned to the latest 2.1.x release                                      |
 | [agave-2_0](#agave)                                   | <!-- {~v_agave_2_0:"{{ v.agave_2_0 }}"} -->2.0.25<!-- {/v_agave_2_0} -->                                             | linux (x64), macos       | Agave pinned to the latest 2.0.x release                                      |
+| [cargo-dylint](#cargo-dylint)                         | <!-- {~v_cargo_dylint:"{{ v.cargo_dylint }}"} -->5.0.0<!-- {/v_cargo_dylint} -->                                     | linux, macos             | A cargo extension for running Rust lints from dynamic libraries               |
 | [cargo-interactive-update](#cargo-interactive-update) | <!-- {~v_cargo_interactive_update:"{{ v.cargo_interactive_update }}"} -->0.6.2<!-- {/v_cargo_interactive_update} --> | linux, macos             | A cargo extension to update direct dependencies interactively                 |
 | [codex-cli](#codex-cli)                               | <!-- {~v_codex_cli:"{{ v.codex_cli }}"} -->0.123.0<!-- {/v_codex_cli} -->                                            | linux, macos             | OpenAI Codex CLI - AI coding assistant for the terminal                       |
 | [codexbar](#codexbar)                                 | <!-- {~v_codexbar:"{{ v.codexbar }}"} -->0.17.0<!-- {/v_codexbar} -->                                                | macos                    | macOS menu bar app showing AI coding tool usage and limits                    |
 | [cursor-cli](#cursor-cli)                             | <!-- {~v_cursor_cli:"{{ v.cursor_cli }}"} -->2026.04.17-787b533<!-- {/v_cursor_cli} -->                              | linux, macos             | Cursor AI CLI agent for terminal-based development                            |
+| [dylint-link](#dylint-link)                           | <!-- {~v_dylint_link:"{{ v.dylint_link }}"} -->5.0.0<!-- {/v_dylint_link} -->                                        | linux, macos             | A linker wrapper for building Dylint libraries                                |
 | [godot](#godot)                                       | <!-- {~v_godot:"{{ v.godot }}"} -->4.6.2-stable<!-- {/v_godot} -->                                                   | linux, macos             | Free and open-source 2D and 3D game engine                                    |
 | [gpg-suite](#gpg-suite)                               | <!-- {~v_gpg_suite:"{{ v.gpg_suite }}"} -->2023.3<!-- {/v_gpg_suite} -->                                             | macos                    | GPG Suite - encryption, signing, and key management                           |
 | [knope](#knope)                                       | <!-- {~v_knope:"{{ v.knope }}"} -->0.22.4<!-- {/v_knope} -->                                                         | linux, macos             | Automate common development tasks (changelogs, releases, versioning)          |
@@ -230,6 +232,14 @@ nix run github:ifiokjr/nixpkgs#agave-3_0 -- --version
 nix run github:ifiokjr/nixpkgs#agave-2_1 -- --version
 ```
 
+### cargo-dylint
+
+A cargo extension for running Rust lints from dynamic libraries. Built from source using `rustPlatform.buildRustPackage`.
+
+- **Binary:** `cargo-dylint`
+- **License:** Apache-2.0 OR MIT
+- **Source:** <https://github.com/trailofbits/dylint>
+
 ### cargo-interactive-update
 
 A cargo extension to update direct dependencies interactively. Built from source using `rustPlatform.buildRustPackage`.
@@ -261,6 +271,14 @@ Cursor AI CLI agent for terminal-based AI development workflows. Pre-built binar
 - **Binary:** `cursor-agent`
 - **License:** Proprietary
 - **Source:** <https://cursor.com/cli>
+
+### dylint-link
+
+A linker wrapper for building Dylint libraries. Built from source using `rustPlatform.buildRustPackage`.
+
+- **Binary:** `dylint-link`
+- **License:** Apache-2.0 OR MIT
+- **Source:** <https://github.com/trailofbits/dylint>
 
 ### godot
 
@@ -441,7 +459,7 @@ The script updates:
 - GitHub release packages (version + platform hashes)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
 - Rolling URL packages (`steam`)
-- Rust packages (`cargo-interactive-update`, `knope`, `mdt`, `pina`) including `cargoHash`
+- Rust packages built from source (`cargo-dylint`, `cargo-interactive-update`, `dylint-link`, `knope`, `mdt`, `pina`)
 
 ### binary packages (pre-built)
 
@@ -455,13 +473,25 @@ For packages that use pre-built binaries (`fetchurl`), update the version and se
 
 ### rust packages (built from source)
 
-For Rust packages (`knope`, `mdt`), you need to update both the source hash and the cargo hash:
+Rust packages in this repo use one of two patterns:
+
+- `cargoHash`: update both the source hash and the cargo hash
+- `cargoLock`: update the source hash and keep `Cargo.lock` in sync with upstream
+
+For `cargoHash` packages:
 
 1. Change the `version` string
 2. Set both `hash` and `cargoHash` to `lib.fakeHash`
 3. Run `nix build .#<name>` - first error gives the source hash
 4. Replace the source `hash`, build again - second error gives the cargo hash
 5. Replace `cargoHash`, build again to verify
+
+For `cargoLock` packages:
+
+1. Change the `version` string
+2. Set `hash` to `lib.fakeHash`
+3. Run `nix build .#<name>` - Nix will show the correct source hash
+4. Replace `hash`, then build again to verify
 
 ## license
 
