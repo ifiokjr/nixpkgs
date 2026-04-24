@@ -3,11 +3,10 @@
 #
 # The script covers:
 # - Flake inputs (nix flake update → flake.lock)
-# - Versioned GitHub release packages (agave, codex-cli, godot, ollama, surfpool, etc.)
-# 
+# - Versioned GitHub release packages (agave, codex-cli, godot, mdt, monochange, ollama, surfpool, etc.)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (steam)
-# - Rust packages built from source (cargo-dylint, cargo-interactive-update, dylint-link, knope, mdt, pina)
+# - Rust packages built from source (cargo-dylint, cargo-interactive-update, dylint-link, knope, pina)
 
 # ANSI helpers
 
@@ -955,11 +954,28 @@ def update-rust-knope [repo_root: string, packages_dir: string, dry_run: bool] {
   update-rust-package $repo_root $packages_dir "knope" $latest_version $rev "knope-dev" "knope" $dry_run
 }
 
-def update-rust-mdt [repo_root: string, packages_dir: string, dry_run: bool] {
-  let tag = (github-latest-tag "ifiokjr" "mdt")
-  let latest_version = ($tag | str replace --regex '^v' '')
-  let rev = $"v($latest_version)"
-  update-rust-package $repo_root $packages_dir "mdt" $latest_version $rev "ifiokjr" "mdt" $dry_run
+def update-mdt [packages_dir: string, dry_run: bool] {
+  let latest_version = (github-latest-tag "ifiokjr" "mdt" | str replace --regex '^v' '')
+  let file = $"($packages_dir)/mdt/package.nix"
+  let entries = [
+    { key: "aarch64-apple-darwin", url: $"https://github.com/ifiokjr/mdt/releases/download/v($latest_version)/mdt-aarch64-apple-darwin-v($latest_version).tar.gz" }
+    { key: "x86_64-apple-darwin", url: $"https://github.com/ifiokjr/mdt/releases/download/v($latest_version)/mdt-x86_64-apple-darwin-v($latest_version).tar.gz" }
+    { key: "aarch64-unknown-linux-musl", url: $"https://github.com/ifiokjr/mdt/releases/download/v($latest_version)/mdt-aarch64-unknown-linux-musl-v($latest_version).tar.gz" }
+    { key: "x86_64-unknown-linux-musl", url: $"https://github.com/ifiokjr/mdt/releases/download/v($latest_version)/mdt-x86_64-unknown-linux-musl-v($latest_version).tar.gz" }
+  ]
+  update-versioned-keyed-hashes "mdt" $file $latest_version $entries $dry_run
+}
+
+def update-monochange [packages_dir: string, dry_run: bool] {
+  let latest_version = (github-latest-tag "ifiokjr" "monochange" | str replace --regex '^v' '')
+  let file = $"($packages_dir)/monochange/package.nix"
+  let entries = [
+    { key: "aarch64-apple-darwin", url: $"https://github.com/ifiokjr/monochange/releases/download/v($latest_version)/monochange-aarch64-apple-darwin-v($latest_version).tar.gz" }
+    { key: "x86_64-apple-darwin", url: $"https://github.com/ifiokjr/monochange/releases/download/v($latest_version)/monochange-x86_64-apple-darwin-v($latest_version).tar.gz" }
+    { key: "aarch64-unknown-linux-musl", url: $"https://github.com/ifiokjr/monochange/releases/download/v($latest_version)/monochange-aarch64-unknown-linux-musl-v($latest_version).tar.gz" }
+    { key: "x86_64-unknown-linux-musl", url: $"https://github.com/ifiokjr/monochange/releases/download/v($latest_version)/monochange-x86_64-unknown-linux-musl-v($latest_version).tar.gz" }
+  ]
+  update-versioned-keyed-hashes "monochange" $file $latest_version $entries $dry_run
 }
 
 def update-rust-pina [repo_root: string, packages_dir: string, dry_run: bool] {
@@ -1090,7 +1106,8 @@ def main [
     { name: "godot", run: {|| update-godot $packages_dir $dry_run } }
     { name: "gpg-suite", run: {|| update-gpg-suite $packages_dir $dry_run } }
     { name: "knope", run: {|| update-rust-knope $root $packages_dir $dry_run } }
-    { name: "mdt", run: {|| update-rust-mdt $root $packages_dir $dry_run } }
+    { name: "mdt", run: {|| update-mdt $packages_dir $dry_run } }
+    { name: "monochange", run: {|| update-monochange $packages_dir $dry_run } }
     { name: "nordvpn", run: {|| update-nordvpn $packages_dir $dry_run } }
     { name: "ollama", run: {|| update-ollama $packages_dir $dry_run } }
     { name: "pina", run: {|| update-rust-pina $root $packages_dir $dry_run } }
