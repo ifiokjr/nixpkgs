@@ -6,35 +6,39 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 
 ## packages
 
-| Package                                               | Version                                                                                                              | Platforms                | Description                                                                   |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------ | ----------------------------------------------------------------------------- |
-| [agave](#agave)                                       | <!-- {~v_agave:"{{ v.agave }}"} -->3.1.13<!-- {/v_agave} -->                                                         | linux (x64), macos       | Solana validator client and CLI toolchain by Anza (latest 3.1.x track)        |
-| [agave-3_1](#agave)                                   | <!-- {~v_agave_3_1:"{{ v.agave }}"} -->3.1.13<!-- {/v_agave_3_1} -->                                                 | linux (x64), macos       | Agave pinned to the latest 3.1.x release                                      |
-| [agave-3_0](#agave)                                   | <!-- {~v_agave_3_0:"{{ v.agave_3_0 }}"} -->3.0.14<!-- {/v_agave_3_0} -->                                             | linux (x64), macos       | Agave pinned to the latest 3.0.x release                                      |
-| [agave-2_3](#agave)                                   | <!-- {~v_agave_2_3:"{{ v.agave_2_3 }}"} -->2.3.13<!-- {/v_agave_2_3} -->                                             | linux (x64), macos       | Agave pinned to the latest 2.3.x release                                      |
-| [agave-2_2](#agave)                                   | <!-- {~v_agave_2_2:"{{ v.agave_2_2 }}"} -->2.2.20<!-- {/v_agave_2_2} -->                                             | linux (x64), macos       | Agave pinned to the latest 2.2.x release                                      |
-| [agave-2_1](#agave)                                   | <!-- {~v_agave_2_1:"{{ v.agave_2_1 }}"} -->2.1.21<!-- {/v_agave_2_1} -->                                             | linux (x64), macos       | Agave pinned to the latest 2.1.x release                                      |
-| [agave-2_0](#agave)                                   | <!-- {~v_agave_2_0:"{{ v.agave_2_0 }}"} -->2.0.25<!-- {/v_agave_2_0} -->                                             | linux (x64), macos       | Agave pinned to the latest 2.0.x release                                      |
-| [cargo-clean-all](#cargo-clean-all)                   | <!-- {~v_cargo_clean_all:"{{ v.cargo_clean_all }}"} -->0.6.4<!-- {/v_cargo_clean_all} -->                            | linux, macos             | Recursively clean Cargo projects in a directory that match selected criteria  |
-| [cargo-dylint](#cargo-dylint)                         | <!-- {~v_cargo_dylint:"{{ v.cargo_dylint }}"} -->5.0.0<!-- {/v_cargo_dylint} -->                                     | linux, macos             | A cargo extension for running Rust lints from dynamic libraries               |
-| [cargo-interactive-update](#cargo-interactive-update) | <!-- {~v_cargo_interactive_update:"{{ v.cargo_interactive_update }}"} -->0.6.2<!-- {/v_cargo_interactive_update} --> | linux, macos             | A cargo extension to update direct dependencies interactively                 |
-| [codex-cli](#codex-cli)                               | <!-- {~v_codex_cli:"{{ v.codex_cli }}"} -->0.124.0<!-- {/v_codex_cli} -->                                            | linux, macos             | OpenAI Codex CLI - AI coding assistant for the terminal                       |
-| [codexbar](#codexbar)                                 | <!-- {~v_codexbar:"{{ v.codexbar }}"} -->0.17.0<!-- {/v_codexbar} -->                                                | macos                    | macOS menu bar app showing AI coding tool usage and limits                    |
-| [dylint-link](#dylint-link)                           | <!-- {~v_dylint_link:"{{ v.dylint_link }}"} -->5.0.0<!-- {/v_dylint_link} -->                                        | linux, macos             | A linker wrapper for building Dylint libraries                                |
-| [godot](#godot)                                       | <!-- {~v_godot:"{{ v.godot }}"} -->4.6.2-stable<!-- {/v_godot} -->                                                   | linux, macos             | Free and open-source 2D and 3D game engine                                    |
-| [gpg-suite](#gpg-suite)                               | <!-- {~v_gpg_suite:"{{ v.gpg_suite }}"} -->2023.3<!-- {/v_gpg_suite} -->                                             | macos                    | GPG Suite - encryption, signing, and key management                           |
-| [knope](#knope)                                       | <!-- {~v_knope:"{{ v.knope }}"} -->0.22.4<!-- {/v_knope} -->                                                         | linux, macos             | Automate common development tasks (changelogs, releases, versioning)          |
-| [mdt](#mdt)                                           | <!-- {~v_mdt:"{{ v.mdt }}"} -->0.7.0<!-- {/v_mdt} -->                                                                | linux, macos             | Update markdown content anywhere using comments as template tags              |
-| [monochange](#monochange)                             | <!-- {~v_monochange:"{{ v.monochange }}"} -->0.2.0<!-- {/v_monochange} -->                                           | linux, macos             | Manage versions and releases for your multiplatform monorepo                  |
-| [nordvpn](#nordvpn)                                   | <!-- {~v_nordvpn:"{{ v.nordvpn }}"} -->10.0.4<!-- {/v_nordvpn} -->                                                   | macos                    | NordVPN macOS client                                                          |
-| [ollama](#ollama)                                     | <!-- {~v_ollama:"{{ v.ollama }}"} -->0.21.2<!-- {/v_ollama} -->                                                      | linux, macos             | Run local LLMs with Ollama via CLI and desktop app                            |
-| [pina](#pina)                                         | <!-- {~v_pina:"{{ v.pina }}"} -->0.8.0<!-- {/v_pina} -->                                                             | linux, macos             | CLI for Pina, a performant Solana smart contract framework                    |
-| [pnpm-standalone](#pnpm-standalone)                   | <!-- {~v_pnpm_standalone:"{{ v.pnpm_standalone }}"} --><!-- {/v_pnpm_standalone} -->                                 | linux, macos             | Fast, disk-space efficient package manager (no Node.js dependency)            |
-| [racket-minimal](#racket-minimal)                     | <!-- {~v_racket_minimal:"{{ v.racket_minimal }}"} -->9.1<!-- {/v_racket_minimal} -->                                 | linux, macos             | Racket programming language (minimal distribution, pre-built)                 |
-| [steam](#steam)                                       | <!-- {~v_steam:"{{ v.steam }}"} -->4.0<!-- {/v_steam} -->                                                            | macos                    | Steam video game digital distribution service                                 |
-| [surfpool](#surfpool)                                 | <!-- {~v_surfpool:"{{ v.surfpool }}"} -->1.2.0<!-- {/v_surfpool} -->                                                 | linux (x64), macos       | A drop-in replacement for solana-test-validator with mainnet state simulation |
-| [wait-for-them](#wait-for-them)                       | <!-- {~v_wait_for_them:"{{ v.wait_for_them }}"} -->0.5.1<!-- {/v_wait_for_them} -->                                  | linux (x64), macos (x64) | Wait for TCP/HTTP endpoints to be ready before proceeding                     |
-| [zoom](#zoom)                                         | <!-- {~v_zoom:"{{ v.zoom }}"} -->7.0.0.77593<!-- {/v_zoom} -->                                                       | macos                    | Zoom video conferencing client                                                |
+| Package                                               | Version                                                                                                              | Platforms                  | Description                                                                   |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------------------------- |
+| [agave](#agave)                                       | <!-- {~v_agave:"{{ v.agave }}"} -->3.1.13<!-- {/v_agave} -->                                                         | linux (x64), macos         | Solana validator client and CLI toolchain by Anza (latest 3.1.x track)        |
+| [agave-4_0](#agave)                                   | <!-- {~v_agave_4_0:"{{ v.agave_4_0 }}"} -->4.0.0-beta.7<!-- {/v_agave_4_0} -->                                       | linux (x64), macos         | Agave pinned to the latest 4.0.x release                                      |
+| [agave-3_1](#agave)                                   | <!-- {~v_agave_3_1:"{{ v.agave }}"} -->3.1.13<!-- {/v_agave_3_1} -->                                                 | linux (x64), macos         | Agave pinned to the latest 3.1.x release                                      |
+| [agave-3_0](#agave)                                   | <!-- {~v_agave_3_0:"{{ v.agave_3_0 }}"} -->3.0.14<!-- {/v_agave_3_0} -->                                             | linux (x64), macos         | Agave pinned to the latest 3.0.x release                                      |
+| [agave-2_3](#agave)                                   | <!-- {~v_agave_2_3:"{{ v.agave_2_3 }}"} -->2.3.13<!-- {/v_agave_2_3} -->                                             | linux (x64), macos         | Agave pinned to the latest 2.3.x release                                      |
+| [agave-2_2](#agave)                                   | <!-- {~v_agave_2_2:"{{ v.agave_2_2 }}"} -->2.2.20<!-- {/v_agave_2_2} -->                                             | linux (x64), macos         | Agave pinned to the latest 2.2.x release                                      |
+| [agave-2_1](#agave)                                   | <!-- {~v_agave_2_1:"{{ v.agave_2_1 }}"} -->2.1.21<!-- {/v_agave_2_1} -->                                             | linux (x64), macos         | Agave pinned to the latest 2.1.x release                                      |
+| [agave-2_0](#agave)                                   | <!-- {~v_agave_2_0:"{{ v.agave_2_0 }}"} -->2.0.25<!-- {/v_agave_2_0} -->                                             | linux (x64), macos         | Agave pinned to the latest 2.0.x release                                      |
+| [cargo-clean-all](#cargo-clean-all)                   | <!-- {~v_cargo_clean_all:"{{ v.cargo_clean_all }}"} -->0.6.4<!-- {/v_cargo_clean_all} -->                            | linux, macos               | Recursively clean Cargo projects in a directory that match selected criteria  |
+| [cargo-dylint](#cargo-dylint)                         | <!-- {~v_cargo_dylint:"{{ v.cargo_dylint }}"} -->5.0.0<!-- {/v_cargo_dylint} -->                                     | linux, macos               | A cargo extension for running Rust lints from dynamic libraries               |
+| [cargo-interactive-update](#cargo-interactive-update) | <!-- {~v_cargo_interactive_update:"{{ v.cargo_interactive_update }}"} -->0.6.2<!-- {/v_cargo_interactive_update} --> | linux, macos               | A cargo extension to update direct dependencies interactively                 |
+| [codex-cli](#codex-cli)                               | <!-- {~v_codex_cli:"{{ v.codex_cli }}"} -->0.124.0<!-- {/v_codex_cli} -->                                            | linux, macos               | OpenAI Codex CLI - AI coding assistant for the terminal                       |
+| [codexbar](#codexbar)                                 | <!-- {~v_codexbar:"{{ v.codexbar }}"} -->0.17.0<!-- {/v_codexbar} -->                                                | macos                      | macOS menu bar app showing AI coding tool usage and limits                    |
+| [dylint-link](#dylint-link)                           | <!-- {~v_dylint_link:"{{ v.dylint_link }}"} -->5.0.0<!-- {/v_dylint_link} -->                                        | linux, macos               | A linker wrapper for building Dylint libraries                                |
+| [godot](#godot)                                       | <!-- {~v_godot:"{{ v.godot }}"} -->4.6.2-stable<!-- {/v_godot} -->                                                   | linux, macos               | Free and open-source 2D and 3D game engine                                    |
+| [gpg-suite](#gpg-suite)                               | <!-- {~v_gpg_suite:"{{ v.gpg_suite }}"} -->2023.3<!-- {/v_gpg_suite} -->                                             | macos                      | GPG Suite - encryption, signing, and key management                           |
+| [kani](#kani)                                         | <!-- {~v_kani:"{{ v.kani }}"} -->0.67.0<!-- {/v_kani} -->                                                            | linux, macos               | Bit-precise model checker for Rust                                            |
+| [knope](#knope)                                       | <!-- {~v_knope:"{{ v.knope }}"} -->0.22.4<!-- {/v_knope} -->                                                         | linux, macos               | Automate common development tasks (changelogs, releases, versioning)          |
+| [mdt](#mdt)                                           | <!-- {~v_mdt:"{{ v.mdt }}"} -->0.7.0<!-- {/v_mdt} -->                                                                | linux, macos               | Update markdown content anywhere using comments as template tags              |
+| [monochange](#monochange)                             | <!-- {~v_monochange:"{{ v.monochange }}"} -->0.2.0<!-- {/v_monochange} -->                                           | linux, macos               | Manage versions and releases for your multiplatform monorepo                  |
+| [nordvpn](#nordvpn)                                   | <!-- {~v_nordvpn:"{{ v.nordvpn }}"} -->10.0.4<!-- {/v_nordvpn} -->                                                   | macos                      | NordVPN macOS client                                                          |
+| [ollama](#ollama)                                     | <!-- {~v_ollama:"{{ v.ollama }}"} -->0.21.2<!-- {/v_ollama} -->                                                      | linux, macos               | Run local LLMs with Ollama via CLI and desktop app                            |
+| [pina](#pina)                                         | <!-- {~v_pina:"{{ v.pina }}"} -->0.8.0<!-- {/v_pina} -->                                                             | linux, macos               | CLI for Pina, a performant Solana smart contract framework                    |
+| [pnpm-standalone](#pnpm-standalone)                   | <!-- {~v_pnpm_standalone:"{{ v.pnpm_standalone }}"} --><!-- {/v_pnpm_standalone} -->                                 | linux, macos               | Fast, disk-space efficient package manager (no Node.js dependency)            |
+| [racket-minimal](#racket-minimal)                     | <!-- {~v_racket_minimal:"{{ v.racket_minimal }}"} -->9.1<!-- {/v_racket_minimal} -->                                 | linux, macos               | Racket programming language (minimal distribution, pre-built)                 |
+| [sbpf-linker](#sbpf-linker)                           | <!-- {~v_sbpf_linker:"{{ v.sbpf_linker }}"} -->0.1.8<!-- {/v_sbpf_linker} -->                                        | macos                      | Upstream BPF linker for SBPF V0 programs                                      |
+| [solana-verifiable-build](#solana-verifiable-build)   | <!-- {~v_solana_verifiable_build:"{{ v.solana_verifiable_build }}"} -->0.4.15<!-- {/v_solana_verifiable_build} -->   | linux (x64), macos (arm64) | CLI tool for building verifiable Solana programs                              |
+| [steam](#steam)                                       | <!-- {~v_steam:"{{ v.steam }}"} -->4.0<!-- {/v_steam} -->                                                            | macos                      | Steam video game digital distribution service                                 |
+| [surfpool](#surfpool)                                 | <!-- {~v_surfpool:"{{ v.surfpool }}"} -->1.2.0<!-- {/v_surfpool} -->                                                 | linux (x64), macos         | A drop-in replacement for solana-test-validator with mainnet state simulation |
+| [wait-for-them](#wait-for-them)                       | <!-- {~v_wait_for_them:"{{ v.wait_for_them }}"} -->0.5.1<!-- {/v_wait_for_them} -->                                  | linux (x64), macos (x64)   | Wait for TCP/HTTP endpoints to be ready before proceeding                     |
+| [zoom](#zoom)                                         | <!-- {~v_zoom:"{{ v.zoom }}"} -->7.0.0.77593<!-- {/v_zoom} -->                                                       | macos                      | Zoom video conferencing client                                                |
 
 ## usage
 
@@ -300,6 +304,15 @@ GPG Suite for macOS providing encryption, signing, and key management. Includes 
 - **License:** GPL-3.0
 - **Source:** <https://gpgtools.org/>
 
+### kani
+
+Bit-precise model checker for Rust. Installs the official upstream release bundle and provides both `kani` and `cargo-kani` commands.
+
+- **Binary:** `kani`, `cargo-kani`
+- **License:** Apache-2.0, MIT
+- **Source:** <https://github.com/model-checking/kani>
+- **Homepage:** <https://model-checking.github.io/kani/>
+
 ### knope
 
 A developer workflow automation tool. Automates changelogs, releases, and versioning based on conventional commits. Built from source using `rustPlatform.buildRustPackage`.
@@ -425,6 +438,22 @@ Minimal Racket distribution using official pre-built binaries. The upstream `rac
 - **License:** Apache-2.0, MIT
 - **Source:** <https://racket-lang.org/>
 
+### sbpf-linker
+
+Upstream BPF linker for SBPF V0 programs. Built from source using `rustPlatform.buildRustPackage` with LLVM 22.
+
+- **Binary:** `sbpf-linker`
+- **License:** MIT
+- **Source:** <https://github.com/blueshift-gg/sbpf-linker>
+
+### solana-verifiable-build
+
+CLI tool for building verifiable Solana programs. Installs the upstream `solana-verify` binary from GitHub releases.
+
+- **Binary:** `solana-verify`
+- **License:** MIT
+- **Source:** <https://github.com/solana-foundation/solana-verifiable-build>
+
 ### steam
 
 Steam video game digital distribution service for macOS.
@@ -472,7 +501,7 @@ The script updates:
 - GitHub release packages (version + platform hashes)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
 - Rolling URL packages (`steam`)
-- Rust packages built from source (`cargo-clean-all`, `cargo-dylint`, `cargo-interactive-update`, `dylint-link`, `knope`, `pina`)
+- Rust packages built from source (`cargo-clean-all`, `cargo-dylint`, `cargo-interactive-update`, `dylint-link`, `knope`, `pina`, `sbpf-linker`)
 
 ### binary packages (pre-built)
 

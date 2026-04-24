@@ -3,10 +3,10 @@
 #
 # The script covers:
 # - Flake inputs (nix flake update → flake.lock)
-# - Versioned GitHub release packages (agave, codex-cli, godot, mdt, monochange, ollama, surfpool, etc.)
+# - Versioned GitHub release packages (agave, codex-cli, codexbar, godot, kani, mdt, monochange, ollama, solana-verifiable-build, surfpool, etc.)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (steam)
-# - Rust packages built from source (cargo-clean-all, cargo-dylint, cargo-interactive-update, dylint-link, knope, pina)
+# - Rust packages built from source (cargo-clean-all, cargo-dylint, cargo-interactive-update, dylint-link, knope, pina, sbpf-linker)
 
 # ANSI helpers
 
@@ -221,6 +221,26 @@ def github-latest-tag [owner: string, repo: string] {
   }
 
   $fallback
+}
+
+def github-head-rev [owner: string, repo: string, branch: string] {
+  try {
+    github-api-get $"https://api.github.com/repos/($owner)/($repo)/commits/($branch)" | get sha
+  } catch {
+    fail $"Failed to fetch head commit for ($owner)/($repo)@($branch)"
+  }
+}
+
+def parse-rev [content: string] {
+  parse-capture $content 'rev = "([^"]+)"'
+}
+
+def replace-rev [content: string, new_rev: string] {
+  let current = (parse-rev $content)
+  if ($current | is-empty) {
+    fail 'Could not find a `rev = "..."` entry'
+  }
+  $content | str replace $"rev = "($current)"" $"rev = "($new_rev)""
 }
 
 def github-latest-tag-with-prefix [owner: string, repo: string, prefix: string] {
@@ -652,6 +672,13 @@ def update-codex [packages_dir: string, dry_run: bool] {
 }
 
 
+def update-codexbar [packages_dir: string, dry_run: bool] {
+  let latest_version = (github-latest-tag "steipete" "CodexBar" | str replace --regex '^v' '')
+  let file = $"($packages_dir)/codexbar/package.nix"
+  let url = $"https://github.com/steipete/CodexBar/releases/download/v($latest_version)/CodexBar-($latest_version).zip"
+  update-versioned-single-hash "codexbar" $file $latest_version $url $dry_run
+}
+
 def update-godot [packages_dir: string, dry_run: bool] {
   let latest_version = (godot-latest-stable-tag)
   let file = $"($packages_dir)/godot/package.nix"
@@ -814,6 +841,28 @@ def update-gpg-suite [packages_dir: string, dry_run: bool] {
   let file = $"($packages_dir)/gpg-suite/package.nix"
   let url = $"https://releases.gpgtools.org/GPG_Suite-($latest_version).dmg"
   update-versioned-single-hash "gpg-suite" $file $latest_version $url $dry_run
+}
+
+def update-kani [packages_dir: string, dry_run: bool] {
+  let latest_version = (github-latest-tag "model-checking" "kani" | str replace "kani-" "")
+  let file = $"($packages_dir)/kani/package.nix"
+  let entries = [
+    { key: "aarch64-apple-darwin", url: $"https://github.com/model-checking/kani/releases/download/kani-($latest_version)/kani-($latest_version)-aarch64-apple-darwin.tar.gz" }
+    { key: "x86_64-apple-darwin", url: $"https://github.com/model-checking/kani/releases/download/kani-($latest_version)/kani-($latest_version)-x86_64-apple-darwin.tar.gz" }
+    { key: "aarch64-unknown-linux-gnu", url: $"https://github.com/model-checking/kani/releases/download/kani-($latest_version)/kani-($latest_version)-aarch64-unknown-linux-gnu.tar.gz" }
+    { key: "x86_64-unknown-linux-gnu", url: $"https://github.com/model-checking/kani/releases/download/kani-($latest_version)/kani-($latest_version)-x86_64-unknown-linux-gnu.tar.gz" }
+  ]
+  update-versioned-keyed-hashes "kani" $file $latest_version $entries $dry_run
+}
+
+def update-solana-verifiable-build [packages_dir: string, dry_run: bool] {
+  let latest_version = (github-latest-tag "solana-foundation" "solana-verifiable-build" | str replace --regex '^v' '')
+  let file = $"($packages_dir)/solana-verifiable-build/package.nix"
+  let entries = [
+    { key: "linux", url: $"https://github.com/solana-foundation/solana-verifiable-build/releases/download/v($latest_version)/solana-verify-($latest_version)-linux" }
+    { key: "macos", url: $"https://github.com/solana-foundation/solana-verifiable-build/releases/download/v($latest_version)/solana-verify-($latest_version)-macos" }
+  ]
+  update-versioned-keyed-hashes "solana-verifiable-build" $file $latest_version $entries $dry_run
 }
 
 def update-nordvpn [packages_dir: string, dry_run: bool] {
@@ -992,6 +1041,73 @@ def update-rust-pina [repo_root: string, packages_dir: string, dry_run: bool] {
   update-rust-package $repo_root $packages_dir "pina" $latest_version $rev "pina-rs" "pina" $dry_run
 }
 
+def update-rust-sbpf-linker [repo_root: string, packages_dir: string, dry_run: bool] {
+  let package = "sbpf-linker"
+  let file = $"($packages_dir)/($package)/package.nix"
+  let lock_file = $"($packages_dir)/($package)/Cargo.lock"
+  let patch_file = $"($packages_dir)/($package)/Cargo.lock.patch"
+  let original = (open $file --raw)
+  let current_version = (parse-capture $original 'version = "([^"]+)"')
+  let current_rev = (parse-rev $original)
+  let branch = "master"
+  let latest_rev = (github-head-rev "blueshift-gg" "sbpf-linker" $branch)
+  let manifest = (^curl -fsSL $"https://raw.githubusercontent.com/blueshift-gg/sbpf-linker/($branch)/Cargo.toml" | str trim)
+  let latest_version = (parse-capture $manifest 'version = "([^"]+)"')
+
+  if $current_version == $latest_version and $current_rev == $latest_rev {
+    log-ok $package $"up to date \(v($current_version) @ ($current_rev | str substring 0..7)\)"
+    return false
+  }
+
+  log-update $package $"v($current_version) → v($latest_version)"
+  if $dry_run {
+    return true
+  }
+
+  let source_url = $"https://github.com/blueshift-gg/sbpf-linker/archive/($latest_rev).tar.gz"
+  let source_hash = (prefetch-sri-unpack $source_url)
+  let staged = (
+    set-cargo-hash-fake
+      (set-src-hash
+        (replace-rev
+          (replace-version $original $latest_version)
+          $latest_rev)
+        $source_hash)
+  )
+
+  try {
+    let tmp_dir = (^mktemp -d | str trim)
+    ^sh -c $"curl -fsSL ($source_url) | tar -xzf - -C ($tmp_dir)"
+    do {
+      cd $"($tmp_dir)/sbpf-linker-($latest_rev)"
+      ^cargo generate-lockfile
+    }
+
+    let lock_text = (open $"($tmp_dir)/sbpf-linker-($latest_rev)/Cargo.lock" --raw)
+    $lock_text | save -f $lock_file
+
+    let patch_tmp = (^mktemp -d | str trim)
+    mkdir $"($patch_tmp)/a" $"($patch_tmp)/b"
+    '' | save -f $"($patch_tmp)/a/Cargo.lock"
+    $lock_text | save -f $"($patch_tmp)/b/Cargo.lock"
+    let diff = (do {
+      cd $patch_tmp
+      ^git diff --no-index --no-prefix a/Cargo.lock b/Cargo.lock | complete
+    })
+    $diff.stdout | save -f $patch_file
+
+    $staged | save -f $file
+    let cargo_hash = (derive-cargo-hash $repo_root $package)
+    let final_content = (set-cargo-hash $staged $cargo_hash)
+    $final_content | save -f $file
+    log-ok $package "updated"
+    true
+  } catch {|err|
+    $original | save -f $file
+    fail $"build failed, restored original \(($err.msg)\)"
+  }
+}
+
 def update-flake-lock [repo_root: string, dry_run: bool] {
   let lock_file = $"($repo_root)/flake.lock"
   if not ($lock_file | path exists) {
@@ -1110,9 +1226,11 @@ def main [
     { name: "cargo-dylint", run: {|| update-rust-cargo-dylint $packages_dir $dry_run } }
     { name: "cargo-interactive-update", run: {|| update-rust-cargo-interactive $root $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
+    { name: "codexbar", run: {|| update-codexbar $packages_dir $dry_run } }
     { name: "dylint-link", run: {|| update-rust-dylint-link $packages_dir $dry_run } }
     { name: "godot", run: {|| update-godot $packages_dir $dry_run } }
     { name: "gpg-suite", run: {|| update-gpg-suite $packages_dir $dry_run } }
+    { name: "kani", run: {|| update-kani $packages_dir $dry_run } }
     { name: "knope", run: {|| update-rust-knope $root $packages_dir $dry_run } }
     { name: "mdt", run: {|| update-mdt $packages_dir $dry_run } }
     { name: "monochange", run: {|| update-monochange $packages_dir $dry_run } }
@@ -1123,6 +1241,8 @@ def main [
     { name: "pnpm-10", run: {|| update-pnpm-10 $packages_dir $dry_run } }
     { name: "pnpm-11", run: {|| update-pnpm-11 $packages_dir $dry_run } }
     { name: "racket-minimal", run: {|| update-racket $packages_dir $dry_run } }
+    { name: "sbpf-linker", run: {|| update-rust-sbpf-linker $root $packages_dir $dry_run } }
+    { name: "solana-verifiable-build", run: {|| update-solana-verifiable-build $packages_dir $dry_run } }
     { name: "steam", run: {|| update-rolling-steam $packages_dir $dry_run } }
     { name: "surfpool", run: {|| update-surfpool $packages_dir $dry_run } }
     { name: "wait-for-them", run: {|| update-wait-for-them $packages_dir $dry_run } }

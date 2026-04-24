@@ -30,6 +30,7 @@
         dylint-link = final.callPackage ./packages/dylint-link/package.nix { };
         godot = final.callPackage ./packages/godot/package.nix { };
         gpg-suite = final.callPackage ./packages/gpg-suite/package.nix { };
+        kani = final.callPackage ./packages/kani/package.nix { };
         knope = final.callPackage ./packages/knope/package.nix { };
         mdt = final.callPackage ./packages/mdt/package.nix { };
         monochange = final.callPackage ./packages/monochange/package.nix { };
@@ -41,6 +42,8 @@
         pnpm-11 = final.callPackage ./packages/pnpm-11/package.nix { };
         pnpm-standalone = final.callPackage ./packages/pnpm-standalone/package.nix { inherit pnpm; };
         racket-minimal = final.callPackage ./packages/racket-minimal/package.nix { };
+        sbpf-linker = final.callPackage ./packages/sbpf-linker/package.nix { };
+        solana-verifiable-build = final.callPackage ./packages/solana-verifiable-build/package.nix { };
         steam = final.callPackage ./packages/steam/package.nix { };
         surfpool = final.callPackage ./packages/surfpool/package.nix { };
         wait-for-them = final.callPackage ./packages/wait-for-them/package.nix { };
@@ -73,6 +76,7 @@
           dylint-link = pkgs.callPackage ./packages/dylint-link/package.nix { };
           godot = pkgs.callPackage ./packages/godot/package.nix { };
           gpg-suite = pkgs.callPackage ./packages/gpg-suite/package.nix { };
+          kani = pkgs.callPackage ./packages/kani/package.nix { };
           knope = pkgs.callPackage ./packages/knope/package.nix { };
           mdt = pkgs.callPackage ./packages/mdt/package.nix { };
           monochange = pkgs.callPackage ./packages/monochange/package.nix { };
@@ -84,6 +88,8 @@
           pnpm-11 = pkgs.callPackage ./packages/pnpm-11/package.nix { };
           pnpm-standalone = pkgs.callPackage ./packages/pnpm-standalone/package.nix { inherit pnpm; };
           racket-minimal = pkgs.callPackage ./packages/racket-minimal/package.nix { };
+          sbpf-linker = pkgs.callPackage ./packages/sbpf-linker/package.nix { };
+          solana-verifiable-build = pkgs.callPackage ./packages/solana-verifiable-build/package.nix { };
           steam = pkgs.callPackage ./packages/steam/package.nix { };
           surfpool = pkgs.callPackage ./packages/surfpool/package.nix { };
           wait-for-them = pkgs.callPackage ./packages/wait-for-them/package.nix { };
