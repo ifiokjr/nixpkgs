@@ -15,6 +15,7 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [agave-2_2](#agave)                                   | <!-- {~v_agave_2_2:"{{ v.agave_2_2 }}"} -->2.2.20<!-- {/v_agave_2_2} -->                                             | linux (x64), macos       | Agave pinned to the latest 2.2.x release                                      |
 | [agave-2_1](#agave)                                   | <!-- {~v_agave_2_1:"{{ v.agave_2_1 }}"} -->2.1.21<!-- {/v_agave_2_1} -->                                             | linux (x64), macos       | Agave pinned to the latest 2.1.x release                                      |
 | [agave-2_0](#agave)                                   | <!-- {~v_agave_2_0:"{{ v.agave_2_0 }}"} -->2.0.25<!-- {/v_agave_2_0} -->                                             | linux (x64), macos       | Agave pinned to the latest 2.0.x release                                      |
+| [cargo-clean-all](#cargo-clean-all)                   | <!-- {~v_cargo_clean_all:"{{ v.cargo_clean_all }}"} -->0.6.4<!-- {/v_cargo_clean_all} -->                            | linux, macos             | Recursively clean Cargo projects in a directory that match selected criteria  |
 | [cargo-dylint](#cargo-dylint)                         | <!-- {~v_cargo_dylint:"{{ v.cargo_dylint }}"} -->5.0.0<!-- {/v_cargo_dylint} -->                                     | linux, macos             | A cargo extension for running Rust lints from dynamic libraries               |
 | [cargo-interactive-update](#cargo-interactive-update) | <!-- {~v_cargo_interactive_update:"{{ v.cargo_interactive_update }}"} -->0.6.2<!-- {/v_cargo_interactive_update} --> | linux, macos             | A cargo extension to update direct dependencies interactively                 |
 | [codex-cli](#codex-cli)                               | <!-- {~v_codex_cli:"{{ v.codex_cli }}"} -->0.124.0<!-- {/v_codex_cli} -->                                            | linux, macos             | OpenAI Codex CLI - AI coding assistant for the terminal                       |
@@ -234,6 +235,14 @@ nix run github:ifiokjr/nixpkgs#agave -- --version
 nix run github:ifiokjr/nixpkgs#agave-3_0 -- --version
 nix run github:ifiokjr/nixpkgs#agave-2_1 -- --version
 ```
+
+### cargo-clean-all
+
+Recursively clean Cargo projects in a directory based on filters like project age, target size, ignored paths, and interactive selection. Built from source using `rustPlatform.buildRustPackage`.
+
+- **Binary:** `cargo-clean-all`
+- **License:** MIT
+- **Source:** <https://github.com/dnlmlr/cargo-clean-all>
 
 ### cargo-dylint
 
@@ -463,7 +472,7 @@ The script updates:
 - GitHub release packages (version + platform hashes)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
 - Rolling URL packages (`steam`)
-- Rust packages built from source (`cargo-dylint`, `cargo-interactive-update`, `dylint-link`, `knope`, `pina`)
+- Rust packages built from source (`cargo-clean-all`, `cargo-dylint`, `cargo-interactive-update`, `dylint-link`, `knope`, `pina`)
 
 ### binary packages (pre-built)
 
