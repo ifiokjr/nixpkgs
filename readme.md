@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/ifiokjr/nixpkgs/actions/workflows/ci.yml/badge.svg)](https://github.com/ifiokjr/nixpkgs/actions/workflows/ci.yml) [![Nix Flake](https://img.shields.io/badge/nix-flake-blue?logo=nixos)](https://nixos.wiki/wiki/Flakes) [![License](https://img.shields.io/github/license/ifiokjr/nixpkgs)](https://github.com/ifiokjr/nixpkgs/blob/main/LICENSE)
 
-Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/nixpkgs). Includes macOS GUI applications, standalone CLI tools, and Rust crates built from source.
+Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/nixpkgs). Includes macOS GUI applications, standalone CLI tools, pre-built release packages, and Rust crates built from source.
 
 ## packages
 
@@ -24,6 +24,7 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [gpg-suite](#gpg-suite)                               | <!-- {~v_gpg_suite:"{{ v.gpg_suite }}"} -->2023.3<!-- {/v_gpg_suite} -->                                             | macos                    | GPG Suite - encryption, signing, and key management                           |
 | [knope](#knope)                                       | <!-- {~v_knope:"{{ v.knope }}"} -->0.22.4<!-- {/v_knope} -->                                                         | linux, macos             | Automate common development tasks (changelogs, releases, versioning)          |
 | [mdt](#mdt)                                           | <!-- {~v_mdt:"{{ v.mdt }}"} -->0.7.0<!-- {/v_mdt} -->                                                                | linux, macos             | Update markdown content anywhere using comments as template tags              |
+| [monochange](#monochange)                             | <!-- {~v_monochange:"{{ v.monochange }}"} -->0.2.0<!-- {/v_monochange} -->                                           | linux, macos             | Manage versions and releases for your multiplatform monorepo                  |
 | [nordvpn](#nordvpn)                                   | <!-- {~v_nordvpn:"{{ v.nordvpn }}"} -->10.0.4<!-- {/v_nordvpn} -->                                                   | macos                    | NordVPN macOS client                                                          |
 | [ollama](#ollama)                                     | <!-- {~v_ollama:"{{ v.ollama }}"} -->0.21.2<!-- {/v_ollama} -->                                                      | linux, macos             | Run local LLMs with Ollama via CLI and desktop app                            |
 | [pina](#pina)                                         | <!-- {~v_pina:"{{ v.pina }}"} -->0.8.0<!-- {/v_pina} -->                                                             | linux, macos             | CLI for Pina, a performant Solana smart contract framework                    |
@@ -41,6 +42,7 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 ```bash
 nix run github:ifiokjr/nixpkgs#knope
 nix run github:ifiokjr/nixpkgs#mdt
+nix run github:ifiokjr/nixpkgs#monochange
 nix run github:ifiokjr/nixpkgs#pnpm-standalone
 nix run github:ifiokjr/nixpkgs#codex-cli
 nix run github:ifiokjr/nixpkgs#godot
@@ -68,6 +70,7 @@ nix run github:ifiokjr/nixpkgs#ollama
         packages = [
           extra.knope
           extra.mdt
+          extra.monochange
           extra.pnpm-standalone
           extra.codex-cli
         ];
@@ -101,6 +104,7 @@ The overlay adds all packages into your nixpkgs set so you can reference them as
         packages = [
           pkgs.knope
           pkgs.mdt
+          pkgs.monochange
           pkgs.pnpm-standalone
         ];
       };
@@ -130,6 +134,7 @@ in
   packages = [
     extra.knope
     extra.mdt
+    extra.monochange
     extra.pnpm-standalone
   ];
 }
@@ -297,11 +302,20 @@ A developer workflow automation tool. Automates changelogs, releases, and versio
 
 ### mdt
 
-CLI tool that updates markdown content anywhere using comments as template tags. Built from source using `rustPlatform.buildRustPackage`.
+CLI tool that updates markdown content anywhere using comments as template tags. Pre-built binary from GitHub releases.
 
 - **Binary:** `mdt`
 - **License:** Unlicense
 - **Source:** <https://github.com/ifiokjr/mdt>
+
+### monochange
+
+Manage versions and releases for your multiplatform, multilanguage monorepo. Pre-built binary from GitHub releases.
+
+- **Binary:** `monochange`, `mc`
+- **License:** Unlicense
+- **Source:** <https://github.com/ifiokjr/monochange>
+- **Homepage:** <https://ifiokjr.github.io/monochange/>
 
 ### nordvpn
 
@@ -449,7 +463,7 @@ The script updates:
 - GitHub release packages (version + platform hashes)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
 - Rolling URL packages (`steam`)
-- Rust packages built from source (`cargo-dylint`, `cargo-interactive-update`, `dylint-link`, `knope`, `mdt`, `pina`)
+- Rust packages built from source (`cargo-dylint`, `cargo-interactive-update`, `dylint-link`, `knope`, `pina`)
 
 ### binary packages (pre-built)
 

@@ -31,6 +31,7 @@
         gpg-suite = final.callPackage ./packages/gpg-suite/package.nix { };
         knope = final.callPackage ./packages/knope/package.nix { };
         mdt = final.callPackage ./packages/mdt/package.nix { };
+        monochange = final.callPackage ./packages/monochange/package.nix { };
         nordvpn = final.callPackage ./packages/nordvpn/package.nix { };
         ollama = final.callPackage ./packages/ollama/package.nix { };
         pina = final.callPackage ./packages/pina/package.nix { };
@@ -72,6 +73,7 @@
           gpg-suite = pkgs.callPackage ./packages/gpg-suite/package.nix { };
           knope = pkgs.callPackage ./packages/knope/package.nix { };
           mdt = pkgs.callPackage ./packages/mdt/package.nix { };
+          monochange = pkgs.callPackage ./packages/monochange/package.nix { };
           nordvpn = pkgs.callPackage ./packages/nordvpn/package.nix { };
           ollama = pkgs.callPackage ./packages/ollama/package.nix { };
           pina = pkgs.callPackage ./packages/pina/package.nix { };
