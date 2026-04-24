@@ -6,7 +6,7 @@
 # - Versioned GitHub release packages (agave, codex-cli, godot, mdt, monochange, ollama, surfpool, etc.)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (steam)
-# - Rust packages built from source (cargo-dylint, cargo-interactive-update, dylint-link, knope, pina)
+# - Rust packages built from source (cargo-clean-all, cargo-dylint, cargo-interactive-update, dylint-link, knope, pina)
 
 # ANSI helpers
 
@@ -930,6 +930,13 @@ def update-rust-cargo-dylint [packages_dir: string, dry_run: bool] {
   update-rust-cargo-lock-package $packages_dir "cargo-dylint" $latest_version $rev "trailofbits" "dylint" $dry_run
 }
 
+def update-rust-cargo-clean-all [repo_root: string, packages_dir: string, dry_run: bool] {
+  let tag = (github-latest-tag "dnlmlr" "cargo-clean-all")
+  let latest_version = ($tag | str replace --regex '^v' '')
+  let rev = $"v($latest_version)"
+  update-rust-package $repo_root $packages_dir "cargo-clean-all" $latest_version $rev "dnlmlr" "cargo-clean-all" $dry_run
+}
+
 def update-rust-cargo-interactive [repo_root: string, packages_dir: string, dry_run: bool] {
   let tag = (github-latest-tag "benjeau" "cargo-interactive-update")
   let latest_version = ($tag | str replace --regex '^v' '')
@@ -1099,6 +1106,7 @@ def main [
     { name: "agave-3_0", run: {|| update-agave-3-0 $packages_dir $dry_run } }
     { name: "agave-3_1", run: {|| update-agave-3-1 $packages_dir $dry_run } }
     { name: "agave-4_0", run: {|| update-agave-4-0 $packages_dir $dry_run } }
+    { name: "cargo-clean-all", run: {|| update-rust-cargo-clean-all $root $packages_dir $dry_run } }
     { name: "cargo-dylint", run: {|| update-rust-cargo-dylint $packages_dir $dry_run } }
     { name: "cargo-interactive-update", run: {|| update-rust-cargo-interactive $root $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
