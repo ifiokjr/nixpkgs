@@ -27,7 +27,7 @@ v = { command = "./scripts/versions", format = "json", watch = [
 	"packages/pnpm-11/package.nix",
 	"packages/racket-minimal/package.nix",
 	"packages/sbpf-linker/package.nix",
-	"packages/solana-verifiable-build/package.nix",
+	"packages/solana-verify/package.nix",
 	"packages/steam/package.nix",
 	"packages/surfpool/package.nix",
 	"packages/wait-for-them/package.nix",

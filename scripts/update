@@ -3,7 +3,7 @@
 #
 # The script covers:
 # - Flake inputs (nix flake update → flake.lock)
-# - Versioned GitHub release packages (agave, codex-cli, codexbar, godot, kani, mdt, monochange, ollama, solana-verifiable-build, surfpool, etc.)
+# - Versioned GitHub release packages (agave, codex-cli, codexbar, godot, kani, mdt, monochange, ollama, solana-verify, surfpool, etc.)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (steam)
 # - Rust packages built from source (cargo-clean-all, cargo-dylint, cargo-interactive-update, dylint-link, knope, pina, sbpf-linker)
@@ -259,6 +259,27 @@ def github-latest-tag-with-prefix [owner: string, repo: string, prefix: string] 
 
   if ($matched | is-empty) {
     fail $"No tag with prefix \"($prefix)\" for ($owner)/($repo)"
+  }
+
+  $matched
+}
+
+def github-latest-stable-tag [owner: string, repo: string] {
+  let tags = try {
+    github-api-get $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=100"
+  } catch {
+    fail $"Failed to fetch tags for ($owner)/($repo)"
+  }
+
+  let matched = (
+    $tags
+    | where {|tag| ($tag.name | str starts-with "v") and not ($tag.name | str contains "-") }
+    | get -o 0.name
+    | default ""
+  )
+
+  if ($matched | is-empty) {
+    fail $"No stable tag found for ($owner)/($repo)"
   }
 
   $matched
@@ -622,7 +643,7 @@ def update-agave-beta-track [packages_dir: string, package_name: string, version
 }
 
 def update-agave [packages_dir: string, dry_run: bool] {
-  let latest_version = (github-latest-tag "anza-xyz" "agave" | str replace --regex '^v' '')
+  let latest_version = (github-latest-stable-tag "anza-xyz" "agave" | str replace --regex '^v' '')
   update-agave-package $packages_dir "agave" $latest_version $dry_run
 }
 
@@ -855,14 +876,14 @@ def update-kani [packages_dir: string, dry_run: bool] {
   update-versioned-keyed-hashes "kani" $file $latest_version $entries $dry_run
 }
 
-def update-solana-verifiable-build [packages_dir: string, dry_run: bool] {
+def update-solana-verify [packages_dir: string, dry_run: bool] {
   let latest_version = (github-latest-tag "solana-foundation" "solana-verifiable-build" | str replace --regex '^v' '')
-  let file = $"($packages_dir)/solana-verifiable-build/package.nix"
+  let file = $"($packages_dir)/solana-verify/package.nix"
   let entries = [
     { key: "linux", url: $"https://github.com/solana-foundation/solana-verifiable-build/releases/download/v($latest_version)/solana-verify-($latest_version)-linux" }
     { key: "macos", url: $"https://github.com/solana-foundation/solana-verifiable-build/releases/download/v($latest_version)/solana-verify-($latest_version)-macos" }
   ]
-  update-versioned-keyed-hashes "solana-verifiable-build" $file $latest_version $entries $dry_run
+  update-versioned-keyed-hashes "solana-verify" $file $latest_version $entries $dry_run
 }
 
 def update-nordvpn [packages_dir: string, dry_run: bool] {
@@ -1242,7 +1263,7 @@ def main [
     { name: "pnpm-11", run: {|| update-pnpm-11 $packages_dir $dry_run } }
     { name: "racket-minimal", run: {|| update-racket $packages_dir $dry_run } }
     { name: "sbpf-linker", run: {|| update-rust-sbpf-linker $root $packages_dir $dry_run } }
-    { name: "solana-verifiable-build", run: {|| update-solana-verifiable-build $packages_dir $dry_run } }
+    { name: "solana-verify", run: {|| update-solana-verify $packages_dir $dry_run } }
     { name: "steam", run: {|| update-rolling-steam $packages_dir $dry_run } }
     { name: "surfpool", run: {|| update-surfpool $packages_dir $dry_run } }
     { name: "wait-for-them", run: {|| update-wait-for-them $packages_dir $dry_run } }

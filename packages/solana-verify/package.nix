@@ -21,7 +21,7 @@ let
   };
 in
 stdenv.mkDerivation {
-  pname = "solana-verifiable-build";
+  pname = "solana-verify";
   inherit version;
 
   src = fetchurl {
