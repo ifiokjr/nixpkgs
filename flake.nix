@@ -43,7 +43,7 @@
         pnpm-standalone = final.callPackage ./packages/pnpm-standalone/package.nix { inherit pnpm; };
         racket-minimal = final.callPackage ./packages/racket-minimal/package.nix { };
         sbpf-linker = final.callPackage ./packages/sbpf-linker/package.nix { };
-        solana-verifiable-build = final.callPackage ./packages/solana-verifiable-build/package.nix { };
+        solana-verify = final.callPackage ./packages/solana-verify/package.nix { };
         steam = final.callPackage ./packages/steam/package.nix { };
         surfpool = final.callPackage ./packages/surfpool/package.nix { };
         wait-for-them = final.callPackage ./packages/wait-for-them/package.nix { };
@@ -89,7 +89,7 @@
           pnpm-standalone = pkgs.callPackage ./packages/pnpm-standalone/package.nix { inherit pnpm; };
           racket-minimal = pkgs.callPackage ./packages/racket-minimal/package.nix { };
           sbpf-linker = pkgs.callPackage ./packages/sbpf-linker/package.nix { };
-          solana-verifiable-build = pkgs.callPackage ./packages/solana-verifiable-build/package.nix { };
+          solana-verify = pkgs.callPackage ./packages/solana-verify/package.nix { };
           steam = pkgs.callPackage ./packages/steam/package.nix { };
           surfpool = pkgs.callPackage ./packages/surfpool/package.nix { };
           wait-for-them = pkgs.callPackage ./packages/wait-for-them/package.nix { };
