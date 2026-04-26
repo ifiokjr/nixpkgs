@@ -7,11 +7,11 @@
 
 stdenv.mkDerivation {
   pname = "codexbar";
-  version = "0.17.0";
+  version = "0.23";
 
   src = fetchurl {
     url = "https://github.com/steipete/CodexBar/releases/download/v0.17.0/CodexBar-0.17.0.zip";
-    hash = "sha256-LD86SQCPLi/yZOSjatAntcFA1hwzGsLnrOLB/5sMadw=";
+    hash = "sha256-pEuMcsDgjZ4OjKzvRqSC/yXTuJt3rB4/LWWgp8D2lxM=";
   };
 
   nativeBuildInputs = [ unzip ];
