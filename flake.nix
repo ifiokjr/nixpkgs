@@ -23,10 +23,9 @@
         agave-3_1 = final.callPackage ./packages/agave-3_1/package.nix { };
         agave-4_0 = final.callPackage ./packages/agave-4_0/package.nix { };
         cargo-clean-all = final.callPackage ./packages/cargo-clean-all/package.nix { };
-        cargo-dylint = final.callPackage ./packages/cargo-dylint/package.nix { };
+        dylint = final.callPackage ./packages/dylint/package.nix { };
         cargo-interactive-update = final.callPackage ./packages/cargo-interactive-update/package.nix { };
         codex-cli = final.callPackage ./packages/codex-cli/package.nix { };
-        dylint-link = final.callPackage ./packages/dylint-link/package.nix { };
         godot = final.callPackage ./packages/godot/package.nix { };
         gpg-suite = final.callPackage ./packages/gpg-suite/package.nix { };
         kani = final.callPackage ./packages/kani/package.nix { };
@@ -68,10 +67,9 @@
           agave-3_1 = pkgs.callPackage ./packages/agave-3_1/package.nix { };
           agave-4_0 = pkgs.callPackage ./packages/agave-4_0/package.nix { };
           cargo-clean-all = pkgs.callPackage ./packages/cargo-clean-all/package.nix { };
-          cargo-dylint = pkgs.callPackage ./packages/cargo-dylint/package.nix { };
+          dylint = pkgs.callPackage ./packages/dylint/package.nix { };
           cargo-interactive-update = pkgs.callPackage ./packages/cargo-interactive-update/package.nix { };
           codex-cli = pkgs.callPackage ./packages/codex-cli/package.nix { };
-          dylint-link = pkgs.callPackage ./packages/dylint-link/package.nix { };
           godot = pkgs.callPackage ./packages/godot/package.nix { };
           gpg-suite = pkgs.callPackage ./packages/gpg-suite/package.nix { };
           kani = pkgs.callPackage ./packages/kani/package.nix { };

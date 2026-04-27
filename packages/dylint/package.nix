@@ -9,7 +9,7 @@
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "dylint-link";
+  pname = "dylint";
   version = "5.0.0";
 
   src = fetchFromGitHub {
@@ -23,7 +23,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     lockFile = "${finalAttrs.src}/Cargo.lock";
   };
 
-  buildAndTestSubdir = "dylint-link";
+  cargoBuildFlags = [
+    "--package"
+    "cargo-dylint"
+    "--package"
+    "dylint-link"
+  ];
+  cargoInstallFlags = [
+    "--package"
+    "cargo-dylint"
+    "--package"
+    "dylint-link"
+  ];
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [
@@ -39,13 +50,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    description = "A linker wrapper for building Dylint libraries";
+    description = "Dylint tools for running Rust lints and building Dylint libraries";
     homepage = "https://github.com/trailofbits/dylint";
     license = [
       lib.licenses.asl20
       lib.licenses.mit
     ];
-    mainProgram = "dylint-link";
+    mainProgram = "cargo-dylint";
     tags = [
       "cli"
       "dev-tool"
