@@ -17,10 +17,9 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [agave-2_1](#agave)                                   | <!-- {~v_agave_2_1:"{{ v.agave_2_1 }}"} -->2.1.21<!-- {/v_agave_2_1} -->                                             | linux (x64), macos         | Agave pinned to the latest 2.1.x release                                      |
 | [agave-2_0](#agave)                                   | <!-- {~v_agave_2_0:"{{ v.agave_2_0 }}"} -->2.0.25<!-- {/v_agave_2_0} -->                                             | linux (x64), macos         | Agave pinned to the latest 2.0.x release                                      |
 | [cargo-clean-all](#cargo-clean-all)                   | <!-- {~v_cargo_clean_all:"{{ v.cargo_clean_all }}"} -->0.6.4<!-- {/v_cargo_clean_all} -->                            | linux, macos               | Recursively clean Cargo projects in a directory that match selected criteria  |
-| [cargo-dylint](#cargo-dylint)                         | <!-- {~v_cargo_dylint:"{{ v.cargo_dylint }}"} -->5.0.0<!-- {/v_cargo_dylint} -->                                     | linux, macos               | A cargo extension for running Rust lints from dynamic libraries               |
 | [cargo-interactive-update](#cargo-interactive-update) | <!-- {~v_cargo_interactive_update:"{{ v.cargo_interactive_update }}"} -->0.6.2<!-- {/v_cargo_interactive_update} --> | linux, macos               | A cargo extension to update direct dependencies interactively                 |
 | [codex-cli](#codex-cli)                               | <!-- {~v_codex_cli:"{{ v.codex_cli }}"} -->0.125.0<!-- {/v_codex_cli} -->                                            | linux, macos               | OpenAI Codex CLI - AI coding assistant for the terminal                       |
-| [dylint-link](#dylint-link)                           | <!-- {~v_dylint_link:"{{ v.dylint_link }}"} -->5.0.0<!-- {/v_dylint_link} -->                                        | linux, macos               | A linker wrapper for building Dylint libraries                                |
+| [dylint](#dylint)                                     | <!-- {~v_dylint:"{{ v.dylint }}"} -->5.0.0<!-- {/v_dylint} -->                                                       | linux, macos               | Dylint tools for running Rust lints and building Dylint libraries             |
 | [godot](#godot)                                       | <!-- {~v_godot:"{{ v.godot }}"} -->4.6.2-stable<!-- {/v_godot} -->                                                   | linux, macos               | Free and open-source 2D and 3D game engine                                    |
 | [gpg-suite](#gpg-suite)                               | <!-- {~v_gpg_suite:"{{ v.gpg_suite }}"} -->2023.3<!-- {/v_gpg_suite} -->                                             | macos                      | GPG Suite - encryption, signing, and key management                           |
 | [kani](#kani)                                         | <!-- {~v_kani:"{{ v.kani }}"} -->0.67.0<!-- {/v_kani} -->                                                            | linux, macos               | Bit-precise model checker for Rust                                            |
@@ -247,14 +246,6 @@ Recursively clean Cargo projects in a directory based on filters like project ag
 - **License:** MIT
 - **Source:** <https://github.com/dnlmlr/cargo-clean-all>
 
-### cargo-dylint
-
-A cargo extension for running Rust lints from dynamic libraries. Built from source using `rustPlatform.buildRustPackage`.
-
-- **Binary:** `cargo-dylint`
-- **License:** Apache-2.0 OR MIT
-- **Source:** <https://github.com/trailofbits/dylint>
-
 ### cargo-interactive-update
 
 A cargo extension to update direct dependencies interactively. Built from source using `rustPlatform.buildRustPackage`.
@@ -271,11 +262,11 @@ OpenAI Codex CLI for AI-assisted coding directly from the terminal. Pre-built bi
 - **License:** Apache-2.0
 - **Source:** <https://github.com/openai/codex>
 
-### dylint-link
+### dylint
 
-A linker wrapper for building Dylint libraries. Built from source using `rustPlatform.buildRustPackage`.
+Dylint tools for running Rust lints and building Dylint libraries. Built from source using `rustPlatform.buildRustPackage`.
 
-- **Binary:** `dylint-link`
+- **Binary:** `cargo-dylint`, `dylint-link`
 - **License:** Apache-2.0 OR MIT
 - **Source:** <https://github.com/trailofbits/dylint>
 
@@ -492,7 +483,7 @@ The script updates:
 - GitHub release packages (version + platform hashes)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
 - Rolling URL packages (`steam`)
-- Rust packages built from source (`cargo-clean-all`, `cargo-dylint`, `cargo-interactive-update`, `dylint-link`, `knope`, `pina`, `sbpf-linker`)
+- Rust packages built from source (`cargo-clean-all`, `cargo-interactive-update`, `dylint`, `knope`, `pina`, `sbpf-linker`)
 
 ### binary packages (pre-built)
 

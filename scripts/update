@@ -6,7 +6,7 @@
 # - Versioned GitHub release packages (agave, codex-cli, godot, kani, mdt, monochange, ollama, solana-verify, surfpool, etc.)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (steam)
-# - Rust packages built from source (cargo-clean-all, cargo-dylint, cargo-interactive-update, dylint-link, knope, pina, sbpf-linker)
+# - Rust packages built from source (cargo-clean-all, cargo-interactive-update, dylint, knope, pina, sbpf-linker)
 
 # ANSI helpers
 
@@ -982,13 +982,6 @@ def update-rust-cargo-lock-package [
   true
 }
 
-def update-rust-cargo-dylint [packages_dir: string, dry_run: bool] {
-  let tag = (github-latest-tag "trailofbits" "dylint")
-  let latest_version = ($tag | str replace --regex '^v' '')
-  let rev = $"v($latest_version)"
-  update-rust-cargo-lock-package $packages_dir "cargo-dylint" $latest_version $rev "trailofbits" "dylint" $dry_run
-}
-
 def update-rust-cargo-clean-all [repo_root: string, packages_dir: string, dry_run: bool] {
   let tag = (github-latest-tag "dnlmlr" "cargo-clean-all")
   let latest_version = ($tag | str replace --regex '^v' '')
@@ -1002,11 +995,11 @@ def update-rust-cargo-interactive [repo_root: string, packages_dir: string, dry_
   update-rust-package $repo_root $packages_dir "cargo-interactive-update" $latest_version $latest_version "benjeau" "cargo-interactive-update" $dry_run
 }
 
-def update-rust-dylint-link [packages_dir: string, dry_run: bool] {
+def update-rust-dylint [packages_dir: string, dry_run: bool] {
   let tag = (github-latest-tag "trailofbits" "dylint")
   let latest_version = ($tag | str replace --regex '^v' '')
   let rev = $"v($latest_version)"
-  update-rust-cargo-lock-package $packages_dir "dylint-link" $latest_version $rev "trailofbits" "dylint" $dry_run
+  update-rust-cargo-lock-package $packages_dir "dylint" $latest_version $rev "trailofbits" "dylint" $dry_run
 }
 
 def update-rust-knope [repo_root: string, packages_dir: string, dry_run: bool] {
@@ -1233,10 +1226,9 @@ def main [
     { name: "agave-3_1", run: {|| update-agave-3-1 $packages_dir $dry_run } }
     { name: "agave-4_0", run: {|| update-agave-4-0 $packages_dir $dry_run } }
     { name: "cargo-clean-all", run: {|| update-rust-cargo-clean-all $root $packages_dir $dry_run } }
-    { name: "cargo-dylint", run: {|| update-rust-cargo-dylint $packages_dir $dry_run } }
     { name: "cargo-interactive-update", run: {|| update-rust-cargo-interactive $root $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
-    { name: "dylint-link", run: {|| update-rust-dylint-link $packages_dir $dry_run } }
+    { name: "dylint", run: {|| update-rust-dylint $packages_dir $dry_run } }
     { name: "godot", run: {|| update-godot $packages_dir $dry_run } }
     { name: "gpg-suite", run: {|| update-gpg-suite $packages_dir $dry_run } }
     { name: "kani", run: {|| update-kani $packages_dir $dry_run } }
