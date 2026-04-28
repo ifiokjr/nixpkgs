@@ -20,7 +20,6 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [cargo-dylint](#cargo-dylint)                         | <!-- {~v_cargo_dylint:"{{ v.cargo_dylint }}"} -->5.0.0<!-- {/v_cargo_dylint} -->                                     | linux, macos               | A cargo extension for running Rust lints from dynamic libraries               |
 | [cargo-interactive-update](#cargo-interactive-update) | <!-- {~v_cargo_interactive_update:"{{ v.cargo_interactive_update }}"} -->0.6.2<!-- {/v_cargo_interactive_update} --> | linux, macos               | A cargo extension to update direct dependencies interactively                 |
 | [codex-cli](#codex-cli)                               | <!-- {~v_codex_cli:"{{ v.codex_cli }}"} -->0.125.0<!-- {/v_codex_cli} -->                                            | linux, macos               | OpenAI Codex CLI - AI coding assistant for the terminal                       |
-| [codexbar](#codexbar)                                 | <!-- {~v_codexbar:"{{ v.codexbar }}"} -->0.23<!-- {/v_codexbar} -->                                                  | macos                      | macOS menu bar app showing AI coding tool usage and limits                    |
 | [dylint-link](#dylint-link)                           | <!-- {~v_dylint_link:"{{ v.dylint_link }}"} -->5.0.0<!-- {/v_dylint_link} -->                                        | linux, macos               | A linker wrapper for building Dylint libraries                                |
 | [godot](#godot)                                       | <!-- {~v_godot:"{{ v.godot }}"} -->4.6.2-stable<!-- {/v_godot} -->                                                   | linux, macos               | Free and open-source 2D and 3D game engine                                    |
 | [gpg-suite](#gpg-suite)                               | <!-- {~v_gpg_suite:"{{ v.gpg_suite }}"} -->2023.3<!-- {/v_gpg_suite} -->                                             | macos                      | GPG Suite - encryption, signing, and key management                           |
@@ -271,14 +270,6 @@ OpenAI Codex CLI for AI-assisted coding directly from the terminal. Pre-built bi
 - **Binary:** `codex`
 - **License:** Apache-2.0
 - **Source:** <https://github.com/openai/codex>
-
-### codexbar
-
-macOS menu bar app showing AI coding tool usage and limits. Pre-built `.app` bundle from GitHub releases.
-
-- **License:** MIT
-- **Source:** <https://github.com/steipete/CodexBar>
-- **Homepage:** <https://codexbar.app>
 
 ### dylint-link
 
