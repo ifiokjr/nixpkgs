@@ -3,7 +3,7 @@
 #
 # The script covers:
 # - Flake inputs (nix flake update → flake.lock)
-# - Versioned GitHub release packages (agave, codex-cli, codexbar, godot, kani, mdt, monochange, ollama, solana-verify, surfpool, etc.)
+# - Versioned GitHub release packages (agave, codex-cli, godot, kani, mdt, monochange, ollama, solana-verify, surfpool, etc.)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (steam)
 # - Rust packages built from source (cargo-clean-all, cargo-dylint, cargo-interactive-update, dylint-link, knope, pina, sbpf-linker)
@@ -693,13 +693,6 @@ def update-codex [packages_dir: string, dry_run: bool] {
 }
 
 
-def update-codexbar [packages_dir: string, dry_run: bool] {
-  let latest_version = (github-latest-tag "steipete" "CodexBar" | str replace --regex '^v' '')
-  let file = $"($packages_dir)/codexbar/package.nix"
-  let url = $"https://github.com/steipete/CodexBar/releases/download/v($latest_version)/CodexBar-($latest_version).zip"
-  update-versioned-single-hash "codexbar" $file $latest_version $url $dry_run
-}
-
 def update-godot [packages_dir: string, dry_run: bool] {
   let latest_version = (godot-latest-stable-tag)
   let file = $"($packages_dir)/godot/package.nix"
@@ -1243,7 +1236,6 @@ def main [
     { name: "cargo-dylint", run: {|| update-rust-cargo-dylint $packages_dir $dry_run } }
     { name: "cargo-interactive-update", run: {|| update-rust-cargo-interactive $root $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
-    { name: "codexbar", run: {|| update-codexbar $packages_dir $dry_run } }
     { name: "dylint-link", run: {|| update-rust-dylint-link $packages_dir $dry_run } }
     { name: "godot", run: {|| update-godot $packages_dir $dry_run } }
     { name: "gpg-suite", run: {|| update-gpg-suite $packages_dir $dry_run } }
