@@ -17,6 +17,11 @@ on:
         description: "Version to build (without v prefix)"
         required: true
         type: string
+      update-package:
+        description: "Update package.nix after building (for automated updates)"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   prepare:
@@ -184,3 +189,76 @@ jobs:
           files: artifacts/**/*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update-package:
+    name: Update package.nix
+    needs: [prepare, release]
+    if: inputs.update-package == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout nixpkgs repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get release hashes and update package.nix
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PACKAGE="${{ inputs.package }}"
+          VERSION="${{ inputs.version }}"
+          TAG="${{ needs.prepare.outputs.tag }}"
+          FILE="packages/${PACKAGE}/package.nix"
+
+          echo "Fetching hashes for ${TAG}..."
+
+          # Platform mapping for hash keys in package.nix
+          declare -A PLATFORM_MAP=(
+            ["aarch64-apple-darwin"]="aarch64-apple-darwin"
+            ["x86_64-apple-darwin"]="x86_64-apple-darwin"
+            ["aarch64-unknown-linux-gnu"]="aarch64-unknown-linux-gnu"
+            ["x86_64-unknown-linux-gnu"]="x86_64-unknown-linux-gnu"
+          )
+
+          # Get all release assets
+          ASSETS=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq '.assets[].name')
+
+          # Update version
+          sed -i "s/version = \"[^\"]*\"/version = \"${VERSION}\"/" "${FILE}"
+
+          # For each platform, download and compute hash
+          for PLATFORM in "${!PLATFORM_MAP[@]}"; do
+            ASSET_NAME="${PACKAGE}-${PLATFORM}.tar.gz"
+            if echo "${ASSETS}" | grep -q "${ASSET_NAME}"; then
+              URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/${ASSET_NAME}"
+              echo "Computing hash for ${PLATFORM}..."
+              HASH=$(nix hash to-sri --type sha256 $(nix-prefetch-url --unpack "${URL}" 2>/dev/null) 2>/dev/null)
+              echo "${PLATFORM}: ${HASH}"
+
+              # Update the hash in package.nix
+              # Match the pattern: "platform" = "sha256-..."
+              sed -i "s|\"${PLATFORM}\" = \"sha256-[^\"]*\"|\"${PLATFORM}\" = \"${HASH}\"|" "${FILE}"
+            fi
+          done
+
+          echo "Updated ${FILE}"
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if [ -n "$(git diff --name-only)" ]; then
+            git add -A
+            git commit -m "chore(${{ inputs.package }}): update to v${{ inputs.version }}"
+            git push
+          else
+            echo "No changes detected."
+          fi
