@@ -19,6 +19,7 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [cargo-clean-all](#cargo-clean-all)                   | <!-- {~v_cargo_clean_all:"{{ v.cargo_clean_all }}"} -->0.6.4<!-- {/v_cargo_clean_all} -->                            | linux, macos               | Recursively clean Cargo projects in a directory that match selected criteria  |
 | [cargo-interactive-update](#cargo-interactive-update) | <!-- {~v_cargo_interactive_update:"{{ v.cargo_interactive_update }}"} -->0.6.2<!-- {/v_cargo_interactive_update} --> | linux, macos               | A cargo extension to update direct dependencies interactively                 |
 | [codex-cli](#codex-cli)                               | <!-- {~v_codex_cli:"{{ v.codex_cli }}"} -->0.125.0<!-- {/v_codex_cli} -->                                            | linux, macos               | OpenAI Codex CLI - AI coding assistant for the terminal                       |
+| [deno](#deno)                                         | <!-- {~v_deno:"{{ v.deno }}"} -->2.7.14<!-- {/v_deno} -->                                                            | linux, macos               | A modern runtime for JavaScript and TypeScript                                |
 | [dylint](#dylint)                                     | <!-- {~v_dylint:"{{ v.dylint }}"} -->5.0.0<!-- {/v_dylint} -->                                                       | linux, macos               | Dylint tools for running Rust lints and building Dylint libraries             |
 | [godot](#godot)                                       | <!-- {~v_godot:"{{ v.godot }}"} -->4.6.2-stable<!-- {/v_godot} -->                                                   | linux, macos               | Free and open-source 2D and 3D game engine                                    |
 | [gpg-suite](#gpg-suite)                               | <!-- {~v_gpg_suite:"{{ v.gpg_suite }}"} -->2023.3<!-- {/v_gpg_suite} -->                                             | macos                      | GPG Suite - encryption, signing, and key management                           |
@@ -48,6 +49,7 @@ nix run github:ifiokjr/nixpkgs#mdt
 nix run github:ifiokjr/nixpkgs#monochange
 nix run github:ifiokjr/nixpkgs#pnpm-standalone
 nix run github:ifiokjr/nixpkgs#codex-cli
+nix run github:ifiokjr/nixpkgs#deno
 nix run github:ifiokjr/nixpkgs#godot
 nix run github:ifiokjr/nixpkgs#ollama
 ```
@@ -261,6 +263,15 @@ OpenAI Codex CLI for AI-assisted coding directly from the terminal. Pre-built bi
 - **Binary:** `codex`
 - **License:** Apache-2.0
 - **Source:** <https://github.com/openai/codex>
+
+### deno
+
+A modern runtime for JavaScript and TypeScript. Installs the official pre-built binary from Deno GitHub releases instead of building from Rust source.
+
+- **Binary:** `deno`
+- **License:** MIT
+- **Source:** <https://github.com/denoland/deno>
+- **Homepage:** <https://deno.com/>
 
 ### dylint
 

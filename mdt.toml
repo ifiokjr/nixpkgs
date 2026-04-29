@@ -11,6 +11,7 @@ v = { command = "./scripts/versions", format = "json", watch = [
 	"packages/dylint/package.nix",
 	"packages/cargo-interactive-update/package.nix",
 	"packages/codex-cli/package.nix",
+	"packages/deno/package.nix",
 	"packages/godot/package.nix",
 	"packages/gpg-suite/package.nix",
 	"packages/kani/package.nix",
