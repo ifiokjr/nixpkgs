@@ -20,7 +20,7 @@ let
     "aarch64-apple-darwin" = "sha256-AhMfKEMVyOzopO9poK/19lgwnU33O5XP374PvZ6c4lk=";
     "x86_64-apple-darwin" = "sha256-08N3/iKotESOQm5JVCePaPiRcKwpAJCHbd42OvpUzqQ=";
     "aarch64-unknown-linux-musl" = "sha256-Pl3vI4Ji89kPPxIC01oz7gqJn5rCO9yQEGYETMKL+ek=";
-    "x86_64-unknown-linux-musl" = "sha256-tioYtww9ozmIKvnjJfeoOIySmSsh9rsxJd1GXLKTouE=";
+    "x86_64-unknown-linux-musl" = "sha256-RadJJa6fTJwsM7UZkq5QJB7E+oNr+NKXfAuOgXLdac8=";
   };
 in
 stdenv.mkDerivation {
