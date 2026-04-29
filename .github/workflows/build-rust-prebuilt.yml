@@ -167,8 +167,8 @@ jobs:
         with:
           name: ${{ inputs.package }}-${{ matrix.target }}
           path: |
-            target/release/*.tar.gz
-            target/release/*.sha256
+            *.tar.gz
+            *.sha256
 
   release:
     name: Create release and upload binaries
