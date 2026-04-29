@@ -98,7 +98,8 @@ jobs:
       - name: Install cross-compilation tools (Linux aarch64)
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
-          cargo install cross
+          pip3 install cargo-zigbuild
+          rustup target add aarch64-unknown-linux-gnu
 
       - name: Install system dependencies
         if: inputs.package == 'dylint' && matrix.target != 'aarch64-unknown-linux-gnu'
@@ -150,7 +151,7 @@ jobs:
           no-default-features: ${{ needs.prepare.outputs.no-default-features || 'false' }}
           locked: true
           ref: ${{ needs.prepare.outputs.tag }}
-          build-tool: ${{ matrix.target == 'aarch64-unknown-linux-gnu' && 'cross' || '' }}
+          build-tool: ${{ matrix.target == 'aarch64-unknown-linux-gnu' && 'cargo-zigbuild' || '' }}
           dry-run: true
 
       - name: Upload artifact
