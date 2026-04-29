@@ -98,11 +98,10 @@ jobs:
       - name: Install cross-compilation tools (Linux aarch64)
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          cargo install cross
 
       - name: Install system dependencies
-        if: inputs.package == 'dylint'
+        if: inputs.package == 'dylint' && matrix.target != 'aarch64-unknown-linux-gnu'
         run: |
           if [ "${{ runner.os }}" = "Linux" ]; then
             sudo apt-get update
@@ -160,6 +159,7 @@ jobs:
           no-default-features: ${{ needs.prepare.outputs.no-default-features || 'false' }}
           locked: true
           ref: ${{ needs.prepare.outputs.tag }}
+          build-tool: ${{ matrix.target == 'aarch64-unknown-linux-gnu' && 'cross' || '' }}
           dry-run: true
 
       - name: Upload artifact
