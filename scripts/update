@@ -3,7 +3,7 @@
 #
 # The script covers:
 # - Flake inputs (nix flake update → flake.lock)
-# - Versioned GitHub release packages (agave, codex-cli, godot, kani, mdt, monochange, ollama, solana-verify, surfpool, etc.)
+# - Versioned GitHub release packages (agave, codex-cli, deno, godot, kani, mdt, monochange, ollama, solana-verify, surfpool, etc.)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (steam)
 # - Rust packages built from source (cargo-clean-all, cargo-interactive-update, dylint, knope, pina, sbpf-linker)
@@ -692,6 +692,17 @@ def update-codex [packages_dir: string, dry_run: bool] {
   update-versioned-keyed-hashes "codex-cli" $file $latest_version $entries $dry_run
 }
 
+def update-deno [packages_dir: string, dry_run: bool] {
+  let latest_version = (github-latest-tag "denoland" "deno" | str replace --regex '^v' '')
+  let file = $"($packages_dir)/deno/package.nix"
+  let entries = [
+    { key: "aarch64-apple-darwin", url: $"https://github.com/denoland/deno/releases/download/v($latest_version)/deno-aarch64-apple-darwin.zip" }
+    { key: "x86_64-apple-darwin", url: $"https://github.com/denoland/deno/releases/download/v($latest_version)/deno-x86_64-apple-darwin.zip" }
+    { key: "aarch64-unknown-linux-gnu", url: $"https://github.com/denoland/deno/releases/download/v($latest_version)/deno-aarch64-unknown-linux-gnu.zip" }
+    { key: "x86_64-unknown-linux-gnu", url: $"https://github.com/denoland/deno/releases/download/v($latest_version)/deno-x86_64-unknown-linux-gnu.zip" }
+  ]
+  update-versioned-keyed-hashes "deno" $file $latest_version $entries $dry_run
+}
 
 def update-godot [packages_dir: string, dry_run: bool] {
   let latest_version = (godot-latest-stable-tag)
@@ -1228,6 +1239,7 @@ def main [
     { name: "cargo-clean-all", run: {|| update-rust-cargo-clean-all $root $packages_dir $dry_run } }
     { name: "cargo-interactive-update", run: {|| update-rust-cargo-interactive $root $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
+    { name: "deno", run: {|| update-deno $packages_dir $dry_run } }
     { name: "dylint", run: {|| update-rust-dylint $packages_dir $dry_run } }
     { name: "godot", run: {|| update-godot $packages_dir $dry_run } }
     { name: "gpg-suite", run: {|| update-gpg-suite $packages_dir $dry_run } }
