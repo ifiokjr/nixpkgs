@@ -1,47 +1,65 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  libgit2,
-  zlib,
+  stdenv,
+  fetchurl,
 }:
 
-rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "knope";
+let
   version = "0.22.4";
 
-  src = fetchFromGitHub {
-    owner = "knope-dev";
-    repo = "knope";
-    rev = "knope/v${finalAttrs.version}";
-    hash = "sha256-2lZhetmctKSfLXd7jvepm1+Vc0db1teryx6tehEHCJM=";
+  platformSuffix =
+    {
+      "aarch64-darwin" = "aarch64-apple-darwin";
+      "x86_64-darwin" = "x86_64-apple-darwin";
+      "aarch64-linux" = "aarch64-unknown-linux-musl";
+      "x86_64-linux" = "x86_64-unknown-linux-musl";
+    }
+    .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
+
+  hashes = {
+    "aarch64-apple-darwin" = "sha256-AhMfKEMVyOzopO9poK/19lgwnU33O5XP374PvZ6c4lk=";
+    "x86_64-apple-darwin" = "sha256-08N3/iKotESOQm5JVCePaPiRcKwpAJCHbd42OvpUzqQ=";
+    "aarch64-unknown-linux-musl" = "sha256-Pl3vI4Ji89kPPxIC01oz7gqJn5rCO9yQEGYETMKL+ek=";
+    "x86_64-unknown-linux-musl" = "sha256-RadJJa6fTJwsM7UZkq5QJB7E+oNr+NKXfAuOgXLdac8=";
+  };
+in
+stdenv.mkDerivation {
+  pname = "knope";
+  inherit version;
+
+  src = fetchurl {
+    url = "https://github.com/knope-dev/knope/releases/download/knope/v${version}/knope-${platformSuffix}.tgz";
+    hash = hashes.${platformSuffix} or lib.fakeHash;
   };
 
-  cargoHash = "sha256-L7IT7nWinyWiuIwlBmGmHDyKB+o3LJBanHVFRQpWB+c=";
+  dontBuild = true;
+  dontStrip = true;
 
-  buildAndTestSubdir = "crates/knope";
+  installPhase = ''
+    runHook preInstall
 
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [
-    libgit2
-    zlib
-  ];
+    mkdir -p $out/bin
+    cp -R ./* $out/bin/
+    chmod +x $out/bin/knope
 
-  doCheck = false;
-
-  env = {
-    LIBGIT2_NO_VENDOR = "1";
-  };
+    runHook postInstall
+  '';
 
   meta = {
     description = "A command line tool for automating common development tasks";
     homepage = "https://knope.tech";
     license = lib.licenses.mit;
     mainProgram = "knope";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
+      "x86_64-darwin"
+      "aarch64-darwin"
+    ];
     tags = [
       "cli"
       "dev-tool"
     ];
   };
-})
+}
