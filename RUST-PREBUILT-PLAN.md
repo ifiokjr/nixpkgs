@@ -8,26 +8,26 @@ Switch Rust packages from building from source to using pre-built GitHub release
 
 ### ✅ Can Switch to Pre-built (2 packages)
 
-| Package | Repo | Version | Platforms Available |
-|---------|------|---------|---------------------|
-| **knope** | knope-dev/knope | 0.22.4 | aarch64-darwin, x86_64-darwin, aarch64-linux-musl, x86_64-linux-musl |
-| **wait-for-them** | shenek/wait-for-them | 0.5.1 | macos, linux (no arch distinction - likely x86_64) |
+| Package           | Repo                 | Version | Platforms Available                                                  |
+| ----------------- | -------------------- | ------- | -------------------------------------------------------------------- |
+| **knope**         | knope-dev/knope      | 0.22.4  | aarch64-darwin, x86_64-darwin, aarch64-linux-musl, x86_64-linux-musl |
+| **wait-for-them** | shenek/wait-for-them | 0.5.1   | macos, linux (no arch distinction - likely x86_64)                   |
 
 ### ✅ Already Using Pre-built (1 package)
 
-| Package | Repo | Version |
-|---------|------|---------|
-| **kani** | model-checking/kani | 0.67.0 |
+| Package  | Repo                | Version |
+| -------- | ------------------- | ------- |
+| **kani** | model-checking/kani | 0.67.0  |
 
 ### ❌ No Pre-built Binaries Available (5 packages)
 
-| Package | Repo | Version | Notes |
-|---------|------|---------|-------|
-| **dylint** | trailofbits/dylint | 5.0.0 | Has releases, no binaries attached |
-| **pina** | pina-rs/pina | 0.8.0 | Has releases, no binaries attached |
-| **cargo-clean-all** | dnlmlr/cargo-clean-all | 0.6.4 | Has releases, no binaries attached |
-| **cargo-interactive-update** | benjeau/cargo-interactive-update | 0.6.2 | Has releases, no binaries attached |
-| **sbpf-linker** | blueshift-gg/sbpf-linker | 0.1.8 | No releases at all |
+| Package                      | Repo                             | Version | Notes                              |
+| ---------------------------- | -------------------------------- | ------- | ---------------------------------- |
+| **dylint**                   | trailofbits/dylint               | 5.0.0   | Has releases, no binaries attached |
+| **pina**                     | pina-rs/pina                     | 0.8.0   | Has releases, no binaries attached |
+| **cargo-clean-all**          | dnlmlr/cargo-clean-all           | 0.6.4   | Has releases, no binaries attached |
+| **cargo-interactive-update** | benjeau/cargo-interactive-update | 0.6.2   | Has releases, no binaries attached |
+| **sbpf-linker**              | blueshift-gg/sbpf-linker         | 0.1.8   | No releases at all                 |
 
 ## Phase 1: Switch Available Packages
 
