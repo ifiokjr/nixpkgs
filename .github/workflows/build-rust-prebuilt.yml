@@ -107,6 +107,15 @@ jobs:
           if [ "${{ runner.os }}" = "Linux" ]; then
             sudo apt-get update
             sudo apt-get install -y pkg-config libssl-dev libgit2-dev zlib1g-dev
+            # Install cross-compilation libraries for aarch64
+            if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
+              sudo dpkg --add-architecture arm64
+              sudo apt-get update
+              sudo apt-get install -y \
+                libssl-dev:arm64 \
+                libgit2-dev:arm64 \
+                zlib1g-dev:arm64
+            fi
           elif [ "${{ runner.os }}" = "macOS" ]; then
             brew install openssl libgit2 zlib pkg-config
           fi
@@ -117,6 +126,12 @@ jobs:
           if [ "${{ runner.os }}" = "Linux" ]; then
             sudo apt-get update
             sudo apt-get install -y pkg-config libcurl4-openssl-dev
+            # Install cross-compilation libraries for aarch64
+            if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
+              sudo dpkg --add-architecture arm64
+              sudo apt-get update
+              sudo apt-get install -y libcurl4-openssl-dev:arm64
+            fi
           elif [ "${{ runner.os }}" = "macOS" ]; then
             brew install curl pkg-config
           fi
