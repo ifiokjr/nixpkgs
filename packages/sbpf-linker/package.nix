@@ -12,11 +12,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   src = fetchFromGitHub {
     owner = "blueshift-gg";
     repo = "sbpf-linker";
-    rev = "48a8abc1d48a0f8021a5bb79ae675e4654d660c1";
-    hash = "sha256-E1b0e95dm6TEzhS4wAJdMGEOcYCptHVPSS7YaJVUjR0=";
+    rev = "06b4e60fba2960f6ec6c433659a88931da934546";
+    hash = "sha256-BqlgczHTV6T0ZBBke8jheQvbQqQU7ik5wloIF+1rpKU=";
   };
 
-  cargoHash = "sha256-7rgTqfskgbnQ/uk3FqmlFG9JveXAzn5OnruhTSspF6s=";
+  cargoHash = "sha256-G+2vSiN3Y6n5BUIVu6jxQwXn+WM1cq4IJYVpxezssSU=";
   cargoPatches = [ ./Cargo.lock.patch ];
 
   buildNoDefaultFeatures = true;
