@@ -1155,6 +1155,103 @@ def update-rolling-steam [packages_dir: string, dry_run: bool] {
   update-rolling-single-hash "steam" $"($packages_dir)/steam/package.nix" "https://cdn.cloudflare.steamstatic.com/client/installer/steam.dmg" $dry_run
 }
 
+# Prebuilt binary packages
+# These packages use binaries built by our CI and hosted in this repo.
+# Instead of updating hashes directly, we trigger the build-rust-prebuilt workflow.
+
+const PREBUILT_PACKAGES = ["dylint" "pina" "cargo-clean-all" "cargo-interactive-update" "sbpf-linker"]
+
+def is-prebuilt-package [package: string] {
+  $PREBUILT_PACKAGES | any {|p| $p == $package }
+}
+
+def trigger-prebuilt-build [package: string, version: string, dry_run: bool] {
+  if not (is-prebuilt-package $package) {
+    return false
+  }
+
+  log-sub "triggering prebuilt binary build..."
+  if $dry_run {
+    log-sub "would trigger: gh workflow run build-rust-prebuilt.yml -f package=($package) -f version=($version) -f update-package=true"
+    return true
+  }
+
+  let result = (^gh workflow run build-rust-prebuilt.yml -f $"package=($package)" -f $"version=($version)" -f "update-package=true" | complete)
+  if $result.exit_code != 0 {
+    log-warn "failed to trigger prebuilt build workflow"
+    log-warn $result.stderr
+    return false
+  }
+
+  log-ok $package "prebuilt build triggered (will update package.nix when complete)"
+  true
+}
+
+def update-prebuilt-package [
+  packages_dir: string,
+  package: string,
+  latest_version: string,
+  owner: string,
+  repo: string,
+  dry_run: bool,
+] {
+  let file = $"($packages_dir)/($package)/package.nix"
+  if not ($file | path exists) {
+    fail $"missing file: ($file)"
+  }
+
+  let content = (open $file --raw)
+  let current_version = (parse-capture $content 'version = "([^"]+)"')
+  if ($current_version | is-empty) {
+    fail $"could not parse version for ($package)"
+  }
+
+  if $current_version == $latest_version {
+    log-ok $package $"up to date \(v($current_version)\)"
+    return false
+  }
+
+  log-update $package $"v($current_version) → v($latest_version)"
+  if $dry_run {
+    log-sub "would trigger prebuilt build for v($latest_version)"
+    return true
+  }
+
+  # Trigger the build workflow which will update package.nix after building
+  trigger-prebuilt-build $package $latest_version $dry_run
+}
+
+def update-prebuilt-dylint [packages_dir: string, dry_run: bool] {
+  let tag = (github-latest-tag "trailofbits" "dylint")
+  let latest_version = ($tag | str replace --regex '^v' '')
+  update-prebuilt-package $packages_dir "dylint" $latest_version "trailofbits" "dylint" $dry_run
+}
+
+def update-prebuilt-pina [packages_dir: string, dry_run: bool] {
+  let tag = (github-latest-tag "pina-rs" "pina")
+  let latest_version = ($tag | str replace --regex '^v' '')
+  update-prebuilt-package $packages_dir "pina" $latest_version "pina-rs" "pina" $dry_run
+}
+
+def update-prebuilt-cargo-clean-all [packages_dir: string, dry_run: bool] {
+  let tag = (github-latest-tag "dnlmlr" "cargo-clean-all")
+  let latest_version = ($tag | str replace --regex '^v' '')
+  update-prebuilt-package $packages_dir "cargo-clean-all" $latest_version "dnlmlr" "cargo-clean-all" $dry_run
+}
+
+def update-prebuilt-cargo-interactive [packages_dir: string, dry_run: bool] {
+  let tag = (github-latest-tag "benjeau" "cargo-interactive-update")
+  let latest_version = ($tag | str replace --regex '^v' '')
+  update-prebuilt-package $packages_dir "cargo-interactive-update" $latest_version "benjeau" "cargo-interactive-update" $dry_run
+}
+
+def update-prebuilt-sbpf-linker [packages_dir: string, dry_run: bool] {
+  let branch = "master"
+  let manifest = (^curl -fsSL "https://raw.githubusercontent.com/blueshift-gg/sbpf-linker/($branch)/Cargo.toml" | str trim)
+  let latest_version = (parse-capture $manifest 'version = "([^"]+)"')
+  update-prebuilt-package $packages_dir "sbpf-linker" $latest_version "blueshift-gg" "sbpf-linker" $dry_run
+}
+
 # Runner
 
 def run-step [name: string, updater: closure] {
@@ -1236,11 +1333,11 @@ def main [
     { name: "agave-3_0", run: {|| update-agave-3-0 $packages_dir $dry_run } }
     { name: "agave-3_1", run: {|| update-agave-3-1 $packages_dir $dry_run } }
     { name: "agave-4_0", run: {|| update-agave-4-0 $packages_dir $dry_run } }
-    { name: "cargo-clean-all", run: {|| update-rust-cargo-clean-all $root $packages_dir $dry_run } }
-    { name: "cargo-interactive-update", run: {|| update-rust-cargo-interactive $root $packages_dir $dry_run } }
+    { name: "cargo-clean-all", run: {|| update-prebuilt-cargo-clean-all $packages_dir $dry_run } }
+    { name: "cargo-interactive-update", run: {|| update-prebuilt-cargo-interactive $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
     { name: "deno", run: {|| update-deno $packages_dir $dry_run } }
-    { name: "dylint", run: {|| update-rust-dylint $packages_dir $dry_run } }
+    { name: "dylint", run: {|| update-prebuilt-dylint $packages_dir $dry_run } }
     { name: "godot", run: {|| update-godot $packages_dir $dry_run } }
     { name: "gpg-suite", run: {|| update-gpg-suite $packages_dir $dry_run } }
     { name: "kani", run: {|| update-kani $packages_dir $dry_run } }
@@ -1249,12 +1346,12 @@ def main [
     { name: "monochange", run: {|| update-monochange $packages_dir $dry_run } }
     { name: "nordvpn", run: {|| update-nordvpn $packages_dir $dry_run } }
     { name: "ollama", run: {|| update-ollama $packages_dir $dry_run } }
-    { name: "pina", run: {|| update-rust-pina $root $packages_dir $dry_run } }
+    { name: "pina", run: {|| update-prebuilt-pina $packages_dir $dry_run } }
     { name: "pnpm", run: {|| update-pnpm $packages_dir $dry_run } }
     { name: "pnpm-10", run: {|| update-pnpm-10 $packages_dir $dry_run } }
     { name: "pnpm-11", run: {|| update-pnpm-11 $packages_dir $dry_run } }
     { name: "racket-minimal", run: {|| update-racket $packages_dir $dry_run } }
-    { name: "sbpf-linker", run: {|| update-rust-sbpf-linker $root $packages_dir $dry_run } }
+    { name: "sbpf-linker", run: {|| update-prebuilt-sbpf-linker $packages_dir $dry_run } }
     { name: "solana-verify", run: {|| update-solana-verify $packages_dir $dry_run } }
     { name: "steam", run: {|| update-rolling-steam $packages_dir $dry_run } }
     { name: "surfpool", run: {|| update-surfpool $packages_dir $dry_run } }
