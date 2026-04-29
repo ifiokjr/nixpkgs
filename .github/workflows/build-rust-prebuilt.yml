@@ -98,24 +98,14 @@ jobs:
       - name: Install cross-compilation tools (Linux aarch64)
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          cargo install cross
 
       - name: Install system dependencies
-        if: inputs.package == 'dylint'
+        if: inputs.package == 'dylint' && matrix.target != 'aarch64-unknown-linux-gnu'
         run: |
           if [ "${{ runner.os }}" = "Linux" ]; then
             sudo apt-get update
             sudo apt-get install -y pkg-config libssl-dev libgit2-dev zlib1g-dev
-            # Install cross-compilation libraries for aarch64
-            if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
-              sudo dpkg --add-architecture arm64
-              sudo apt-get update
-              sudo apt-get install -y \
-                libssl-dev:arm64 \
-                libgit2-dev:arm64 \
-                zlib1g-dev:arm64
-            fi
           elif [ "${{ runner.os }}" = "macOS" ]; then
             brew install openssl libgit2 zlib pkg-config
           fi
@@ -160,6 +150,7 @@ jobs:
           no-default-features: ${{ needs.prepare.outputs.no-default-features || 'false' }}
           locked: true
           ref: ${{ needs.prepare.outputs.tag }}
+          build-tool: ${{ matrix.target == 'aarch64-unknown-linux-gnu' && 'cross' || '' }}
           dry-run: true
 
       - name: Upload artifact
