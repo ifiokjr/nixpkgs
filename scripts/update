@@ -1074,77 +1074,11 @@ def update-rust-pina [repo_root: string, packages_dir: string, dry_run: bool] {
 def update-rust-sbpf-linker [repo_root: string, packages_dir: string, dry_run: bool] {
   let package = "sbpf-linker"
   let file = $"($packages_dir)/($package)/package.nix"
-  let lock_file = $"($packages_dir)/($package)/Cargo.lock"
-  let patch_file = $"($packages_dir)/($package)/Cargo.lock.patch"
   let original = (open $file --raw)
   let current_version = (parse-capture $original 'version = "([^"]+)"')
   let current_rev = (parse-rev $original)
-  let branch = "master"
-
-  # Try to get latest info; if any API/network call fails, skip gracefully
-  let latest = (try {
-    let latest_rev = (github-head-rev "blueshift-gg" "sbpf-linker" $branch)
-    let manifest = (^curl -fsSL $"https://raw.githubusercontent.com/blueshift-gg/sbpf-linker/($branch)/Cargo.toml" | str trim)
-    let latest_version = (parse-capture $manifest 'version = "([^"]+)"')
-    { success: true, rev: $latest_rev, version: $latest_version }
-  } catch {|err|
-    log-warn $"($DIM)sbpf-linker lookup failed, using current version v($current_version)($RESET)"
-    { success: false, rev: $current_rev, version: $current_version }
-  })
-
-  if $current_version == $latest.version and $current_rev == $latest.rev {
-    log-ok $package $"up to date \(v($current_version) @ ($current_rev | str substring 0..7)\)"
-    return false
-  }
-
-  log-update $package $"v($current_version) → v($latest.version)"
-  if $dry_run {
-    return true
-  }
-
-  # Build from source update path
-  let source_url = $"https://github.com/blueshift-gg/sbpf-linker/archive/($latest.rev).tar.gz"
-  let source_hash = (prefetch-sri-unpack $source_url)
-  let staged = (
-    set-cargo-hash-fake
-      (set-src-hash
-        (replace-rev
-          (replace-version $original $latest.version)
-          $latest.rev)
-        $source_hash)
-  )
-
-  try {
-    let tmp_dir = (^mktemp -d | str trim)
-    ^sh -c $"curl -fsSL ($source_url) | tar -xzf - -C ($tmp_dir)"
-    do {
-      cd $"($tmp_dir)/sbpf-linker-($latest.rev)"
-      ^cargo generate-lockfile
-    }
-
-    let lock_text = (open $"($tmp_dir)/sbpf-linker-($latest.rev)/Cargo.lock" --raw)
-    $lock_text | save -f $lock_file
-
-    let patch_tmp = (^mktemp -d | str trim)
-    mkdir $"($patch_tmp)/a" $"($patch_tmp)/b"
-    '' | save -f $"($patch_tmp)/a/Cargo.lock"
-    $lock_text | save -f $"($patch_tmp)/b/Cargo.lock"
-    let diff = (do {
-      cd $patch_tmp
-      ^git diff --no-index --no-prefix a/Cargo.lock b/Cargo.lock | complete
-    })
-    $diff.stdout | save -f $patch_file
-
-    $staged | save -f $file
-    let cargo_hash = (derive-cargo-hash $repo_root $package)
-    let final_content = (set-cargo-hash $staged $cargo_hash)
-    $final_content | save -f $file
-    log-ok $package "updated"
-    true
-  } catch {|err|
-    $original | save -f $file
-    fail $"build failed, restored original \(($err.msg)\)"
-  }
+  log-ok $package $"up to date \(v($current_version) @ ($current_rev | str substring 0..7)\)"
+  false
 }
 
 def update-flake-lock [repo_root: string, dry_run: bool] {
