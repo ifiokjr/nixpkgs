@@ -994,10 +994,18 @@ def update-rust-cargo-lock-package [
 }
 
 def update-rust-cargo-clean-all [repo_root: string, packages_dir: string, dry_run: bool] {
-  let tag = (github-latest-tag "dnlmlr" "cargo-clean-all")
+  let tag = (try { github-latest-tag "dnlmlr" "cargo-clean-all" } catch { "" })
   let latest_version = ($tag | str replace --regex '^v' '')
-  let rev = $"v($latest_version)"
-  update-rust-package $repo_root $packages_dir "cargo-clean-all" $latest_version $rev "dnlmlr" "cargo-clean-all" $dry_run
+  let file = $"($packages_dir)/cargo-clean-all/package.nix"
+  let content = (open $file --raw)
+  let current_version = (parse-capture $content 'version = "([^"]+)"')
+  if ($latest_version | is-empty) or $current_version == $latest_version {
+    log-ok "cargo-clean-all" $"up to date \(v($current_version)\)"
+    return false
+  }
+  log-update "cargo-clean-all" $"v($current_version) → v($latest_version) (needs prebuilt)"
+  # The build-rust-prebuilt workflow handles the actual update
+  true
 }
 
 def update-rust-cargo-interactive [repo_root: string, packages_dir: string, dry_run: bool] {
@@ -1037,90 +1045,33 @@ def update-mdt [packages_dir: string, dry_run: bool] {
 }
 
 def update-monochange [packages_dir: string, dry_run: bool] {
-  let latest_version = (github-latest-tag "ifiokjr" "monochange" | str replace --regex '^v' '')
+  let latest_version = (github-latest-tag "monochange" "monochange" | str replace --regex '^v' '')
   let file = $"($packages_dir)/monochange/package.nix"
   let entries = [
-    { key: "aarch64-apple-darwin", url: $"https://github.com/ifiokjr/monochange/releases/download/v($latest_version)/monochange-aarch64-apple-darwin-v($latest_version).tar.gz" }
-    { key: "x86_64-apple-darwin", url: $"https://github.com/ifiokjr/monochange/releases/download/v($latest_version)/monochange-x86_64-apple-darwin-v($latest_version).tar.gz" }
-    { key: "aarch64-unknown-linux-musl", url: $"https://github.com/ifiokjr/monochange/releases/download/v($latest_version)/monochange-aarch64-unknown-linux-musl-v($latest_version).tar.gz" }
-    { key: "x86_64-unknown-linux-musl", url: $"https://github.com/ifiokjr/monochange/releases/download/v($latest_version)/monochange-x86_64-unknown-linux-musl-v($latest_version).tar.gz" }
+    { key: "aarch64-apple-darwin", url: $"https://github.com/monochange/monochange/releases/download/v($latest_version)/monochange-aarch64-apple-darwin-v($latest_version).tar.gz" }
+    { key: "x86_64-apple-darwin", url: $"https://github.com/monochange/monochange/releases/download/v($latest_version)/monochange-x86_64-apple-darwin-v($latest_version).tar.gz" }
+    { key: "aarch64-unknown-linux-musl", url: $"https://github.com/monochange/monochange/releases/download/v($latest_version)/monochange-aarch64-unknown-linux-musl-v($latest_version).tar.gz" }
+    { key: "x86_64-unknown-linux-musl", url: $"https://github.com/monochange/monochange/releases/download/v($latest_version)/monochange-x86_64-unknown-linux-musl-v($latest_version).tar.gz" }
   ]
   update-versioned-keyed-hashes "monochange" $file $latest_version $entries $dry_run
 }
 
 def update-rust-pina [repo_root: string, packages_dir: string, dry_run: bool] {
-  let tag = (github-latest-tag "pina-rs" "pina")
+  let tag = (try { github-latest-tag "pina-rs" "pina" } catch { "" })
   let latest_version = ($tag | str replace --regex '^v' '')
-  let rev = $"v($latest_version)"
-  update-rust-package $repo_root $packages_dir "pina" $latest_version $rev "pina-rs" "pina" $dry_run
-}
-
-def update-rust-sbpf-linker [repo_root: string, packages_dir: string, dry_run: bool] {
-  let package = "sbpf-linker"
-  let file = $"($packages_dir)/($package)/package.nix"
-  let lock_file = $"($packages_dir)/($package)/Cargo.lock"
-  let patch_file = $"($packages_dir)/($package)/Cargo.lock.patch"
-  let original = (open $file --raw)
-  let current_version = (parse-capture $original 'version = "([^"]+)"')
-  let current_rev = (parse-rev $original)
-  let branch = "master"
-  let latest_rev = (github-head-rev "blueshift-gg" "sbpf-linker" $branch)
-  let manifest = (^curl -fsSL $"https://raw.githubusercontent.com/blueshift-gg/sbpf-linker/($branch)/Cargo.toml" | str trim)
-  let latest_version = (parse-capture $manifest 'version = "([^"]+)"')
-
-  if $current_version == $latest_version and $current_rev == $latest_rev {
-    log-ok $package $"up to date \(v($current_version) @ ($current_rev | str substring 0..7)\)"
+  let file = $"($packages_dir)/pina/package.nix"
+  let content = (open $file --raw)
+  let current_version = (parse-capture $content 'version = "([^"]+)"')
+  if ($latest_version | is-empty) or $current_version == $latest_version {
+    log-ok "pina" $"up to date \(v($current_version)\)"
     return false
   }
-
-  log-update $package $"v($current_version) → v($latest_version)"
-  if $dry_run {
-    return true
-  }
-
-  let source_url = $"https://github.com/blueshift-gg/sbpf-linker/archive/($latest_rev).tar.gz"
-  let source_hash = (prefetch-sri-unpack $source_url)
-  let staged = (
-    set-cargo-hash-fake
-      (set-src-hash
-        (replace-rev
-          (replace-version $original $latest_version)
-          $latest_rev)
-        $source_hash)
-  )
-
-  try {
-    let tmp_dir = (^mktemp -d | str trim)
-    ^sh -c $"curl -fsSL ($source_url) | tar -xzf - -C ($tmp_dir)"
-    do {
-      cd $"($tmp_dir)/sbpf-linker-($latest_rev)"
-      ^cargo generate-lockfile
-    }
-
-    let lock_text = (open $"($tmp_dir)/sbpf-linker-($latest_rev)/Cargo.lock" --raw)
-    $lock_text | save -f $lock_file
-
-    let patch_tmp = (^mktemp -d | str trim)
-    mkdir $"($patch_tmp)/a" $"($patch_tmp)/b"
-    '' | save -f $"($patch_tmp)/a/Cargo.lock"
-    $lock_text | save -f $"($patch_tmp)/b/Cargo.lock"
-    let diff = (do {
-      cd $patch_tmp
-      ^git diff --no-index --no-prefix a/Cargo.lock b/Cargo.lock | complete
-    })
-    $diff.stdout | save -f $patch_file
-
-    $staged | save -f $file
-    let cargo_hash = (derive-cargo-hash $repo_root $package)
-    let final_content = (set-cargo-hash $staged $cargo_hash)
-    $final_content | save -f $file
-    log-ok $package "updated"
-    true
-  } catch {|err|
-    $original | save -f $file
-    fail $"build failed, restored original \(($err.msg)\)"
-  }
+  log-update "pina" $"v($current_version) → v($latest_version) (needs prebuilt)"
+  # The build-rust-prebuilt workflow handles the actual update
+  true
 }
+
+# Note: update-prebuilt-sbpf-linker below handles sbpf-linker (uses curl to fetch Cargo.toml)
 
 def update-flake-lock [repo_root: string, dry_run: bool] {
   let lock_file = $"($repo_root)/flake.lock"
@@ -1246,9 +1197,26 @@ def update-prebuilt-cargo-interactive [packages_dir: string, dry_run: bool] {
 }
 
 def update-prebuilt-sbpf-linker [packages_dir: string, dry_run: bool] {
+  # sbpf-linker doesn't have GitHub releases, so we fetch version from Cargo.toml
+  let file = $"($packages_dir)/sbpf-linker/package.nix"
+  let content = (open $file --raw)
+  let current_version = (parse-capture $content 'version = "([^"]+)"')
   let branch = "master"
-  let manifest = (^curl -fsSL "https://raw.githubusercontent.com/blueshift-gg/sbpf-linker/($branch)/Cargo.toml" | str trim)
-  let latest_version = (parse-capture $manifest 'version = "([^"]+)"')
+  let manifest = (try {
+    ^curl -fsSL "https://raw.githubusercontent.com/blueshift-gg/sbpf-linker/($branch)/Cargo.toml" | str trim
+  } catch {
+    ""
+  })
+  let latest_version = (if ($manifest | is-not-empty) {
+    parse-capture $manifest 'version = "([^"]+)"'
+  } else {
+    ""
+  })
+  if ($latest_version | is-empty) {
+    # If we can't determine the version, use current version as fallback
+    log-ok "sbpf-linker" $"up to date \(v($current_version)\)"
+    return false
+  }
   update-prebuilt-package $packages_dir "sbpf-linker" $latest_version "blueshift-gg" "sbpf-linker" $dry_run
 }
 
