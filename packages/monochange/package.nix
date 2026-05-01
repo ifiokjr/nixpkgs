@@ -29,7 +29,7 @@ stdenv.mkDerivation {
   inherit version;
 
   src = fetchurl {
-    url = "https://github.com/ifiokjr/monochange/releases/download/${tag}/monochange-${platformSuffix}-${tag}.tar.gz";
+    url = "https://github.com/monochange/monochange/releases/download/${tag}/monochange-${platformSuffix}-${tag}.tar.gz";
     sha256 = hashes.${platformSuffix} or lib.fakeSha256;
   };
 
