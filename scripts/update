@@ -1198,18 +1198,22 @@ def update-prebuilt-cargo-interactive [packages_dir: string, dry_run: bool] {
 
 def update-prebuilt-sbpf-linker [packages_dir: string, dry_run: bool] {
   # sbpf-linker doesn't have GitHub releases, so we fetch version from Cargo.toml
+  let file = $"($packages_dir)/sbpf-linker/package.nix"
+  let content = (open $file --raw)
+  let current_version = (parse-capture $content 'version = "([^"]+)"')
   let branch = "master"
   let manifest = (try {
     ^curl -fsSL "https://raw.githubusercontent.com/blueshift-gg/sbpf-linker/($branch)/Cargo.toml" | str trim
   } catch {
-    "version = \"0.0.0\""
+    ""
   })
-  let latest_version = (parse-capture $manifest 'version = "([^"]+)"')
+  let latest_version = (if ($manifest | is-not-empty) {
+    parse-capture $manifest 'version = "([^"]+)"'
+  } else {
+    ""
+  })
   if ($latest_version | is-empty) {
-    # If we can't determine the version, just log and skip
-    let file = $"($packages_dir)/sbpf-linker/package.nix"
-    let content = (open $file --raw)
-    let current_version = (parse-capture $content 'version = "([^"]+)"')
+    # If we can't determine the version, use current version as fallback
     log-ok "sbpf-linker" $"up to date \(v($current_version)\)"
     return false
   }
