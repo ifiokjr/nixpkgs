@@ -1071,15 +1071,7 @@ def update-rust-pina [repo_root: string, packages_dir: string, dry_run: bool] {
   true
 }
 
-def update-rust-sbpf-linker [repo_root: string, packages_dir: string, dry_run: bool] {
-  let package = "sbpf-linker"
-  let file = $"($packages_dir)/($package)/package.nix"
-  let original = (open $file --raw)
-  let current_version = (parse-capture $original 'version = "([^"]+)"')
-  let current_rev = (parse-rev $original)
-  log-ok $package $"up to date \(v($current_version) @ ($current_rev | str substring 0..7)\)"
-  false
-}
+# Note: update-prebuilt-sbpf-linker below handles sbpf-linker (uses curl to fetch Cargo.toml)
 
 def update-flake-lock [repo_root: string, dry_run: bool] {
   let lock_file = $"($repo_root)/flake.lock"
@@ -1205,9 +1197,22 @@ def update-prebuilt-cargo-interactive [packages_dir: string, dry_run: bool] {
 }
 
 def update-prebuilt-sbpf-linker [packages_dir: string, dry_run: bool] {
+  # sbpf-linker doesn't have GitHub releases, so we fetch version from Cargo.toml
   let branch = "master"
-  let manifest = (^curl -fsSL "https://raw.githubusercontent.com/blueshift-gg/sbpf-linker/($branch)/Cargo.toml" | str trim)
+  let manifest = (try {
+    ^curl -fsSL "https://raw.githubusercontent.com/blueshift-gg/sbpf-linker/($branch)/Cargo.toml" | str trim
+  } catch {
+    "version = \"0.0.0\""
+  })
   let latest_version = (parse-capture $manifest 'version = "([^"]+)"')
+  if ($latest_version | is-empty) {
+    # If we can't determine the version, just log and skip
+    let file = $"($packages_dir)/sbpf-linker/package.nix"
+    let content = (open $file --raw)
+    let current_version = (parse-capture $content 'version = "([^"]+)"')
+    log-ok "sbpf-linker" $"up to date \(v($current_version)\)"
+    return false
+  }
   update-prebuilt-package $packages_dir "sbpf-linker" $latest_version "blueshift-gg" "sbpf-linker" $dry_run
 }
 
