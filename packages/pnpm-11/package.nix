@@ -2,13 +2,13 @@
 
 callPackage ../pnpm/common.nix {
   pname = "pnpm-11";
-  version = "11.0.0";
+  version = "11.0.3";
   description = "Fast, disk space efficient package manager (standalone, no Node.js dependency) — v11 pre-release";
-  exeHash = "sha256-dC2n9YNjUhIsjSeUXeA/vI+wvMuMzARADF1KeRG2nEg=";
+  exeHash = "sha256-NBrv1yQXPwI0k0ANHQD4+YPPqAaGKT7ONFiqB+abqxs=";
   hashes = {
-    "x86_64-linux" = "sha256-44VSx+QTWMfNwq4B7U3TlgyWTxOoBOn4d2XbkCyQGds=";
-    "aarch64-linux" = "sha256-ur19gaUvuFYm6joZlkazQDk5HgUgvSff4pH344pB30U=";
-    "x86_64-darwin" = "sha256-P5KfWs/W6ePBMAi1fQoD8QKXTmNK5fQWWvJZh73ionE=";
-    "aarch64-darwin" = "sha256-pyhjK3baFvBDtsUSzjy1gv0FZ5S9ZEjDFaSXRCD7V4k=";
+    "x86_64-linux" = "sha256-080QOXHYWQ1qSmIjXEKNuJJRNhM820JJ/ss5VWRUOys=";
+    "aarch64-linux" = "sha256-fizGskwrUCSlqS8VI63a7dgmeQlR1sK/ID21dfHAPqE=";
+    "x86_64-darwin" = "sha256-++aV+EaJXDtmYfHxHb1xPtUm7aK+g4IUQ/JpTEnRykc=";
+    "aarch64-darwin" = "sha256-axjNhsKIq9RpFSpm2IWouIq3byi0xNLaeIcnIgctBow=";
   };
 }
