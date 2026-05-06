@@ -19,7 +19,7 @@ let
   hashes = {
     "aarch64-apple-darwin" = "sha256-YFxJB63Ze+i38cqssm487+yT1qhJZr/5GTYy6VKcSBI=";
     "x86_64-apple-darwin" = "sha256-B763ofTJc8Si/bYkhvhxaYBH21pOr9OsJKgTvDcZV70=";
-    "x86_64-unknown-linux-gnu" = "sha256-4ndk7oEPB5Ee1jrqESfzCtd+isNEoWDcVCHSjzw/Iq4=";
+    "x86_64-unknown-linux-gnu" = "sha256-+iGFrClE5MMvSsc3GG5EQvg1mn/XNU7hzjGI6dUwJSw=";
   };
 in
 stdenv.mkDerivation {

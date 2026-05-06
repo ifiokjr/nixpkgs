@@ -181,6 +181,61 @@ jobs:
       - name: 🏗️ build ${{ matrix.package }}
         run: nix build .#${{ matrix.package }}
 
+  downstream:
+    name: "downstream ${{ matrix.project }}"
+    needs: [detect-changes, validate, test-update-script]
+    if: contains(needs.detect-changes.outputs.linux-packages, 'pnpm') || contains(needs.detect-changes.outputs.macos-packages, 'pnpm') || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: monochange
+            repository: monochange/monochange
+            command: pnpm install --frozen-lockfile
+    steps:
+      - name: 📥 checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔧 install nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 set up nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: 📥 checkout downstream ${{ matrix.project }}
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.repository }}
+          path: downstream/${{ matrix.project }}
+
+      - name: 🧪 test downstream ${{ matrix.project }}
+        working-directory: downstream/${{ matrix.project }}
+        run: |
+          set -euo pipefail
+          export XDG_DATA_HOME="$PWD/.xdg-data"
+          export XDG_CACHE_HOME="$PWD/.xdg-cache"
+          mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME"
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("devenv.yaml")
+          text = path.read_text()
+          text = text.replace("url: github:ifiokjr/nixpkgs", f"url: path:{Path.cwd().parents[1]}")
+          path.write_text(text)
+          PY
+
+          nix shell nixpkgs#devenv -c devenv update ifiokjr-nixpkgs
+          nix shell nixpkgs#devenv -c env \
+            HOME=/homeless-shelter \
+            PNPM_HOME="$XDG_DATA_HOME/pnpm" \
+            XDG_CACHE_HOME="$PWD/.xdg-cache" \
+            XDG_DATA_HOME="$XDG_DATA_HOME" \
+            devenv shell ${{ matrix.command }}
+
   build-macos:
     name: "build ${{ matrix.package }} (macos)"
     needs: [detect-changes, validate, test-update-script]
