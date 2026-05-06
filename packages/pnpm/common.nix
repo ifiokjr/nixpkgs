@@ -333,6 +333,7 @@ stdenv.mkDerivation {
           export PNPM_ACTIVATE_PNPM_BIN="$FAKE_PNPM"
           export TEST_PNPM_HOME TEST_LOG
           export PNPM_HOME="$TEST_PNPM_HOME"
+          export PATH="$TEST_PNPM_HOME/nodejs/20.11.1/bin:/usr/bin:$TEST_PNPM_HOME:/bin"
           EXPORTS="$($out/bin/pnpm-activate-env)"
           test -n "$EXPORTS"
           eval "$EXPORTS"
@@ -357,7 +358,15 @@ stdenv.mkDerivation {
           export PNPM_ACTIVATE_PNPM_BIN="$FAKE_PNPM"
           export TEST_PNPM_HOME TEST_LOG
           export PNPM_HOME="$TEST_PNPM_HOME"
+          export PATH="$TEST_PNPM_HOME/nodejs/20.11.1/bin:/usr/bin:$TEST_PNPM_HOME:/bin"
           . "$out/bin/pnpm-activate-env"
+          case "$PATH" in
+            "$TEST_PNPM_HOME:$TEST_PNPM_HOME/nodejs/20.11.1/bin:"*) ;;
+            *)
+              echo "sourcing pnpm-activate-env did not prioritize PNPM_HOME before Node bin path" >&2
+              exit 1
+              ;;
+          esac
           case ":$PATH:" in
             *":$TEST_PNPM_HOME/nodejs/20.11.1/bin:") ;;
             *)
