@@ -120,20 +120,26 @@ stdenv.mkDerivation {
     mkdir -p $out/nix-support
     cat > $out/nix-support/setup-hook <<'EOF'
     if [ -z "''${PNPM_HOME:-}" ]; then
-      case "$(uname -s)" in
-        Darwin)
-          export PNPM_HOME="''${HOME:?}/Library/pnpm"
-          ;;
-        *)
-          export PNPM_HOME="''${HOME:?}/.local/share/pnpm"
-          ;;
-      esac
+      if [ -n "''${XDG_DATA_HOME:-}" ]; then
+        export PNPM_HOME="''${XDG_DATA_HOME}/pnpm"
+      elif [ -n "''${HOME:-}" ] && [ "''${HOME}" != /homeless-shelter ]; then
+        case "$(uname -s)" in
+          Darwin)
+            export PNPM_HOME="''${HOME}/Library/pnpm"
+            ;;
+          *)
+            export PNPM_HOME="''${HOME}/.local/share/pnpm"
+            ;;
+        esac
+      fi
     fi
 
-    case ":''${PATH:-}:" in
-      *":''${PNPM_HOME}:"*) ;;
-      *) export PATH="''${PNPM_HOME}:''${PATH:-}" ;;
-    esac
+    if [ -n "''${PNPM_HOME:-}" ]; then
+      case ":''${PATH:-}:" in
+        *":''${PNPM_HOME}:"*) ;;
+        *) export PATH="''${PNPM_HOME}:''${PATH:-}" ;;
+      esac
+    fi
     EOF
 
     runHook postInstall
@@ -188,6 +194,29 @@ stdenv.mkDerivation {
               exit 1
               ;;
           esac
+        )
+        (
+          export HOME="/homeless-shelter"
+          export XDG_DATA_HOME="$SETUP_ROOT/xdg-data"
+          export PATH="/usr/bin:/bin"
+          unset PNPM_HOME
+          . "$out/nix-support/setup-hook"
+          test "$PNPM_HOME" = "$XDG_DATA_HOME/pnpm"
+          case ":$PATH:" in
+            *":$XDG_DATA_HOME/pnpm:"*) ;;
+            *)
+              echo "setup-hook did not use XDG_DATA_HOME when HOME is /homeless-shelter" >&2
+              exit 1
+              ;;
+          esac
+        )
+        (
+          export HOME="/homeless-shelter"
+          export PATH="/usr/bin:/bin"
+          unset XDG_DATA_HOME PNPM_HOME
+          . "$out/nix-support/setup-hook"
+          test -z "''${PNPM_HOME:-}"
+          test "$PATH" = "/usr/bin:/bin"
         )
 
         echo "Checking pnpm-activate-env helper..."
