@@ -207,15 +207,21 @@ emit_export_script() {
 	printf '__pnpm_activate_node_bin=%s\n' "$quoted_node_bin"
 	cat <<'EOF'
 export PNPM_HOME="${__pnpm_activate_pnpm_home}"
-case ":$PATH:" in
-  *":${__pnpm_activate_node_bin}:"*) ;;
-  *) export PATH="${__pnpm_activate_node_bin}:$PATH" ;;
-esac
-case ":$PATH:" in
-  *":${__pnpm_activate_pnpm_home}:"*) ;;
-  *) export PATH="${__pnpm_activate_pnpm_home}:$PATH" ;;
-esac
-unset __pnpm_activate_pnpm_home __pnpm_activate_node_bin
+__pnpm_activate_old_path="${PATH:-}"
+PATH=""
+IFS=:
+for __pnpm_activate_path_entry in ${__pnpm_activate_old_path}; do
+  if [ "${__pnpm_activate_path_entry}" != "${__pnpm_activate_pnpm_home}" ] && [ "${__pnpm_activate_path_entry}" != "${__pnpm_activate_node_bin}" ]; then
+    if [ -z "${PATH}" ]; then
+      PATH="${__pnpm_activate_path_entry}"
+    else
+      PATH="${PATH}:${__pnpm_activate_path_entry}"
+    fi
+  fi
+done
+unset IFS
+export PATH="${__pnpm_activate_pnpm_home}:${__pnpm_activate_node_bin}:${PATH}"
+unset __pnpm_activate_pnpm_home __pnpm_activate_node_bin __pnpm_activate_old_path __pnpm_activate_path_entry
 EOF
 }
 
@@ -223,15 +229,25 @@ apply_path() {
 	local pnpm_home="$1"
 	local node_bin="$2"
 
+	local old_path="$PATH"
+	local new_path=""
+	local entry
+
 	export PNPM_HOME="$pnpm_home"
 
-	if ! path_has_entry "$PATH" "$node_bin"; then
-		export PATH="${node_bin}:$PATH"
-	fi
+	IFS=:
+	for entry in $old_path; do
+		if [ "$entry" != "$pnpm_home" ] && [ "$entry" != "$node_bin" ]; then
+			if [ -z "$new_path" ]; then
+				new_path="$entry"
+			else
+				new_path="${new_path}:$entry"
+			fi
+		fi
+	done
+	unset IFS
 
-	if ! path_has_entry "$PATH" "$pnpm_home"; then
-		export PATH="${pnpm_home}:$PATH"
-	fi
+	export PATH="${pnpm_home}:${node_bin}:${new_path}"
 }
 
 main() {
