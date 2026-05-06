@@ -163,7 +163,22 @@ resolve_pnpm_home() {
 	global_bin="$(trim "$global_bin")"
 
 	if [ -n "$global_bin" ] && [ "$global_bin" != "undefined" ]; then
-		printf '%s\n' "$global_bin"
+		case "$global_bin" in
+		/homeless-shelter | /homeless-shelter/*) ;;
+		*)
+			printf '%s\n' "$global_bin"
+			return 0
+			;;
+		esac
+	fi
+
+	if [ -n "${XDG_DATA_HOME:-}" ]; then
+		printf '%s\n' "${XDG_DATA_HOME}/pnpm"
+		return 0
+	fi
+
+	if [ "${HOME:-}" = "/homeless-shelter" ]; then
+		printf '%s\n' "${PWD}/.pnpm-home"
 		return 0
 	fi
 
@@ -193,12 +208,12 @@ emit_export_script() {
 	cat <<'EOF'
 export PNPM_HOME="${__pnpm_activate_pnpm_home}"
 case ":$PATH:" in
-  *":${__pnpm_activate_pnpm_home}:"*) ;;
-  *) export PATH="${__pnpm_activate_pnpm_home}:$PATH" ;;
-esac
-case ":$PATH:" in
   *":${__pnpm_activate_node_bin}:"*) ;;
   *) export PATH="${__pnpm_activate_node_bin}:$PATH" ;;
+esac
+case ":$PATH:" in
+  *":${__pnpm_activate_pnpm_home}:"*) ;;
+  *) export PATH="${__pnpm_activate_pnpm_home}:$PATH" ;;
 esac
 unset __pnpm_activate_pnpm_home __pnpm_activate_node_bin
 EOF
@@ -210,12 +225,12 @@ apply_path() {
 
 	export PNPM_HOME="$pnpm_home"
 
-	if ! path_has_entry "$PATH" "$pnpm_home"; then
-		export PATH="${pnpm_home}:$PATH"
-	fi
-
 	if ! path_has_entry "$PATH" "$node_bin"; then
 		export PATH="${node_bin}:$PATH"
+	fi
+
+	if ! path_has_entry "$PATH" "$pnpm_home"; then
+		export PATH="${pnpm_home}:$PATH"
 	fi
 }
 

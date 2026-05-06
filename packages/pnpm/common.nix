@@ -234,7 +234,7 @@ stdenv.mkDerivation {
 
         case "''${1-} ''${2-} ''${3-}" in
           "bin -g ")
-            printf '%s\n' "$effective_pnpm_home"
+            printf '%s\n' "''${TEST_FAKE_GLOBAL_BIN:-$effective_pnpm_home}"
             ;;
           "env add --global")
             version="''${4:?missing version}"
@@ -265,6 +265,38 @@ stdenv.mkDerivation {
           test -n "$EXPORTS"
           eval "$EXPORTS"
           test "$PNPM_HOME" = "$TEST_PNPM_HOME"
+        )
+
+        mkdir -p "$TEST_ROOT/homeless-home/ws"
+        cat > "$TEST_ROOT/homeless-home/ws/pnpm-workspace.yaml" <<'EOF'
+        useNodeVersion: "20.11.1"
+        EOF
+
+        (
+          cd "$TEST_ROOT/homeless-home/ws"
+          export PNPM_ACTIVATE_PNPM_BIN="$FAKE_PNPM"
+          export TEST_FAKE_GLOBAL_BIN="/homeless-shelter/.local/share/pnpm"
+          export TEST_LOG
+          export HOME="/homeless-shelter"
+          export XDG_DATA_HOME="$TEST_ROOT/xdg-data"
+          unset PNPM_HOME
+          EXPORTS="$($out/bin/pnpm-activate-env)"
+          test -n "$EXPORTS"
+          eval "$EXPORTS"
+          test "$PNPM_HOME" = "$XDG_DATA_HOME/pnpm"
+        )
+
+        (
+          cd "$TEST_ROOT/homeless-home/ws"
+          export PNPM_ACTIVATE_PNPM_BIN="$FAKE_PNPM"
+          export TEST_FAKE_GLOBAL_BIN="/homeless-shelter/.local/share/pnpm"
+          export TEST_LOG
+          export HOME="/homeless-shelter"
+          unset XDG_DATA_HOME PNPM_HOME
+          EXPORTS="$($out/bin/pnpm-activate-env)"
+          test -n "$EXPORTS"
+          eval "$EXPORTS"
+          test "$PNPM_HOME" = "$PWD/.pnpm-home"
         )
 
         mkdir -p "$TEST_ROOT/no-workspace"
@@ -304,6 +336,13 @@ stdenv.mkDerivation {
           EXPORTS="$($out/bin/pnpm-activate-env)"
           test -n "$EXPORTS"
           eval "$EXPORTS"
+          case "$PATH" in
+            "$TEST_PNPM_HOME:"*) ;;
+            *)
+              echo "pnpm-activate-env did not prioritize PNPM_HOME on PATH" >&2
+              exit 1
+              ;;
+          esac
           case ":$PATH:" in
             *":$TEST_PNPM_HOME/nodejs/20.11.1/bin:") ;;
             *)
