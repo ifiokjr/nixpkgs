@@ -117,6 +117,25 @@ stdenv.mkDerivation {
     install -m 755 ${./pnpm-activate-env.sh} $out/bin/pnpm-activate-env
     patchShebangs $out/bin/pnpm-activate-env
 
+    mkdir -p $out/nix-support
+    cat > $out/nix-support/setup-hook <<'EOF'
+    if [ -z "''${PNPM_HOME:-}" ]; then
+      case "$(uname -s)" in
+        Darwin)
+          export PNPM_HOME="''${HOME:?}/Library/pnpm"
+          ;;
+        *)
+          export PNPM_HOME="''${HOME:?}/.local/share/pnpm"
+          ;;
+      esac
+    fi
+
+    case ":''${PATH:-}:" in
+      *":''${PNPM_HOME}:"*) ;;
+      *) export PATH="''${PNPM_HOME}:''${PATH:-}" ;;
+    esac
+    EOF
+
     runHook postInstall
   '';
 
@@ -132,6 +151,44 @@ stdenv.mkDerivation {
         cd "$WORK"
         $out/bin/pnpm init
         test -f package.json
+
+        echo "Checking PNPM_HOME setup hook..."
+        SETUP_ROOT=$(mktemp -d)
+        (
+          export HOME="$SETUP_ROOT/home"
+          export PATH="/usr/bin:/bin"
+          unset PNPM_HOME
+          . "$out/nix-support/setup-hook"
+          case "$(uname -s)" in
+            Darwin)
+              test "$PNPM_HOME" = "$HOME/Library/pnpm"
+              ;;
+            *)
+              test "$PNPM_HOME" = "$HOME/.local/share/pnpm"
+              ;;
+          esac
+          case ":$PATH:" in
+            *":$PNPM_HOME:"*) ;;
+            *)
+              echo "setup-hook did not add PNPM_HOME to PATH" >&2
+              exit 1
+              ;;
+          esac
+        )
+        (
+          export HOME="$SETUP_ROOT/home"
+          export PNPM_HOME="$SETUP_ROOT/custom-pnpm-home"
+          export PATH="/usr/bin:/bin"
+          . "$out/nix-support/setup-hook"
+          test "$PNPM_HOME" = "$SETUP_ROOT/custom-pnpm-home"
+          case ":$PATH:" in
+            *":$SETUP_ROOT/custom-pnpm-home:"*) ;;
+            *)
+              echo "setup-hook did not preserve and add custom PNPM_HOME to PATH" >&2
+              exit 1
+              ;;
+          esac
+        )
 
         echo "Checking pnpm-activate-env helper..."
         TEST_ROOT=$(mktemp -d)
