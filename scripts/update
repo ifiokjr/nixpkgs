@@ -1032,6 +1032,19 @@ def update-rust-knope [repo_root: string, packages_dir: string, dry_run: bool] {
   update-rust-package $repo_root $packages_dir "knope" $latest_version $rev "knope-dev" "knope" $dry_run
 }
 
+def update-ironclaw [packages_dir: string, dry_run: bool] {
+  let tag = (github-latest-tag-with-prefix "nearai" "ironclaw" "ironclaw-v")
+  let latest_version = ($tag | str replace --regex '^ironclaw-v' '')
+  let file = $"($packages_dir)/ironclaw/package.nix"
+  let entries = [
+    { key: "aarch64-apple-darwin", url: $"https://github.com/nearai/ironclaw/releases/download/($tag)/ironclaw-aarch64-apple-darwin.tar.gz" }
+    { key: "x86_64-apple-darwin", url: $"https://github.com/nearai/ironclaw/releases/download/($tag)/ironclaw-x86_64-apple-darwin.tar.gz" }
+    { key: "aarch64-unknown-linux-gnu", url: $"https://github.com/nearai/ironclaw/releases/download/($tag)/ironclaw-aarch64-unknown-linux-gnu.tar.gz" }
+    { key: "x86_64-unknown-linux-musl", url: $"https://github.com/nearai/ironclaw/releases/download/($tag)/ironclaw-x86_64-unknown-linux-musl.tar.gz" }
+  ]
+  update-versioned-keyed-hashes "ironclaw" $file $latest_version $entries $dry_run
+}
+
 def update-mdt [packages_dir: string, dry_run: bool] {
   let latest_version = (github-latest-tag "ifiokjr" "mdt" | str replace --regex '^v' '')
   let file = $"($packages_dir)/mdt/package.nix"
@@ -1308,6 +1321,7 @@ def main [
     { name: "dylint", run: {|| update-prebuilt-dylint $packages_dir $dry_run } }
     { name: "godot", run: {|| update-godot $packages_dir $dry_run } }
     { name: "gpg-suite", run: {|| update-gpg-suite $packages_dir $dry_run } }
+    { name: "ironclaw", run: {|| update-ironclaw $packages_dir $dry_run } }
     { name: "kani", run: {|| update-kani $packages_dir $dry_run } }
     { name: "knope", run: {|| update-rust-knope $root $packages_dir $dry_run } }
     { name: "mdt", run: {|| update-mdt $packages_dir $dry_run } }
