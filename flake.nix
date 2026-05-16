@@ -75,7 +75,7 @@
           deno = pkgs.callPackage ./packages/deno/package.nix { };
           godot = pkgs.callPackage ./packages/godot/package.nix { };
           gpg-suite = pkgs.callPackage ./packages/gpg-suite/package.nix { };
-        ironclaw = pkgs.callPackage ./packages/ironclaw/package.nix { };
+          ironclaw = pkgs.callPackage ./packages/ironclaw/package.nix { };
           kani = pkgs.callPackage ./packages/kani/package.nix { };
           knope = pkgs.callPackage ./packages/knope/package.nix { };
           mdt = pkgs.callPackage ./packages/mdt/package.nix { };
