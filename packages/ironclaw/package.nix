@@ -36,14 +36,11 @@ stdenv.mkDerivation {
   dontBuild = true;
   dontStrip = stdenv.isDarwin;
 
-  sourceRoot = ".";
-
   installPhase = ''
     runHook preInstall
 
     mkdir -p $out/bin
-    cp ironclaw-${platformSuffix}/ironclaw $out/bin/ironclaw
-    chmod +x $out/bin/ironclaw
+    install -m 755 ironclaw $out/bin/ironclaw
 
     runHook postInstall
   '';
