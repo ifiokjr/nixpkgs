@@ -35,17 +35,18 @@ stdenv.mkDerivation {
 
   dontBuild = true;
   dontStrip = true;
+  dontFixup = true;
 
   installPhase = ''
     runHook preInstall
 
     mkdir -p $out/bin
-    cp ironclaw-${platformSuffix}/ironclaw $out/bin/
+    cp ironclaw $out/bin/
     chmod +x $out/bin/ironclaw
 
     # Install sandbox daemon alongside ironclaw (used for isolated tool execution)
-    if [ -f ironclaw-${platformSuffix}/sandbox_daemon ]; then
-      cp ironclaw-${platformSuffix}/sandbox_daemon $out/bin/
+    if [ -f sandbox_daemon ]; then
+      cp sandbox_daemon $out/bin/
       chmod +x $out/bin/sandbox_daemon
     fi
 
