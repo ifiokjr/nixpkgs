@@ -22,8 +22,8 @@ jobs:
       - name: 🔍 detect changed packages
         id: changes
         run: |
-          LINUX_PACKAGES="agave agave-2_0 agave-2_1 agave-2_2 agave-2_3 agave-3_0 agave-3_1 cargo-interactive-update codex-cli deno dylint godot knope mdt monochange ollama pina pnpm pnpm-10 pnpm-11 pnpm-standalone racket-minimal surfpool wait-for-them"
-          MACOS_PACKAGES="agave agave-2_0 agave-2_1 agave-2_2 agave-2_3 agave-3_0 agave-3_1 cargo-interactive-update codex-cli deno dylint godot gpg-suite knope mdt monochange nordvpn ollama pina pnpm pnpm-10 pnpm-11 pnpm-standalone racket-minimal steam surfpool zoom"
+          LINUX_PACKAGES="agave agave-2_0 agave-2_1 agave-2_2 agave-2_3 agave-3_0 agave-3_1 cargo-interactive-update codex-cli deno dylint godot knope mdt monochange ollama pina pnpm pnpm-10 pnpm-11 pnpm-standalone racket-minimal secretspec surfpool wait-for-them"
+          MACOS_PACKAGES="agave agave-2_0 agave-2_1 agave-2_2 agave-2_3 agave-3_0 agave-3_1 cargo-interactive-update codex-cli deno dylint godot gpg-suite knope mdt monochange nordvpn ollama pina pnpm pnpm-10 pnpm-11 pnpm-standalone racket-minimal secretspec steam surfpool zoom"
 
           build_all=false
 
@@ -217,7 +217,7 @@ jobs:
           set -euo pipefail
           export XDG_DATA_HOME="$PWD/.xdg-data"
           export XDG_CACHE_HOME="$PWD/.xdg-cache"
-          mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME"
+          mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$PWD/.home"
 
           python3 - <<'PY'
           from pathlib import Path
@@ -230,7 +230,7 @@ jobs:
 
           nix shell nixpkgs#devenv -c devenv update ifiokjr-nixpkgs
           nix shell nixpkgs#devenv -c env \
-            HOME=/homeless-shelter \
+            HOME="$PWD/.home" \
             PNPM_HOME="$XDG_DATA_HOME/pnpm" \
             XDG_CACHE_HOME="$PWD/.xdg-cache" \
             XDG_DATA_HOME="$XDG_DATA_HOME" \
