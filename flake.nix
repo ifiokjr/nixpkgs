@@ -36,6 +36,7 @@
         monochange = final.callPackage ./packages/monochange/package.nix { };
         nordvpn = final.callPackage ./packages/nordvpn/package.nix { };
         ollama = final.callPackage ./packages/ollama/package.nix { };
+        op = final.callPackage ./packages/op/package.nix { };
         pina = final.callPackage ./packages/pina/package.nix { };
         pnpm = final.callPackage ./packages/pnpm/package.nix { };
         pnpm-10 = final.callPackage ./packages/pnpm-10/package.nix { };
@@ -82,6 +83,7 @@
           monochange = pkgs.callPackage ./packages/monochange/package.nix { };
           nordvpn = pkgs.callPackage ./packages/nordvpn/package.nix { };
           ollama = pkgs.callPackage ./packages/ollama/package.nix { };
+          op = pkgs.callPackage ./packages/op/package.nix { };
           pina = pkgs.callPackage ./packages/pina/package.nix { };
           pnpm = pkgs.callPackage ./packages/pnpm/package.nix { };
           pnpm-10 = pkgs.callPackage ./packages/pnpm-10/package.nix { };

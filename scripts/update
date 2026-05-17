@@ -886,6 +886,67 @@ def update-solana-verify [packages_dir: string, dry_run: bool] {
   update-versioned-keyed-hashes "solana-verify" $file $latest_version $entries $dry_run
 }
 
+def update-op [packages_dir: string, dry_run: bool] {
+  let rss = (try {
+    http get "https://releases.1password.com/developers/cli-beta/index.xml"
+  } catch {
+    fail "Failed to fetch 1Password CLI beta RSS feed"
+  })
+  let latest_version = (
+    $rss
+    | parse --regex '<item>.*?<title>1Password CLI Beta ([^<]+)</title>'
+    | get -o capture0.0
+    | default ""
+  )
+  if ($latest_version | is-empty) {
+    fail "Could not parse latest beta version from RSS feed"
+  }
+
+  let file = $"($packages_dir)/op/package.nix"
+  if not ($file | path exists) {
+    fail $"missing file: ($file)"
+  }
+
+  let content = (open $file --raw)
+  let current_version = (parse-capture $content 'version = "([^"]+)"')
+  if ($current_version | is-empty) {
+    fail "could not parse version for op"
+  }
+
+  if $current_version == $latest_version {
+    log-ok "op" $"up to date \(v($current_version)\)"
+    return false
+  }
+
+  log-update "op" $"v($current_version) → v($latest_version)"
+  if $dry_run {
+    return true
+  }
+
+  mut updated = (replace-version $content $latest_version)
+
+  # Fetch hashes for each platform
+  let entries = [
+    { key: "linux_arm64", url: $"https://cache.agilebits.com/dist/1P/op2/pkg/v($latest_version)/op_linux_arm64_v($latest_version).zip" }
+    { key: "linux_amd64", url: $"https://cache.agilebits.com/dist/1P/op2/pkg/v($latest_version)/op_linux_amd64_v($latest_version).zip" }
+    { key: "apple_universal", url: $"https://cache.agilebits.com/dist/1P/op2/pkg/v($latest_version)/op_apple_universal_v($latest_version).pkg" }
+  ]
+  for entry in $entries {
+    log-sub $"fetching ($entry.key)..."
+    let new_hash = (prefetch-sri $entry.url)
+    # Replace the hash in: fetch "key" "old_hash" "ext"
+    let current_hash = (parse-capture $updated $"fetch \"($entry.key)\" \"([^\"]+)\"")
+    if ($current_hash | is-empty) {
+      fail $"could not find hash for ($entry.key)"
+    }
+    $updated = ($updated | str replace $"fetch \"($entry.key)\" \"($current_hash)\"" $"fetch \"($entry.key)\" \"($new_hash)\"")
+  }
+
+  $updated | save -f $file
+  log-ok "op" "updated"
+  true
+}
+
 def update-nordvpn [packages_dir: string, dry_run: bool] {
   let latest_version = (brew-cask-latest-version "nordvpn")
   let file = $"($packages_dir)/nordvpn/package.nix"
@@ -1328,6 +1389,7 @@ def main [
     { name: "monochange", run: {|| update-monochange $packages_dir $dry_run } }
     { name: "nordvpn", run: {|| update-nordvpn $packages_dir $dry_run } }
     { name: "ollama", run: {|| update-ollama $packages_dir $dry_run } }
+    { name: "op", run: {|| update-op $packages_dir $dry_run } }
     { name: "pina", run: {|| update-prebuilt-pina $packages_dir $dry_run } }
     { name: "pnpm", run: {|| update-pnpm $packages_dir $dry_run } }
     { name: "pnpm-10", run: {|| update-pnpm-10 $packages_dir $dry_run } }
