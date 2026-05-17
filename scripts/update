@@ -935,11 +935,15 @@ def update-op [packages_dir: string, dry_run: bool] {
     log-sub $"fetching ($entry.key)..."
     let new_hash = (prefetch-sri $entry.url)
     # Replace the hash in: fetch "key" "old_hash" "ext"
-    let current_hash = (parse-capture $updated $"fetch \"($entry.key)\" \"([^\"]+)\"")
+    # Use parse-capture with a pattern that matches the fetch call
+    let pattern = 'fetch "' + $entry.key + '" "(sha256-[^"]+)"'
+    let current_hash = (parse-capture $updated $pattern)
     if ($current_hash | is-empty) {
       fail $"could not find hash for ($entry.key)"
     }
-    $updated = ($updated | str replace $"fetch \"($entry.key)\" \"($current_hash)\"" $"fetch \"($entry.key)\" \"($new_hash)\"")
+    let old_fragment = 'fetch "' + $entry.key + '" "' + $current_hash + '"'
+    let new_fragment = 'fetch "' + $entry.key + '" "' + $new_hash + '"'
+    $updated = ($updated | str replace $old_fragment $new_fragment)
   }
 
   $updated | save -f $file
