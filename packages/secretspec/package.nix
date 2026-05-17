@@ -36,6 +36,9 @@ rustPlatform.buildRustPackage {
   # Only build the CLI binary (not the derive macro crate or examples)
   buildAndTestSubcommand = "secretspec";
 
+  # Keyring tests need system keyring access which doesn't work in the Nix sandbox
+  doCheck = false;
+
   doInstallCheck = true;
   installCheckPhase = ''
     runHook preInstallCheck
