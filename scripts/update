@@ -888,7 +888,7 @@ def update-solana-verify [packages_dir: string, dry_run: bool] {
 
 def update-op [packages_dir: string, dry_run: bool] {
   let rss = (try {
-    http get "https://releases.1password.com/developers/cli-beta/index.xml"
+    ^curl -fsSL "https://releases.1password.com/developers/cli-beta/index.xml" | str trim
   } catch {
     fail "Failed to fetch 1Password CLI beta RSS feed"
   })
