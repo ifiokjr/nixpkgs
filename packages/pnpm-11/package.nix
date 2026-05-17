@@ -3,7 +3,7 @@
 callPackage ../pnpm/common.nix {
   pname = "pnpm-11";
   version = "11.0.4";
-  description = "Fast, disk space efficient package manager (standalone, no Node.js dependency) — v11 pre-release";
+  description = "Fast, disk space efficient package manager (standalone, no Node.js dependency) — v11";
   exeHash = "sha256-Vkf+hpA6Tim8eDSaPhI0Wwn1kUsMH8AAAXH6IBnWYRg=";
   hashes = {
     "x86_64-linux" = "sha256-gdUd4nPY4KVwBxcN6S0V/qBjMT7RBYmYstXWFl/7aKQ=";

@@ -25,6 +25,8 @@ let
     sha256 = hashes.${stdenv.hostPlatform.system} or lib.fakeSha256;
   };
 
+  useRuntimeCommand = lib.versionAtLeast version "11";
+
   exeSrc =
     if exeHash != null then
       fetchurl {
@@ -115,6 +117,8 @@ stdenv.mkDerivation {
     done
 
     install -m 755 ${./pnpm-activate-env.sh} $out/bin/pnpm-activate-env
+    substituteInPlace $out/bin/pnpm-activate-env \
+      --replace-fail '@PNPM_ACTIVATE_USE_RUNTIME@' '${if useRuntimeCommand then "1" else "0"}'
     patchShebangs $out/bin/pnpm-activate-env
 
     mkdir -p $out/nix-support
@@ -135,10 +139,12 @@ stdenv.mkDerivation {
     fi
 
     if [ -n "''${PNPM_HOME:-}" ]; then
+      PNPM_GLOBAL_BIN="''${PNPM_HOME}${if useRuntimeCommand then "/bin" else ""}"
       case ":''${PATH:-}:" in
-        *":''${PNPM_HOME}:"*) ;;
-        *) export PATH="''${PNPM_HOME}:''${PATH:-}" ;;
+        *":''${PNPM_GLOBAL_BIN}:"*) ;;
+        *) export PATH="''${PNPM_GLOBAL_BIN}:''${PATH:-}" ;;
       esac
+      unset PNPM_GLOBAL_BIN
     fi
     EOF
 
@@ -160,6 +166,7 @@ stdenv.mkDerivation {
 
         echo "Checking PNPM_HOME setup hook..."
         SETUP_ROOT=$(mktemp -d)
+        SETUP_GLOBAL_SUFFIX="${if useRuntimeCommand then "/bin" else ""}"
         (
           export HOME="$SETUP_ROOT/home"
           export PATH="/usr/bin:/bin"
@@ -174,9 +181,9 @@ stdenv.mkDerivation {
               ;;
           esac
           case ":$PATH:" in
-            *":$PNPM_HOME:"*) ;;
+            *":$PNPM_HOME$SETUP_GLOBAL_SUFFIX:"*) ;;
             *)
-              echo "setup-hook did not add PNPM_HOME to PATH" >&2
+              echo "setup-hook did not add PNPM global bin to PATH" >&2
               exit 1
               ;;
           esac
@@ -188,9 +195,9 @@ stdenv.mkDerivation {
           . "$out/nix-support/setup-hook"
           test "$PNPM_HOME" = "$SETUP_ROOT/custom-pnpm-home"
           case ":$PATH:" in
-            *":$SETUP_ROOT/custom-pnpm-home:"*) ;;
+            *":$SETUP_ROOT/custom-pnpm-home$SETUP_GLOBAL_SUFFIX:"*) ;;
             *)
-              echo "setup-hook did not preserve and add custom PNPM_HOME to PATH" >&2
+              echo "setup-hook did not preserve and add custom PNPM global bin to PATH" >&2
               exit 1
               ;;
           esac
@@ -203,9 +210,9 @@ stdenv.mkDerivation {
           . "$out/nix-support/setup-hook"
           test "$PNPM_HOME" = "$XDG_DATA_HOME/pnpm"
           case ":$PATH:" in
-            *":$XDG_DATA_HOME/pnpm:"*) ;;
+            *":$XDG_DATA_HOME/pnpm$SETUP_GLOBAL_SUFFIX:"*) ;;
             *)
-              echo "setup-hook did not use XDG_DATA_HOME when HOME is /homeless-shelter" >&2
+              echo "setup-hook did not use XDG_DATA_HOME global bin when HOME is /homeless-shelter" >&2
               exit 1
               ;;
           esac
@@ -223,6 +230,12 @@ stdenv.mkDerivation {
         TEST_ROOT=$(mktemp -d)
         TEST_PNPM_HOME="$TEST_ROOT/pnpm-home"
         TEST_LOG="$TEST_ROOT/pnpm.log"
+        TEST_USE_RUNTIME="${if useRuntimeCommand then "1" else "0"}"
+        TEST_GLOBAL_BIN="$TEST_PNPM_HOME${if useRuntimeCommand then "/bin" else ""}"
+        TEST_NODE_BIN="$TEST_PNPM_HOME${if useRuntimeCommand then "/bin" else "/nodejs/20.11.1/bin"}"
+        TEST_INSTALL_LOG="${
+          if useRuntimeCommand then "runtime set node 20.11.1" else "env add 20.11.1"
+        }"
         : > "$TEST_LOG"
 
         FAKE_PNPM="$TEST_ROOT/fake-pnpm"
@@ -242,6 +255,15 @@ stdenv.mkDerivation {
             mkdir -p "$effective_pnpm_home/nodejs/$version/bin"
             : > "$effective_pnpm_home/nodejs/$version/bin/node"
             chmod +x "$effective_pnpm_home/nodejs/$version/bin/node"
+            ;;
+          "runtime set node")
+            version="''${4:?missing version}"
+            global_flag="''${5:?missing global flag}"
+            test "$global_flag" = "--global"
+            printf 'runtime set node %s\n' "$version" >> "''${TEST_LOG:?}"
+            mkdir -p "$effective_pnpm_home/bin"
+            : > "$effective_pnpm_home/bin/node"
+            chmod +x "$effective_pnpm_home/bin/node"
             ;;
           *)
             printf 'unexpected fake pnpm args: %s\n' "$*" >&2
@@ -333,19 +355,19 @@ stdenv.mkDerivation {
           export PNPM_ACTIVATE_PNPM_BIN="$FAKE_PNPM"
           export TEST_PNPM_HOME TEST_LOG
           export PNPM_HOME="$TEST_PNPM_HOME"
-          export PATH="$TEST_PNPM_HOME/nodejs/20.11.1/bin:/usr/bin:$TEST_PNPM_HOME:/bin"
+          export PATH="$TEST_NODE_BIN:/usr/bin:$TEST_PNPM_HOME:/bin"
           EXPORTS="$($out/bin/pnpm-activate-env)"
           test -n "$EXPORTS"
           eval "$EXPORTS"
           case "$PATH" in
-            "$TEST_PNPM_HOME:"*) ;;
+            "$TEST_GLOBAL_BIN:"*) ;;
             *)
               echo "pnpm-activate-env did not prioritize PNPM_HOME on PATH" >&2
               exit 1
               ;;
           esac
           case ":$PATH:" in
-            *":$TEST_PNPM_HOME/nodejs/20.11.1/bin:") ;;
+            *":$TEST_NODE_BIN:") ;;
             *)
               echo "pnpm-activate-env did not add Node bin path to PATH" >&2
               exit 1
@@ -358,17 +380,17 @@ stdenv.mkDerivation {
           export PNPM_ACTIVATE_PNPM_BIN="$FAKE_PNPM"
           export TEST_PNPM_HOME TEST_LOG
           export PNPM_HOME="$TEST_PNPM_HOME"
-          export PATH="$TEST_PNPM_HOME/nodejs/20.11.1/bin:/usr/bin:$TEST_PNPM_HOME:/bin"
+          export PATH="$TEST_NODE_BIN:/usr/bin:$TEST_PNPM_HOME:/bin"
           . "$out/bin/pnpm-activate-env"
           case "$PATH" in
-            "$TEST_PNPM_HOME:$TEST_PNPM_HOME/nodejs/20.11.1/bin:"*) ;;
+            "$TEST_GLOBAL_BIN:"*) ;;
             *)
               echo "sourcing pnpm-activate-env did not prioritize PNPM_HOME before Node bin path" >&2
               exit 1
               ;;
           esac
           case ":$PATH:" in
-            *":$TEST_PNPM_HOME/nodejs/20.11.1/bin:") ;;
+            *":$TEST_NODE_BIN:") ;;
             *)
               echo "sourcing pnpm-activate-env did not add Node bin path to PATH" >&2
               exit 1
@@ -376,7 +398,37 @@ stdenv.mkDerivation {
           esac
         )
 
-        grep -q '^env add 20.11.1$' "$TEST_LOG"
+        grep -q "^$TEST_INSTALL_LOG$" "$TEST_LOG"
+
+        mkdir -p "$TEST_ROOT/runtime-package/packages/app"
+        cat > "$TEST_ROOT/runtime-package/package.json" <<'EOF'
+        {
+          "devEngines": {
+            "runtime": {
+              "name": "node",
+              "version": "^20.11.1",
+              "onFail": "download"
+            }
+          }
+        }
+        EOF
+
+        (
+          cd "$TEST_ROOT/runtime-package/packages/app"
+          export PNPM_ACTIVATE_PNPM_BIN="$FAKE_PNPM"
+          export TEST_PNPM_HOME TEST_LOG
+          export PNPM_HOME="$TEST_PNPM_HOME"
+          before_lines=$(wc -l < "$TEST_LOG" | tr -d '[:space:]')
+          EXPORTS="$($out/bin/pnpm-activate-env)"
+          if [ "$TEST_USE_RUNTIME" = "1" ]; then
+            test -n "$EXPORTS"
+            grep -q '^runtime set node \^20.11.1$' "$TEST_LOG"
+          else
+            test -z "$EXPORTS"
+            after_lines=$(wc -l < "$TEST_LOG" | tr -d '[:space:]')
+            test "$before_lines" -eq "$after_lines"
+          fi
+        )
 
         cat > "$TEST_ROOT/ws/pnpm-workspace.yaml" <<'EOF'
         useNodeVersion: lts

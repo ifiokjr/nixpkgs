@@ -2,11 +2,13 @@
 
 callPackage ./common.nix {
   pname = "pnpm";
-  version = "10.33.2";
+  version = "11.0.4";
+  description = "Fast, disk space efficient package manager (standalone, no Node.js dependency)";
+  exeHash = "sha256-Vkf+hpA6Tim8eDSaPhI0Wwn1kUsMH8AAAXH6IBnWYRg=";
   hashes = {
-    "x86_64-linux" = "sha256-wzjNGhmgz9tf/SK/vlBNpZXo0c6unyShRcR5kOaO+jo=";
-    "aarch64-linux" = "sha256-jRq0Q4ZqTTZkDsNnFfuQcY3TcctaWd6PD+izwtsnOiI=";
-    "x86_64-darwin" = "sha256-zTHC3LSgCx4LwG4rEloiUwFKIpiNfF87TTmZ3jbQm+A=";
-    "aarch64-darwin" = "sha256-iwVUZDSoFHxmXJ+X6zg4DAF1IiNP62jfBeC4UoxPCMw=";
+    "x86_64-linux" = "sha256-gdUd4nPY4KVwBxcN6S0V/qBjMT7RBYmYstXWFl/7aKQ=";
+    "aarch64-linux" = "sha256-KuOBPaUgoc+eHbFMxQD/EcpoZPnRMT39gHv1zfTzN8M=";
+    "x86_64-darwin" = "sha256-WZlaKunniQHKbIqwyA9B4ddYodeyodODZGFSqf3f55o=";
+    "aarch64-darwin" = "sha256-tNbvgDQsCbs8D3y5+EE1Adp4wKZiP94AYTXTLBbt9OQ=";
   };
 }
