@@ -24,8 +24,8 @@ let
     if extension == "zip" then fetchzip args else fetchurl args;
 
   sources = rec {
-    aarch64-linux = fetch "linux_arm64" "sha256-HlmNAnHeFvWplcIBSWHP6REbEfBTWKtzMURUrqu3Ns0=" "zip";
-    x86_64-linux = fetch "linux_amd64" "sha256-oNzlRzPPMxc3oA4UkSV/VohqzoLAo9SBxcwzqdcwW84=" "zip";
+    aarch64-linux = fetch "linux_arm64" "sha256-DH2Ze6AVk0extqMp4tyNnepseQu1YJENGwHCjFU7foY=" "zip";
+    x86_64-linux = fetch "linux_amd64" "sha256-R1O+u38bEqmAuOhyvm+Zb+xSYi32ySbXZW+EL33UJW8=" "zip";
     aarch64-darwin =
       fetch "apple_universal" "sha256-5SA1qClHRXei64xFUrykecQO7Le5GlANHj25XCCjt2I="
         "pkg";
