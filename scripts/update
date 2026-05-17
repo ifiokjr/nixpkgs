@@ -926,14 +926,15 @@ def update-op [packages_dir: string, dry_run: bool] {
   mut updated = (replace-version $content $latest_version)
 
   # Fetch hashes for each platform
+  # .zip files use fetchzip (unpacked hashes), .pkg uses fetchurl (raw hashes)
   let entries = [
-    { key: "linux_arm64", url: $"https://cache.agilebits.com/dist/1P/op2/pkg/v($latest_version)/op_linux_arm64_v($latest_version).zip" }
-    { key: "linux_amd64", url: $"https://cache.agilebits.com/dist/1P/op2/pkg/v($latest_version)/op_linux_amd64_v($latest_version).zip" }
-    { key: "apple_universal", url: $"https://cache.agilebits.com/dist/1P/op2/pkg/v($latest_version)/op_apple_universal_v($latest_version).pkg" }
+    { key: "linux_arm64", url: $"https://cache.agilebits.com/dist/1P/op2/pkg/v($latest_version)/op_linux_arm64_v($latest_version).zip", unpack: true }
+    { key: "linux_amd64", url: $"https://cache.agilebits.com/dist/1P/op2/pkg/v($latest_version)/op_linux_amd64_v($latest_version).zip", unpack: true }
+    { key: "apple_universal", url: $"https://cache.agilebits.com/dist/1P/op2/pkg/v($latest_version)/op_apple_universal_v($latest_version).pkg", unpack: false }
   ]
   for entry in $entries {
     log-sub $"fetching ($entry.key)..."
-    let new_hash = (prefetch-sri $entry.url)
+    let new_hash = (if $entry.unpack { prefetch-sri-unpack $entry.url } else { prefetch-sri $entry.url })
     # Replace the hash in: fetch "key" "old_hash" "ext"
     # Use parse-capture with a pattern that matches the fetch call
     let pattern = 'fetch "' + $entry.key + '" "(sha256-[^"]+)"'
