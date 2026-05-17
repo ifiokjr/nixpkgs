@@ -41,6 +41,7 @@
         pnpm = final.callPackage ./packages/pnpm/package.nix { };
         pnpm-10 = final.callPackage ./packages/pnpm-10/package.nix { };
         pnpm-11 = final.callPackage ./packages/pnpm-11/package.nix { };
+        secretspec = final.callPackage ./packages/secretspec/package.nix { };
         pnpm-standalone = final.callPackage ./packages/pnpm-standalone/package.nix { inherit pnpm; };
         racket-minimal = final.callPackage ./packages/racket-minimal/package.nix { };
         sbpf-linker = final.callPackage ./packages/sbpf-linker/package.nix { };
@@ -88,6 +89,7 @@
           pnpm = pkgs.callPackage ./packages/pnpm/package.nix { };
           pnpm-10 = pkgs.callPackage ./packages/pnpm-10/package.nix { };
           pnpm-11 = pkgs.callPackage ./packages/pnpm-11/package.nix { };
+          secretspec = pkgs.callPackage ./packages/secretspec/package.nix { };
           pnpm-standalone = pkgs.callPackage ./packages/pnpm-standalone/package.nix { inherit pnpm; };
           racket-minimal = pkgs.callPackage ./packages/racket-minimal/package.nix { };
           sbpf-linker = pkgs.callPackage ./packages/sbpf-linker/package.nix { };

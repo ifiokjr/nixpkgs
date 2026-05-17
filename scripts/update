@@ -1188,6 +1188,71 @@ def update-rust-pina [repo_root: string, packages_dir: string, dry_run: bool] {
 
 # Note: update-prebuilt-sbpf-linker below handles sbpf-linker (uses curl to fetch Cargo.toml)
 
+def update-secretspec [repo_root: string, dry_run: bool] {
+  # secretspec tracks the feat/provider-secret-locations branch on ifiokjr's fork
+  let owner = "ifiokjr"
+  let repo = "secretspec"
+  let branch = "feat/provider-secret-locations"
+  let rev = (github-head-rev $owner $repo $branch)
+  let source_url = $"https://github.com/($owner)/($repo)/archive/refs/heads/($branch).tar.gz"
+  let file = $"($repo_root)/packages/secretspec/package.nix"
+  let content = (open $file --raw)
+  let current_version = (parse-capture $content 'version = "([^"]+)"')
+  if ($current_version | is-empty) {
+    fail "could not parse version for secretspec"
+  }
+
+  # Fetch Cargo.toml from the branch to get the version
+  let cargo_toml = (try {
+    http get $"https://raw.githubusercontent.com/($owner)/($repo)/($branch)/Cargo.toml" --raw
+  } catch { "" })
+  let latest_version = (parse-capture $cargo_toml 'version = "([^"]+)"')
+  let latest_version = if ($latest_version | is-empty) {
+    $current_version
+  } else {
+    $latest_version
+  }
+
+  if $current_version == $latest_version {
+    # Still check if the rev changed (branch moved)
+    let current_rev = (parse-capture $content 'rev = "([^"]+)"')
+    if $current_rev == $rev {
+      log-ok "secretspec" $"up to date \(v($current_version) at ($rev)\)"
+      return false
+    }
+  }
+
+  log-update "secretspec" $"v($current_version) → v($latest_version) at ($rev)"
+  if $dry_run {
+    return true
+  }
+
+  log-sub "fetching source archive..."
+  let source_hash = (prefetch-sri-unpack $source_url)
+
+  let staged = (
+    set-cargo-hash-fake
+      (set-src-hash
+        (replace-version $content $latest_version)
+        $source_hash)
+  )
+
+  # Update rev in the file
+  let staged = ($staged | str replace --regex 'rev = "([^"]+)"' $"rev = \"($rev)\"")
+
+  try {
+    $staged | save -f $file
+    let cargo_hash = (derive-cargo-hash $repo_root "secretspec")
+    let final_content = (set-cargo-hash $staged $cargo_hash)
+    $final_content | save -f $file
+    log-ok "secretspec" "updated"
+    true
+  } catch {|err|
+    $content | save -f $file
+    fail $"build failed, restored original \(($err.msg)\)"
+  }
+}
+
 def update-flake-lock [repo_root: string, dry_run: bool] {
   let lock_file = $"($repo_root)/flake.lock"
   if not ($lock_file | path exists) {
@@ -1435,6 +1500,7 @@ def main [
     { name: "pnpm", run: {|| update-pnpm $packages_dir $dry_run } }
     { name: "pnpm-10", run: {|| update-pnpm-10 $packages_dir $dry_run } }
     { name: "pnpm-11", run: {|| update-pnpm-11 $packages_dir $dry_run } }
+    { name: "secretspec", run: {|| update-secretspec $root $dry_run } }
     { name: "racket-minimal", run: {|| update-racket $packages_dir $dry_run } }
     { name: "sbpf-linker", run: {|| update-prebuilt-sbpf-linker $packages_dir $dry_run } }
     { name: "solana-verify", run: {|| update-solana-verify $packages_dir $dry_run } }
