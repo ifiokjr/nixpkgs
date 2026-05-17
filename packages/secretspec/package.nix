@@ -4,6 +4,8 @@
   fetchFromGitHub,
   pkg-config,
   openssl,
+  dbus,
+  stdenv,
 }:
 
 let
@@ -24,7 +26,12 @@ rustPlatform.buildRustPackage {
 
   nativeBuildInputs = [ pkg-config ];
 
-  buildInputs = [ openssl ];
+  buildInputs = [
+    openssl
+  ]
+  ++ lib.optionals stdenv.isLinux [
+    dbus
+  ];
 
   # Only build the CLI binary (not the derive macro crate or examples)
   buildAndTestSubcommand = "secretspec";
