@@ -743,13 +743,48 @@ def npm-dist-tag [pkg: string, tag: string] {
 def update-pnpm [packages_dir: string, dry_run: bool] {
   let latest_version = (npm-dist-tag "pnpm" "latest")
   let file = $"($packages_dir)/pnpm/package.nix"
-  let entries = [
+  let content = (open $file --raw)
+  let current_version = (parse-capture $content 'version = "([^"]+)"')
+  if ($current_version | is-empty) {
+    fail "could not parse version for pnpm"
+  }
+
+  if $current_version == $latest_version {
+    log-ok "pnpm" $"up to date \(v($current_version)\)"
+    return false
+  }
+
+  log-update "pnpm" $"v($current_version) → v($latest_version)"
+  if $dry_run {
+    return true
+  }
+
+  mut updated = (replace-version $content $latest_version)
+
+  let platform_entries = [
     { key: "x86_64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-x64/-/linux-x64-($latest_version).tgz" }
     { key: "aarch64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-arm64/-/linux-arm64-($latest_version).tgz" }
     { key: "x86_64-darwin", url: $"https://registry.npmjs.org/@pnpm/macos-x64/-/macos-x64-($latest_version).tgz" }
     { key: "aarch64-darwin", url: $"https://registry.npmjs.org/@pnpm/macos-arm64/-/macos-arm64-($latest_version).tgz" }
   ]
-  update-versioned-keyed-hashes "pnpm" $file $latest_version $entries $dry_run
+  for entry in $platform_entries {
+    log-sub $"fetching ($entry.key)..."
+    let new_hash = (prefetch-sri $entry.url)
+    $updated = (replace-key-hash $updated $entry.key $new_hash)
+  }
+
+  # Update exeHash if present (v11+)
+  let current_exe_hash = (parse-capture $updated 'exeHash = "([^"]+)"')
+  if not ($current_exe_hash | is-empty) {
+    log-sub "fetching exe..."
+    let exe_url = $"https://registry.npmjs.org/@pnpm/exe/-/exe-($latest_version).tgz"
+    let exe_hash = (prefetch-sri $exe_url)
+    $updated = ($updated | str replace $"exeHash = \"($current_exe_hash)\"" $"exeHash = \"($exe_hash)\"")
+  }
+
+  $updated | save -f $file
+  log-ok "pnpm" "updated"
+  true
 }
 
 def update-pnpm-10 [packages_dir: string, dry_run: bool] {
@@ -765,7 +800,7 @@ def update-pnpm-10 [packages_dir: string, dry_run: bool] {
 }
 
 def update-pnpm-11 [packages_dir: string, dry_run: bool] {
-  let latest_version = (npm-dist-tag "pnpm" "next-11")
+  let latest_version = (npm-dist-tag "pnpm" "latest-11")
   let file = $"($packages_dir)/pnpm-11/package.nix"
   let content = (open $file --raw)
   let current_version = (parse-capture $content 'version = "([^"]+)"')
@@ -797,6 +832,7 @@ def update-pnpm-11 [packages_dir: string, dry_run: bool] {
     $updated = (replace-key-hash $updated $entry.key $new_hash)
   }
 
+  # Update exeHash
   log-sub "fetching exe..."
   let exe_url = $"https://registry.npmjs.org/@pnpm/exe/-/exe-($latest_version).tgz"
   let exe_hash = (prefetch-sri $exe_url)
