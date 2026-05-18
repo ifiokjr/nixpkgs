@@ -211,14 +211,10 @@ jobs:
           repository: ${{ matrix.repository }}
           path: downstream/${{ matrix.project }}
 
-      - name: 🧪 test downstream ${{ matrix.project }}
+      - name: 📥 patch downstream devenv.yaml
         working-directory: downstream/${{ matrix.project }}
         run: |
           set -euo pipefail
-          export XDG_DATA_HOME="$PWD/.xdg-data"
-          export XDG_CACHE_HOME="$PWD/.xdg-cache"
-          mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$PWD/.home"
-
           python3 - <<'PY'
           from pathlib import Path
 
@@ -228,13 +224,47 @@ jobs:
           path.write_text(text)
           PY
 
-          nix shell nixpkgs#devenv -c devenv update ifiokjr-nixpkgs
-          nix shell nixpkgs#devenv -c env \
-            HOME="$PWD/.home" \
-            PNPM_HOME="$XDG_DATA_HOME/pnpm" \
-            XDG_CACHE_HOME="$PWD/.xdg-cache" \
-            XDG_DATA_HOME="$XDG_DATA_HOME" \
-            devenv shell ${{ matrix.command }}
+      - name: 🔧 devenv update
+        working-directory: downstream/${{ matrix.project }}
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            if nix shell nixpkgs#devenv -c devenv update ifiokjr-nixpkgs; then
+              break
+            fi
+            echo "devenv update attempt $i failed, retrying in 10s..."
+            if [ "$i" = 3 ]; then
+              echo "devenv update failed after 3 attempts"
+              exit 1
+            fi
+            sleep 10
+          done
+
+      - name: 🧪 test downstream ${{ matrix.project }}
+        working-directory: downstream/${{ matrix.project }}
+        run: |
+          set -euo pipefail
+          export XDG_DATA_HOME="$PWD/.xdg-data"
+          export XDG_CACHE_HOME="$PWD/.xdg-cache"
+          mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$PWD/.home"
+
+          for i in 1 2 3; do
+            if nix shell nixpkgs#devenv -c env \
+              HOME="$PWD/.home" \
+              PNPM_HOME="$XDG_DATA_HOME/pnpm" \
+              XDG_CACHE_HOME="$PWD/.xdg-cache" \
+              XDG_DATA_HOME="$XDG_DATA_HOME" \
+              devenv shell ${{ matrix.command }}; then
+              break
+            fi
+            echo "devenv shell attempt $i failed, repairing nix store and retrying in 30s..."
+            if [ "$i" = 3 ]; then
+              echo "devenv shell failed after 3 attempts"
+              exit 1
+            fi
+            nix-store --verify --check-contents --repair 2>/dev/null || true
+            sleep 30
+          done
 
   build-macos:
     name: "build ${{ matrix.package }} (macos)"
