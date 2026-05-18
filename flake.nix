@@ -29,6 +29,7 @@
         deno = final.callPackage ./packages/deno/package.nix { };
         godot = final.callPackage ./packages/godot/package.nix { };
         gpg-suite = final.callPackage ./packages/gpg-suite/package.nix { };
+        herdr = final.callPackage ./packages/herdr/package.nix { };
         ironclaw = final.callPackage ./packages/ironclaw/package.nix { };
         kani = final.callPackage ./packages/kani/package.nix { };
         knope = final.callPackage ./packages/knope/package.nix { };
@@ -77,6 +78,7 @@
           deno = pkgs.callPackage ./packages/deno/package.nix { };
           godot = pkgs.callPackage ./packages/godot/package.nix { };
           gpg-suite = pkgs.callPackage ./packages/gpg-suite/package.nix { };
+          herdr = pkgs.callPackage ./packages/herdr/package.nix { };
           ironclaw = pkgs.callPackage ./packages/ironclaw/package.nix { };
           kani = pkgs.callPackage ./packages/kani/package.nix { };
           knope = pkgs.callPackage ./packages/knope/package.nix { };
