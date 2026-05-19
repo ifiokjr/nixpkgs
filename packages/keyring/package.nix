@@ -22,10 +22,10 @@ let
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
   hashes = {
-    "aarch64-apple-darwin" = lib.fakeHash;
-    "x86_64-apple-darwin" = lib.fakeHash;
-    "aarch64-unknown-linux-gnu" = lib.fakeHash;
-    "x86_64-unknown-linux-gnu" = lib.fakeHash;
+    "aarch64-apple-darwin" = "sha256-f+9ip7gObvrSn476S2Xw75s0YhlLF9LrnRbHswZsmUo=";
+    "x86_64-apple-darwin" = "sha256-WhLGDLoUAiIp9u/vlSmZCfh8LKwBx8SlN8k7j2OrdwI=";
+    "aarch64-unknown-linux-gnu" = "sha256-9CYuLtpEKm0Aes8BAC9oOBXuCxuXOhjaD1iWLXHK6aE=";
+    "x86_64-unknown-linux-gnu" = "sha256-+hdK7l3TMqWCpA2MPaUCy4OfYgEBMFp401lFT1QJ/O8=";
   };
 
   prebuiltHash = hashes.${platformSuffix} or lib.fakeHash;
