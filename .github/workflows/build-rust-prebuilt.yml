@@ -13,6 +13,7 @@ on:
           - cargo-clean-all
           - cargo-interactive-update
           - sbpf-linker
+          - keyring
       version:
         description: "Version to build (without v prefix)"
         required: true
@@ -33,12 +34,19 @@ jobs:
       features: ${{ steps.config.outputs.features }}
       no-default-features: ${{ steps.config.outputs.no-default-features }}
       tag: ${{ steps.config.outputs.tag }}
+      matrix: ${{ steps.config.outputs.matrix }}
     steps:
       - name: Configure package
         id: config
         run: |
           VERSION="${{ inputs.version }}"
           echo "tag=prebuilt/${{ inputs.package }}/${VERSION}" >> "$GITHUB_OUTPUT"
+
+          if [ "${{ inputs.package }}" = "keyring" ]; then
+            echo 'matrix={"include":[{"target":"aarch64-apple-darwin","os":"macos-latest"},{"target":"x86_64-apple-darwin","os":"macos-latest"},{"target":"aarch64-unknown-linux-gnu","os":"ubuntu-24.04-arm"},{"target":"x86_64-unknown-linux-gnu","os":"ubuntu-latest"}]}' >> "$GITHUB_OUTPUT"
+          else
+            echo 'matrix={"include":[{"target":"aarch64-apple-darwin","os":"macos-latest"},{"target":"x86_64-apple-darwin","os":"macos-latest"},{"target":"x86_64-unknown-linux-gnu","os":"ubuntu-latest"}]}' >> "$GITHUB_OUTPUT"
+          fi
 
           case "${{ inputs.package }}" in
             dylint)
@@ -63,6 +71,10 @@ jobs:
               echo "features=upstream-gallery-22" >> "$GITHUB_OUTPUT"
               echo "no-default-features=true" >> "$GITHUB_OUTPUT"
               ;;
+            keyring)
+              echo "repo=open-source-cooperative/keyring-rs" >> "$GITHUB_OUTPUT"
+              echo "bin=keyring" >> "$GITHUB_OUTPUT"
+              ;;
           esac
 
   build:
@@ -70,14 +82,7 @@ jobs:
     needs: prepare
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - target: aarch64-apple-darwin
-            os: macos-latest
-          - target: x86_64-apple-darwin
-            os: macos-latest
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
@@ -112,6 +117,12 @@ jobs:
           elif [ "${{ runner.os }}" = "macOS" ]; then
             brew install curl pkg-config
           fi
+
+      - name: Install system dependencies (keyring)
+        if: inputs.package == 'keyring' && runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libdbus-1-dev
 
       - name: Install LLVM (sbpf-linker)
         if: inputs.package == 'sbpf-linker'
@@ -234,9 +245,8 @@ jobs:
               HASH=$(nix hash to-sri --type sha256 $(nix-prefetch-url --unpack "${URL}" 2>/dev/null) 2>/dev/null)
               echo "${PLATFORM}: ${HASH}"
 
-              # Update the hash in package.nix
-              # Match the pattern: "platform" = "sha256-..."
-              sed -i "s|\"${PLATFORM}\" = \"sha256-[^\"]*\"|\"${PLATFORM}\" = \"${HASH}\"|" "${FILE}"
+              # Update the hash in package.nix.
+              python3 -c 'import pathlib, re, sys; path = pathlib.Path(sys.argv[1]); platform = sys.argv[2]; hash_value = sys.argv[3]; text = path.read_text(); text = re.sub(r"\"" + re.escape(platform) + r"\" = (?:\"sha256-[^\"]*\"|lib\.fakeHash)", "\"" + platform + "\" = \"" + hash_value + "\"", text); path.write_text(text)' "${FILE}" "${PLATFORM}" "${HASH}"
             fi
           done
 

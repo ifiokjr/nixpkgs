@@ -15,6 +15,7 @@ v = { command = "./scripts/versions", format = "json", watch = [
 	"packages/godot/package.nix",
 	"packages/gpg-suite/package.nix",
 	"packages/kani/package.nix",
+	"packages/keyring/package.nix",
 	"packages/knope/package.nix",
 	"packages/mdt/package.nix",
 	"packages/monochange/package.nix",

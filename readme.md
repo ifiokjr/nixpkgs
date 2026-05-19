@@ -23,16 +23,24 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [dylint](#dylint)                                     | <!-- {~v_dylint:"{{ v.dylint }}"} -->5.0.0<!-- {/v_dylint} -->                                                       | linux, macos               | Dylint tools for running Rust lints and building Dylint libraries             |
 | [godot](#godot)                                       | <!-- {~v_godot:"{{ v.godot }}"} -->4.6.2-stable<!-- {/v_godot} -->                                                   | linux, macos               | Free and open-source 2D and 3D game engine                                    |
 | [gpg-suite](#gpg-suite)                               | <!-- {~v_gpg_suite:"{{ v.gpg_suite }}"} -->2023.3<!-- {/v_gpg_suite} -->                                             | macos                      | GPG Suite - encryption, signing, and key management                           |
+| [herdr](#herdr)                                       | <!-- {~v_herdr:"{{ v.herdr }}"} -->0.5.10<!-- {/v_herdr} -->                                                         | linux, macos               | Terminal agent multiplexer - tmux for coding agents                           |
+| [ironclaw](#ironclaw)                                 | <!-- {~v_ironclaw:"{{ v.ironclaw }}"} -->0.28.2<!-- {/v_ironclaw} -->                                                | linux, macos               | Agent OS focused on privacy, security, and extensibility (NEAR AI)            |
 | [kani](#kani)                                         | <!-- {~v_kani:"{{ v.kani }}"} -->0.67.0<!-- {/v_kani} -->                                                            | linux, macos               | Bit-precise model checker for Rust                                            |
+| [keyring](#keyring)                                   | <!-- {~v_keyring:"{{ v.keyring }}"} -->4.0.1<!-- {/v_keyring} -->                                                    | linux, macos               | Sample code and CLI for the Rust Keyring                                      |
 | [knope](#knope)                                       | <!-- {~v_knope:"{{ v.knope }}"} -->0.22.4<!-- {/v_knope} -->                                                         | linux, macos               | Automate common development tasks (changelogs, releases, versioning)          |
 | [mdt](#mdt)                                           | <!-- {~v_mdt:"{{ v.mdt }}"} -->0.7.0<!-- {/v_mdt} -->                                                                | linux, macos               | Update markdown content anywhere using comments as template tags              |
 | [monochange](#monochange)                             | <!-- {~v_monochange:"{{ v.monochange }}"} -->0.5.1<!-- {/v_monochange} -->                                           | linux, macos               | Manage versions and releases for your multiplatform monorepo                  |
 | [nordvpn](#nordvpn)                                   | <!-- {~v_nordvpn:"{{ v.nordvpn }}"} -->10.1.0<!-- {/v_nordvpn} -->                                                   | macos                      | NordVPN macOS client                                                          |
 | [ollama](#ollama)                                     | <!-- {~v_ollama:"{{ v.ollama }}"} -->0.23.0<!-- {/v_ollama} -->                                                      | linux, macos               | Run local LLMs with Ollama via CLI and desktop app                            |
+| [op](#op)                                             | <!-- {~v_op:"{{ v.op }}"} -->2.35.0-beta.01<!-- {/v_op} -->                                                          | linux, macos               | 1Password CLI beta channel with environment support                           |
 | [pina](#pina)                                         | <!-- {~v_pina:"{{ v.pina }}"} -->0.8.0<!-- {/v_pina} -->                                                             | linux, macos               | CLI for Pina, a performant Solana smart contract framework                    |
-| [pnpm-standalone](#pnpm-standalone)                   | <!-- {~v_pnpm_standalone:"{{ v.pnpm_standalone }}"} --><!-- {/v_pnpm_standalone} -->                                 | linux, macos               | Fast, disk-space efficient package manager (no Node.js dependency)            |
+| [pnpm](#pnpm)                                         | <!-- {~v_pnpm:"{{ v.pnpm }}"} -->11.0.4<!-- {/v_pnpm} -->                                                            | linux, macos               | Fast, disk-space efficient package manager (latest standalone track)          |
+| [pnpm-10](#pnpm)                                      | <!-- {~v_pnpm_10:"{{ v.pnpm_10 }}"} -->10.33.2<!-- {/v_pnpm_10} -->                                                  | linux, macos               | Standalone pnpm pinned to the latest v10 release track                        |
+| [pnpm-11](#pnpm)                                      | <!-- {~v_pnpm_11:"{{ v.pnpm_11 }}"} -->11.0.4<!-- {/v_pnpm_11} -->                                                   | linux, macos               | Standalone pnpm pinned to the latest v11 release track                        |
+| [pnpm-standalone](#pnpm)                              | <!-- {~v_pnpm_standalone:"{{ v.pnpm_standalone }}"} --><!-- {/v_pnpm_standalone} -->                                 | linux, macos               | Fast, disk-space efficient package manager (no Node.js dependency)            |
 | [racket-minimal](#racket-minimal)                     | <!-- {~v_racket_minimal:"{{ v.racket_minimal }}"} -->9.1<!-- {/v_racket_minimal} -->                                 | linux, macos               | Racket programming language (minimal distribution, pre-built)                 |
 | [sbpf-linker](#sbpf-linker)                           | <!-- {~v_sbpf_linker:"{{ v.sbpf_linker }}"} -->0.1.8<!-- {/v_sbpf_linker} -->                                        | macos                      | Upstream BPF linker for SBPF V0 programs                                      |
+| [secretspec](#secretspec)                             | <!-- {~v_secretspec:"{{ v.secretspec }}"} -->0.10.1<!-- {/v_secretspec} -->                                          | linux, macos               | Declarative secrets, every environment, any provider                          |
 | [solana-verify](#solana-verify)                       | <!-- {~v_solana_verify:"{{ v.solana_verify }}"} -->0.4.15<!-- {/v_solana_verify} -->                                 | linux (x64), macos (arm64) | CLI tool for building verifiable Solana programs                              |
 | [steam](#steam)                                       | <!-- {~v_steam:"{{ v.steam }}"} -->4.0<!-- {/v_steam} -->                                                            | macos                      | Steam video game digital distribution service                                 |
 | [surfpool](#surfpool)                                 | <!-- {~v_surfpool:"{{ v.surfpool }}"} -->1.2.0<!-- {/v_surfpool} -->                                                 | linux (x64), macos         | A drop-in replacement for solana-test-validator with mainnet state simulation |
@@ -52,6 +60,12 @@ nix run github:ifiokjr/nixpkgs#codex-cli
 nix run github:ifiokjr/nixpkgs#deno
 nix run github:ifiokjr/nixpkgs#godot
 nix run github:ifiokjr/nixpkgs#ollama
+nix run github:ifiokjr/nixpkgs#herdr
+nix run github:ifiokjr/nixpkgs#ironclaw
+nix run github:ifiokjr/nixpkgs#op
+nix run github:ifiokjr/nixpkgs#pnpm
+nix run github:ifiokjr/nixpkgs#secretspec
+nix run github:ifiokjr/nixpkgs#keyring -- --help
 ```
 
 ### add to your flake
@@ -78,6 +92,12 @@ nix run github:ifiokjr/nixpkgs#ollama
           extra.monochange
           extra.pnpm-standalone
           extra.codex-cli
+          extra.herdr
+          extra.ironclaw
+          extra.keyring
+          extra.op
+          extra.pnpm
+          extra.secretspec
         ];
       };
     };
@@ -111,6 +131,12 @@ The overlay adds all packages into your nixpkgs set so you can reference them as
           pkgs.mdt
           pkgs.monochange
           pkgs.pnpm-standalone
+          pkgs.herdr
+          pkgs.ironclaw
+          pkgs.keyring
+          pkgs.op
+          pkgs.pnpm
+          pkgs.secretspec
         ];
       };
     };
@@ -141,6 +167,12 @@ in
     extra.mdt
     extra.monochange
     extra.pnpm-standalone
+    extra.herdr
+    extra.ironclaw
+    extra.keyring
+    extra.op
+    extra.pnpm
+    extra.secretspec
   ];
 }
 ```
@@ -172,6 +204,12 @@ in
               extra.zoom
               extra.knope
               extra.codex-cli
+              extra.herdr
+              extra.ironclaw
+              extra.keyring
+              extra.op
+              extra.pnpm
+              extra.secretspec
             ];
           }
         ];
@@ -206,6 +244,12 @@ in
               extra.pnpm-standalone
               extra.codex-cli
               extra.racket-minimal
+              extra.herdr
+              extra.ironclaw
+              extra.keyring
+              extra.op
+              extra.pnpm
+              extra.secretspec
             ];
           }
         ];
@@ -297,6 +341,22 @@ GPG Suite for macOS providing encryption, signing, and key management. Includes 
 - **License:** GPL-3.0
 - **Source:** <https://gpgtools.org/>
 
+### herdr
+
+Terminal agent multiplexer for running and switching between coding agents in tmux sessions. Installs the upstream pre-built release binary.
+
+- **Binary:** `herdr`
+- **License:** AGPL-3.0-only
+- **Source:** <https://github.com/ogulcancelik/herdr>
+
+### ironclaw
+
+Agent OS focused on privacy, security, and extensibility for NEAR AI workflows. Installs pre-built release binaries.
+
+- **Binary:** `ironclaw`
+- **License:** Apache-2.0, MIT
+- **Source:** <https://github.com/nearai/ironclaw>
+
 ### kani
 
 Bit-precise model checker for Rust. Installs the official upstream release bundle and provides both `kani` and `cargo-kani` commands.
@@ -305,6 +365,15 @@ Bit-precise model checker for Rust. Installs the official upstream release bundl
 - **License:** Apache-2.0, MIT
 - **Source:** <https://github.com/model-checking/kani>
 - **Homepage:** <https://model-checking.github.io/kani/>
+
+### keyring
+
+Sample code and CLI for the Rust Keyring crate. Upstream does not publish release binaries, so this package is set up to consume pre-built artifacts produced by this repo's `build-rust-prebuilt.yml` workflow from the upstream `keyring-rs` source tag. Until a prebuilt release exists for a platform, it falls back to a pinned source build with `cargoHash`.
+
+- **Binary:** `keyring`
+- **License:** Apache-2.0, MIT
+- **Source:** <https://github.com/open-source-cooperative/keyring-rs>
+- **Homepage:** <https://github.com/open-source-cooperative/keyring-rs/wiki/Keyring>
 
 ### knope
 
@@ -348,6 +417,14 @@ Ollama for running local LLMs. On macOS this installs `Ollama.app` plus the bund
 - **Source:** <https://github.com/ollama/ollama>
 - **Homepage:** <https://ollama.com/>
 
+### op
+
+1Password CLI beta channel, packaged for access to beta-only `op environment` support. Installs the official upstream pre-built binary.
+
+- **Binary:** `op`
+- **License:** Proprietary
+- **Source:** <https://developer.1password.com/docs/cli/>
+
 ### pina
 
 CLI for Pina, a performant Solana smart contract framework. Built from source using `rustPlatform.buildRustPackage`.
@@ -357,12 +434,14 @@ CLI for Pina, a performant Solana smart contract framework. Built from source us
 - **Source:** <https://github.com/pina-rs/pina>
 - **Homepage:** <https://pina.rs>
 
-### pnpm-standalone
+### pnpm
 
-Standalone pnpm binary with no Node.js dependency. Downloaded directly from GitHub releases. Includes `pnpm-activate-env` to read `useNodeVersion` from `pnpm-workspace.yaml`, install that Node.js version with `pnpm env add --global`, and emit PATH export commands.
+Standalone pnpm binary with no Node.js dependency. Downloaded directly from GitHub releases. `pnpm` tracks the latest release, while `pnpm-11` and `pnpm-10` are explicit versioned tracks. `pnpm-standalone` is kept as a compatibility alias for the latest track. Includes `pnpm-activate-env` to read `useNodeVersion` from `pnpm-workspace.yaml`, install that Node.js version with the appropriate pnpm runtime/env command, and emit PATH export commands.
 
 - **Binary:** `pnpm`, `pnpm-activate-env`
+- **Packages:** `pnpm`, `pnpm-11`, `pnpm-10`, `pnpm-standalone`
 - **Activate workspace Node version:** `eval "$(pnpm-activate-env)"`
+- **Runtime support:** v11 uses `pnpm runtime set node`; v10 uses `pnpm env add --global`
 - **License:** MIT
 - **Source:** <https://github.com/pnpm/pnpm>
 - **Homepage:** <https://pnpm.io/>
@@ -439,6 +518,15 @@ Upstream BPF linker for SBPF V0 programs. Built from source using `rustPlatform.
 - **License:** MIT
 - **Source:** <https://github.com/blueshift-gg/sbpf-linker>
 
+### secretspec
+
+Declarative secrets tooling for every environment and any provider. Built from the `ifiokjr/secretspec` source branch with keyring support enabled on Linux.
+
+- **Binary:** `secretspec`
+- **License:** Apache-2.0
+- **Source:** <https://github.com/ifiokjr/secretspec>
+- **Homepage:** <https://secretspec.dev>
+
 ### solana-verify
 
 CLI tool for building verifiable Solana programs. Installs the upstream `solana-verify` binary from GitHub releases.
@@ -491,10 +579,10 @@ Run the repo updater to check every package for new upstream releases and refres
 
 The script updates:
 
-- GitHub release packages (version + platform hashes)
+- GitHub release packages (version + platform hashes, including `herdr`, `ironclaw`, `keyring`, `op`, and `pnpm`)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
 - Rolling URL packages (`steam`)
-- Rust packages built from source (`cargo-clean-all`, `cargo-interactive-update`, `dylint`, `knope`, `pina`, `sbpf-linker`)
+- Rust packages built from source (`cargo-clean-all`, `cargo-interactive-update`, `dylint`, `knope`, `pina`, `sbpf-linker`, `secretspec`)
 
 ### binary packages (pre-built)
 
