@@ -18,8 +18,8 @@ rustPlatform.buildRustPackage {
   src = fetchFromGitHub {
     owner = "ifiokjr";
     repo = "secretspec";
-    rev = "feat/provider-secret-locations";
-    hash = "sha256-J8Lmz4QCTUaEI35T7fIaydpM99mec6ZZwkkJEwFyjNQ=";
+    rev = "0848257f05e9e64892689afdf5f658812babd6f8";
+    hash = "sha256-17T8UUAGYTBgZnaYhONPicGNQKzfbgY/RzbEr3RqeLc=";
   };
 
   cargoHash = "sha256-rzWzjAkK0keqFnt3TsXKTrFc0yIWQXiGBy2zIG+k4H4=";
