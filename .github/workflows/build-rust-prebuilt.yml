@@ -242,7 +242,7 @@ jobs:
             if echo "${ASSETS}" | grep -q "${ASSET_NAME}"; then
               URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/${ASSET_NAME}"
               echo "Computing hash for ${PLATFORM}..."
-              HASH=$(nix hash to-sri --type sha256 $(nix-prefetch-url --unpack "${URL}" 2>/dev/null) 2>/dev/null)
+              HASH=$(nix hash to-sri --type sha256 $(nix-prefetch-url "${URL}" 2>/dev/null) 2>/dev/null)
               echo "${PLATFORM}: ${HASH}"
 
               # Update the hash in package.nix.

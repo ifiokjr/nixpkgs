@@ -1359,7 +1359,7 @@ def update-prebuilt-package [
     fail $"could not parse version for ($package)"
   }
 
-  let has_fake_hashes = ($content | str contains "lib.fakeHash")
+  let has_fake_hashes = ($content | str contains "\" = lib.fakeHash;")
   if $current_version == $latest_version and not $has_fake_hashes {
     log-ok $package $"up to date \(v($current_version)\)"
     return false
