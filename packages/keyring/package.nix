@@ -66,7 +66,10 @@ let
     cargoHash = "sha256-ePXiHOs+EhgoP6e6TSm56FxrKVq4zbkZaTmfXUnew8E=";
 
     nativeBuildInputs = [ pkg-config ];
-    buildInputs = lib.optionals stdenv.isLinux [ dbus ];
+    buildInputs = lib.optionals stdenv.isLinux [
+      dbus
+      stdenv.cc.cc.lib
+    ];
 
     cargoBuildFlags = [
       "--bin"
@@ -98,7 +101,10 @@ let
     dontStrip = true;
 
     nativeBuildInputs = lib.optionals stdenv.isLinux [ autoPatchelfHook ];
-    buildInputs = lib.optionals stdenv.isLinux [ dbus ];
+    buildInputs = lib.optionals stdenv.isLinux [
+      dbus
+      stdenv.cc.cc.lib
+    ];
 
     installPhase = ''
       runHook preInstall
