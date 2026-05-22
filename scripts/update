@@ -770,10 +770,10 @@ def update-pnpm [packages_dir: string, dry_run: bool] {
 
   mut updated = (replace-version $content $latest_version)
 
+  # pnpm 11.1+ dropped Intel macOS (x86_64-darwin / macos-x64)
   let platform_entries = [
     { key: "x86_64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-x64/-/linux-x64-($latest_version).tgz" }
     { key: "aarch64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-arm64/-/linux-arm64-($latest_version).tgz" }
-    { key: "x86_64-darwin", url: $"https://registry.npmjs.org/@pnpm/macos-x64/-/macos-x64-($latest_version).tgz" }
     { key: "aarch64-darwin", url: $"https://registry.npmjs.org/@pnpm/macos-arm64/-/macos-arm64-($latest_version).tgz" }
   ]
   for entry in $platform_entries {
@@ -781,6 +781,9 @@ def update-pnpm [packages_dir: string, dry_run: bool] {
     let new_hash = (prefetch-sri $entry.url)
     $updated = (replace-key-hash $updated $entry.key $new_hash)
   }
+
+  # Remove x86_64-darwin hash line if present (dropped in 11.1+)
+  $updated = ($updated | str replace --regex '\n.*?"x86_64-darwin".*?\n' '\n')
 
   # Update exeHash if present (v11+)
   let current_exe_hash = (parse-capture $updated 'exeHash = "([^"]+)"')
@@ -829,10 +832,10 @@ def update-pnpm-11 [packages_dir: string, dry_run: bool] {
 
   mut updated = (replace-version $content $latest_version)
 
+  # pnpm 11.1+ dropped Intel macOS (x86_64-darwin / macos-x64)
   let platform_entries = [
     { key: "x86_64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-x64/-/linux-x64-($latest_version).tgz" }
     { key: "aarch64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-arm64/-/linux-arm64-($latest_version).tgz" }
-    { key: "x86_64-darwin", url: $"https://registry.npmjs.org/@pnpm/macos-x64/-/macos-x64-($latest_version).tgz" }
     { key: "aarch64-darwin", url: $"https://registry.npmjs.org/@pnpm/macos-arm64/-/macos-arm64-($latest_version).tgz" }
   ]
   for entry in $platform_entries {
@@ -840,6 +843,9 @@ def update-pnpm-11 [packages_dir: string, dry_run: bool] {
     let new_hash = (prefetch-sri $entry.url)
     $updated = (replace-key-hash $updated $entry.key $new_hash)
   }
+
+  # Remove x86_64-darwin hash line if present (dropped in 11.1+)
+  $updated = ($updated | str replace --regex '\n.*?"x86_64-darwin".*?\n' '\n')
 
   # Update exeHash
   log-sub "fetching exe..."
