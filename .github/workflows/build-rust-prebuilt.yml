@@ -129,7 +129,12 @@ jobs:
         run: |
           if [ "${{ runner.os }}" = "Linux" ]; then
             sudo apt-get update
-            sudo apt-get install -y llvm-22-dev
+            sudo apt-get install -y software-properties-common wget
+            # Add LLVM apt repository for LLVM 22
+            wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+            sudo add-apt-repository -y "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-22 main"
+            sudo apt-get update
+            sudo apt-get install -y llvm-22-dev clang-22
             echo "LLVM_PREFIX=/usr/lib/llvm-22" >> "$GITHUB_ENV"
           elif [ "${{ runner.os }}" = "macOS" ]; then
             brew install llvm@22
