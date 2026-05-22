@@ -51,7 +51,7 @@ let
   src = fetchFromGitHub {
     owner = "benjeau";
     repo = "cargo-interactive-update";
-    rev = "v${version}";
+    rev = version;
     hash = "sha256-9SJRDuAXeMYis8k47Eayongadfa1NP/j9Ku311zVBuY=";
   };
 
