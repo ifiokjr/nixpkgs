@@ -20,7 +20,7 @@ let
     "aarch64-apple-darwin" = "sha256-YFxJB63Ze+i38cqssm487+yT1qhJZr/5GTYy6VKcSBI=";
     "x86_64-apple-darwin" = "sha256-B763ofTJc8Si/bYkhvhxaYBH21pOr9OsJKgTvDcZV70=";
     "x86_64-unknown-linux-gnu" = "sha256-+iGFrClE5MMvSsc3GG5EQvg1mn/XNU7hzjGI6dUwJSw=";
-    "aarch64-unknown-linux-gnu" = lib.fakeHash;
+    "aarch64-unknown-linux-gnu" = "sha256-2vtacfzeL5XzTBXlr2NPok3R4egH0TP8WfNN3vPeq6w=";
   };
 in
 stdenv.mkDerivation {
