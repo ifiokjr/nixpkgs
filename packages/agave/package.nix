@@ -10,12 +10,12 @@
 }:
 
 let
-  version = "3.1.14";
+  version = "4.0.0";
 
   hashes = {
-    "aarch64-apple-darwin" = "sha256-VM/CaAvWQm/aBGGe4Bkz9ApknIBW86Ybog3FTdQn6+0=";
-    "x86_64-apple-darwin" = "sha256-43aO0B2qHjz8Aq8+PrOWzsLUipns+AzV173/UQ+AjR8=";
-    "x86_64-unknown-linux-gnu" = "sha256-Bvl8BlzJd8vsLxP/ybydO5L+9IVDH8s3Ciad5pUy71E=";
+    "aarch64-apple-darwin" = "sha256-eRln77dFyV+PaHaJIy6JV40rVAGJveLJnemHlPBoT/U=";
+    "x86_64-apple-darwin" = "sha256-THsS0arYSmksetN0yKN+ViVc6CvMq2iwKl5AvDstQSE=";
+    "x86_64-unknown-linux-gnu" = "sha256-yDm6Yp0Q7dX5mvaIB9wllI/OYs1RdrVq0T4j91Yu9PI=";
   };
 in
 import ./common.nix {

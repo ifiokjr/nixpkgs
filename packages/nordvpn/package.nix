@@ -5,7 +5,7 @@
 }:
 
 let
-  version = "10.1.0";
+  version = "10.2.0";
 in
 stdenv.mkDerivation {
   pname = "nordvpn";
@@ -13,7 +13,7 @@ stdenv.mkDerivation {
 
   src = fetchurl {
     url = "https://downloads.nordcdn.com/apps/macos/generic/NordVPN-OpenVPN/${version}/NordVPN.pkg";
-    hash = "sha256-FfIcNyTi5TXMG+vbj2uua3X5pepvB4EbAW6D/rsOWx4=";
+    hash = "sha256-brhdyIpQ3sLZtYRz6VFT2tgKFppT7BKBMV82lIvg1/I=";
   };
 
   dontUnpack = true;

@@ -10,7 +10,7 @@
 }:
 
 let
-  version = "2.35.0-beta.01";
+  version = "2.31.0-beta.01";
 
   fetch =
     srcPlatform: hash: extension:
@@ -24,10 +24,10 @@ let
     if extension == "zip" then fetchzip args else fetchurl args;
 
   sources = rec {
-    aarch64-linux = fetch "linux_arm64" "sha256-DH2Ze6AVk0extqMp4tyNnepseQu1YJENGwHCjFU7foY=" "zip";
-    x86_64-linux = fetch "linux_amd64" "sha256-R1O+u38bEqmAuOhyvm+Zb+xSYi32ySbXZW+EL33UJW8=" "zip";
+    aarch64-linux = fetch "linux_arm64" "sha256-T0T55UMvzPY4T4nWAgaLDxEMZ/50B1gv8GOZpTFcOnE=" "zip";
+    x86_64-linux = fetch "linux_amd64" "sha256-LffQMv4XiVg23v3UMexPfzT/NCcoErasWBb1lfJN/fY=" "zip";
     aarch64-darwin =
-      fetch "apple_universal" "sha256-5SA1qClHRXei64xFUrykecQO7Le5GlANHj25XCCjt2I="
+      fetch "apple_universal" "sha256-m+97xV1qJ8zP0Ics28UuvQycVaZKIhFaRiw4uKX5yjo="
         "pkg";
     x86_64-darwin = aarch64-darwin;
   };

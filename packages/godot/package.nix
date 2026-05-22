@@ -8,7 +8,7 @@
 }:
 
 let
-  version = "4.6.2-stable";
+  version = "4.6.3-stable";
 
   platformSuffix =
     {
@@ -20,9 +20,9 @@ let
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
   hashes = {
-    "linux.arm64" = "sha256-yRVBVN4UrLHzimyGGPAfQRHsvRzbzs0KUVG+Qt4r0ck=";
-    "linux.x86_64" = "sha256-MOa20UHwzVvr1imtHQ7xMk5gCRuyBmLQJrQCuljFmTc=";
-    "macos.universal" = "sha256-ZmsqZOS1xZ2w5JdGBbiI63LrfU5g6HDSvmzBlye1CAc=";
+    "linux.arm64" = "sha256-kMcDgu7hVCkEv1B7m9xuYqIwrHP9IUvziHqeCk2Fru0=";
+    "linux.x86_64" = "sha256-0LwhEwZeSBycLCssN9qk6L4/6eJ/CrmrC2CW6aN5B/M=";
+    "macos.universal" = "sha256-MGMPPpsR4Qs1wfkLqIFBhdzsQ/rhpINFFZvnVSxkv+g=";
   };
 in
 stdenv.mkDerivation {
