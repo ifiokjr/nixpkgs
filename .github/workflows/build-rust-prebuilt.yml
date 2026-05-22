@@ -36,6 +36,7 @@ jobs:
       tag: ${{ steps.config.outputs.tag }}
       ref: ${{ steps.config.outputs.ref }}
       matrix: ${{ steps.config.outputs.matrix }}
+      locked: ${{ steps.config.outputs.locked }}
     steps:
       - name: Configure package
         id: config
@@ -70,6 +71,7 @@ jobs:
               echo "ref=06b4e60fba2960f6ec6c433659a88931da934546" >> "$GITHUB_OUTPUT"
               echo "features=upstream-gallery-22" >> "$GITHUB_OUTPUT"
               echo "no-default-features=true" >> "$GITHUB_OUTPUT"
+              echo "locked=false" >> "$GITHUB_OUTPUT"
               ;;
             keyring)
               echo "repo=open-source-cooperative/keyring-rs" >> "$GITHUB_OUTPUT"
@@ -151,7 +153,7 @@ jobs:
           checksum: sha256
           features: ${{ needs.prepare.outputs.features }}
           no-default-features: ${{ needs.prepare.outputs.no-default-features || 'false' }}
-          locked: true
+          locked: ${{ needs.prepare.outputs.locked != '' && needs.prepare.outputs.locked || 'true' }}
           ref: ${{ needs.prepare.outputs.tag }}
           dry-run: true
 
