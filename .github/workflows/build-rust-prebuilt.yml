@@ -166,6 +166,7 @@ jobs:
   release:
     name: Create release and upload binaries
     needs: [prepare, build]
+    if: always() && needs.prepare.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -201,7 +202,7 @@ jobs:
   update-package:
     name: Update package.nix
     needs: [prepare, release]
-    if: inputs.update-package == true
+    if: inputs.update-package == true && always() && needs.release.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
