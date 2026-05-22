@@ -20,6 +20,7 @@ let
     "aarch64-apple-darwin" = "sha256-YFxJB63Ze+i38cqssm487+yT1qhJZr/5GTYy6VKcSBI=";
     "x86_64-apple-darwin" = "sha256-B763ofTJc8Si/bYkhvhxaYBH21pOr9OsJKgTvDcZV70=";
     "x86_64-unknown-linux-gnu" = "sha256-+iGFrClE5MMvSsc3GG5EQvg1mn/XNU7hzjGI6dUwJSw=";
+    "aarch64-unknown-linux-gnu" = lib.fakeHash;
   };
 in
 stdenv.mkDerivation {
@@ -28,7 +29,7 @@ stdenv.mkDerivation {
 
   src = fetchurl {
     url = "https://github.com/ifiokjr/nixpkgs/releases/download/prebuilt/pina/${version}/pina-${platformSuffix}.tar.gz";
-    hash = hashes.${platformSuffix} or lib.fakeHash;
+    hash = hashes.${platformSuffix} or (throw "No prebuilt for platform: ${platformSuffix}");
   };
 
   dontUnpack = true;

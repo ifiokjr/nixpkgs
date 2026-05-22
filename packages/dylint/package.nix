@@ -1,53 +1,37 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
+  fetchurl,
   fetchFromGitHub,
+  rustPlatform,
   pkg-config,
+  autoPatchelfHook,
   libgit2,
   openssl,
   zlib,
 }:
 
-rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "dylint";
+let
   version = "5.0.0";
 
-  src = fetchFromGitHub {
-    owner = "trailofbits";
-    repo = "dylint";
-    rev = "v${finalAttrs.version}";
-    hash = "sha256-Q06arUQ0p6nWtAbpTGJdW34F9Gg6k2rXqRqkLHGe7Zs=";
+  platformSuffix =
+    {
+      "aarch64-darwin" = "aarch64-apple-darwin";
+      "x86_64-darwin" = "x86_64-apple-darwin";
+      "aarch64-linux" = "aarch64-unknown-linux-gnu";
+      "x86_64-linux" = "x86_64-unknown-linux-gnu";
+    }
+    .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
+
+  hashes = {
+    "aarch64-apple-darwin" = lib.fakeHash;
+    "x86_64-apple-darwin" = lib.fakeHash;
+    "aarch64-unknown-linux-gnu" = lib.fakeHash;
+    "x86_64-unknown-linux-gnu" = lib.fakeHash;
   };
 
-  cargoLock = {
-    lockFile = "${finalAttrs.src}/Cargo.lock";
-  };
-
-  cargoBuildFlags = [
-    "--package"
-    "cargo-dylint"
-    "--package"
-    "dylint-link"
-  ];
-  cargoInstallFlags = [
-    "--package"
-    "cargo-dylint"
-    "--package"
-    "dylint-link"
-  ];
-
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [
-    libgit2
-    openssl
-    zlib
-  ];
-
-  doCheck = false;
-
-  env = {
-    LIBGIT2_NO_VENDOR = "1";
-  };
+  prebuiltHash = hashes.${platformSuffix} or lib.fakeHash;
+  hasPrebuilt = prebuiltHash != lib.fakeHash;
 
   meta = {
     description = "Dylint tools for running Rust lints and building Dylint libraries";
@@ -57,10 +41,96 @@ rustPlatform.buildRustPackage (finalAttrs: {
       lib.licenses.mit
     ];
     mainProgram = "cargo-dylint";
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
+      "x86_64-darwin"
+      "aarch64-darwin"
+    ];
     tags = [
       "cli"
       "dev-tool"
       "rust"
     ];
   };
-})
+
+  src = fetchFromGitHub {
+    owner = "trailofbits";
+    repo = "dylint";
+    rev = "v${version}";
+    hash = "sha256-Q06arUQ0p6nWtAbpTGJdW34F9Gg6k2rXqRqkLHGe7Zs=";
+  };
+
+  sourceBuild = rustPlatform.buildRustPackage {
+    pname = "dylint";
+    inherit version src;
+    cargoLock = {
+      lockFile = "${src}/Cargo.lock";
+    };
+    cargoBuildFlags = [
+      "--package"
+      "cargo-dylint"
+      "--package"
+      "dylint-link"
+    ];
+    cargoInstallFlags = [
+      "--package"
+      "cargo-dylint"
+      "--package"
+      "dylint-link"
+    ];
+    nativeBuildInputs = [ pkg-config ];
+    buildInputs = [
+      libgit2
+      openssl
+      zlib
+    ];
+    doCheck = false;
+    doInstallCheck = true;
+    installCheckPhase = "$out/bin/cargo-dylint --help > /dev/null";
+    env = {
+      LIBGIT2_NO_VENDOR = "1";
+    };
+    meta = meta // {
+      sourceProvenance = [ lib.sourceTypes.fromSource ];
+    };
+  };
+
+  prebuilt = stdenv.mkDerivation {
+    pname = "dylint";
+    inherit version;
+    src = fetchurl {
+      url = "https://github.com/ifiokjr/nixpkgs/releases/download/prebuilt/dylint/${version}/dylint-${platformSuffix}.tar.gz";
+      hash = prebuiltHash;
+    };
+    dontUnpack = true;
+    dontBuild = true;
+    dontStrip = true;
+    nativeBuildInputs = lib.optionals stdenv.isLinux [ autoPatchelfHook ];
+    buildInputs = [
+      libgit2
+      openssl
+      zlib
+    ]
+    ++ lib.optionals stdenv.isLinux [ stdenv.cc.cc.lib ];
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out/bin
+      tar xzf $src -C $out/bin/
+      chmod +x $out/bin/cargo-dylint $out/bin/dylint-link
+
+      runHook postInstall
+    '';
+    doInstallCheck = true;
+    installCheckPhase = ''
+      runHook preInstallCheck
+      $out/bin/cargo-dylint --help > /dev/null
+      runHook postInstallCheck
+    '';
+    meta = meta // {
+      sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    };
+  };
+in
+if hasPrebuilt then prebuilt else sourceBuild
