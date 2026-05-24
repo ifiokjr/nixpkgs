@@ -15,7 +15,6 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [agave-2_3](#agave)                                   | <!-- {~v_agave_2_3:"{{ v.agave_2_3 }}"} -->2.3.13<!-- {/v_agave_2_3} -->                                             | linux (x64), macos         | Agave pinned to the latest 2.3.x release                                      |
 | [agave-2_2](#agave)                                   | <!-- {~v_agave_2_2:"{{ v.agave_2_2 }}"} -->2.2.20<!-- {/v_agave_2_2} -->                                             | linux (x64), macos         | Agave pinned to the latest 2.2.x release                                      |
 | [agave-2_1](#agave)                                   | <!-- {~v_agave_2_1:"{{ v.agave_2_1 }}"} -->2.1.21<!-- {/v_agave_2_1} -->                                             | linux (x64), macos         | Agave pinned to the latest 2.1.x release                                      |
-| [agave-2_0](#agave)                                   | <!-- {~v_agave_2_0:"{{ v.agave_2_0 }}"} -->2.0.25<!-- {/v_agave_2_0} -->                                             | linux (x64), macos         | Agave pinned to the latest 2.0.x release                                      |
 | [cargo-clean-all](#cargo-clean-all)                   | <!-- {~v_cargo_clean_all:"{{ v.cargo_clean_all }}"} -->0.6.4<!-- {/v_cargo_clean_all} -->                            | linux, macos               | Recursively clean Cargo projects in a directory that match selected criteria  |
 | [cargo-interactive-update](#cargo-interactive-update) | <!-- {~v_cargo_interactive_update:"{{ v.cargo_interactive_update }}"} -->0.6.2<!-- {/v_cargo_interactive_update} --> | linux, macos               | A cargo extension to update direct dependencies interactively                 |
 | [codex-cli](#codex-cli)                               | <!-- {~v_codex_cli:"{{ v.codex_cli }}"} -->0.133.0<!-- {/v_codex_cli} -->                                            | linux, macos               | OpenAI Codex CLI - AI coding assistant for the terminal                       |
@@ -274,7 +273,6 @@ Solana validator client and CLI toolchain by Anza. Pre-built binary from GitHub 
   - `agave-2_3`
   - `agave-2_2`
   - `agave-2_1`
-  - `agave-2_0`
 
 Examples:
 
