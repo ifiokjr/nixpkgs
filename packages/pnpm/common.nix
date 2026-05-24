@@ -430,6 +430,59 @@ stdenv.mkDerivation {
           fi
         )
 
+        # Test .nvmrc support (v11+: reads .nvmrc; v10: ignores it)
+        mkdir -p "$TEST_ROOT/nvmrc-project"
+        printf '20.11.1' > "$TEST_ROOT/nvmrc-project/.nvmrc"
+
+        (
+          cd "$TEST_ROOT/nvmrc-project"
+          export PNPM_ACTIVATE_PNPM_BIN="$FAKE_PNPM"
+          export TEST_PNPM_HOME TEST_LOG
+          export PNPM_HOME="$TEST_PNPM_HOME"
+          before_lines=$(wc -l < "$TEST_LOG" | tr -d '[:space:]')
+          EXPORTS="$($out/bin/pnpm-activate-env)"
+          if [ "$TEST_USE_RUNTIME" = "1" ]; then
+            test -n "$EXPORTS"
+            grep -q '^runtime set node 20.11.1$' "$TEST_LOG"
+          else
+            test -z "$EXPORTS"
+            after_lines=$(wc -l < "$TEST_LOG" | tr -d '[:space:]')
+            test "$before_lines" -eq "$after_lines"
+          fi
+        )
+
+        # Test engines.runtime support (v11+: reads from package.json)
+        mkdir -p "$TEST_ROOT/engines-runtime-project"
+        cat > "$TEST_ROOT/engines-runtime-project/package.json" <<'EOF'
+        {
+          "engines": {
+            "runtime": {
+              "name": "node",
+              "version": ">=20",
+              "onFail": "download"
+            }
+          }
+        }
+        EOF
+
+        (
+          cd "$TEST_ROOT/engines-runtime-project"
+          export PNPM_ACTIVATE_PNPM_BIN="$FAKE_PNPM"
+          export TEST_PNPM_HOME TEST_LOG
+          export PNPM_HOME="$TEST_PNPM_HOME"
+          before_lines=$(wc -l < "$TEST_LOG" | tr -d '[:space:]')
+          EXPORTS="$($out/bin/pnpm-activate-env)"
+          if [ "$TEST_USE_RUNTIME" = "1" ]; then
+            test -n "$EXPORTS"
+            grep -q '^runtime set node >=20$' "$TEST_LOG"
+          else
+            test -z "$EXPORTS"
+            after_lines=$(wc -l < "$TEST_LOG" | tr -d '[:space:]')
+            test "$before_lines" -eq "$after_lines"
+          fi
+        )
+
+        # Test that invalid version specifiers are ignored
         cat > "$TEST_ROOT/ws/pnpm-workspace.yaml" <<'EOF'
         useNodeVersion: lts
         EOF
