@@ -8,12 +8,13 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 
 | Package                                               | Version                                                                                                              | Platforms                  | Description                                                                   |
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------------------------- |
-| [agave](#agave)                                       | <!-- {~v_agave:"{{ v.agave }}"} -->4.0.0<!-- {/v_agave} -->                                                          | linux (x64), macos         | Solana validator client and CLI toolchain by Anza (latest 3.1.x track)        |
-| [agave-4_0](#agave)                                   | <!-- {~v_agave_4_0:"{{ v.agave_4_0 }}"} -->4.0.0-beta.7<!-- {/v_agave_4_0} -->                                       | linux (x64), macos         | Agave pinned to the latest 4.0.x release                                      |
+| [agave](#agave)                                       | <!-- {~v_agave:"{{ v.agave_3_1 }}"} -->3.1.14<!-- {/v_agave} -->                                                     | linux (x64), macos         | Solana validator client and CLI toolchain by Anza (alias for agave-3_1)       |
+| [agave-4_0](#agave)                                   | <!-- {~v_agave_4_0:"{{ v.agave_4_0 }}"} -->4.0.0<!-- {/v_agave_4_0} -->                                              | linux (x64), macos         | Agave pinned to the latest 4.0.x release                                      |
 | [agave-3_1](#agave)                                   | <!-- {~v_agave_3_1:"{{ v.agave }}"} -->4.0.0<!-- {/v_agave_3_1} -->                                                  | linux (x64), macos         | Agave pinned to the latest 3.1.x release                                      |
 | [agave-3_0](#agave)                                   | <!-- {~v_agave_3_0:"{{ v.agave_3_0 }}"} -->3.0.14<!-- {/v_agave_3_0} -->                                             | linux (x64), macos         | Agave pinned to the latest 3.0.x release                                      |
 | [agave-2_3](#agave)                                   | <!-- {~v_agave_2_3:"{{ v.agave_2_3 }}"} -->2.3.13<!-- {/v_agave_2_3} -->                                             | linux (x64), macos         | Agave pinned to the latest 2.3.x release                                      |
 | [agave-2_2](#agave)                                   | <!-- {~v_agave_2_2:"{{ v.agave_2_2 }}"} -->2.2.20<!-- {/v_agave_2_2} -->                                             | linux (x64), macos         | Agave pinned to the latest 2.2.x release                                      |
+| [agave-2_0](#agave)                                   | <!-- {~v_agave_2_0:"{{ v.agave_2_0 }}"} -->2.0.21<!-- {/v_agave_2_0} -->                                             | linux (x64), macos         | Agave pinned to the latest 2.0.x release                                      |
 | [agave-2_1](#agave)                                   | <!-- {~v_agave_2_1:"{{ v.agave_2_1 }}"} -->2.1.21<!-- {/v_agave_2_1} -->                                             | linux (x64), macos         | Agave pinned to the latest 2.1.x release                                      |
 | [cargo-clean-all](#cargo-clean-all)                   | <!-- {~v_cargo_clean_all:"{{ v.cargo_clean_all }}"} -->0.6.4<!-- {/v_cargo_clean_all} -->                            | linux, macos               | Recursively clean Cargo projects in a directory that match selected criteria  |
 | [cargo-interactive-update](#cargo-interactive-update) | <!-- {~v_cargo_interactive_update:"{{ v.cargo_interactive_update }}"} -->0.6.2<!-- {/v_cargo_interactive_update} --> | linux, macos               | A cargo extension to update direct dependencies interactively                 |
@@ -40,6 +41,7 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [racket-minimal](#racket-minimal)                     | <!-- {~v_racket_minimal:"{{ v.racket_minimal }}"} -->9.1<!-- {/v_racket_minimal} -->                                 | linux, macos               | Racket programming language (minimal distribution, pre-built)                 |
 | [sbpf-linker](#sbpf-linker)                           | <!-- {~v_sbpf_linker:"{{ v.sbpf_linker }}"} -->0.1.8<!-- {/v_sbpf_linker} -->                                        | macos                      | Upstream BPF linker for SBPF V0 programs                                      |
 | [secretspec](#secretspec)                             | <!-- {~v_secretspec:"{{ v.secretspec }}"} -->0.10.1<!-- {/v_secretspec} -->                                          | linux, macos               | Declarative secrets, every environment, any provider                          |
+| [solana](#agave)                                      | <!-- {~v_solana:"{{ v.agave_3_1 }}"} -->3.1.14<!-- {/v_solana} -->                                                   | linux (x64), macos         | Alias for agave-3_1 (Solana validator client and CLI)                         |
 | [solana-verify](#solana-verify)                       | <!-- {~v_solana_verify:"{{ v.solana_verify }}"} -->0.4.15<!-- {/v_solana_verify} -->                                 | linux (x64), macos (arm64) | CLI tool for building verifiable Solana programs                              |
 | [steam](#steam)                                       | <!-- {~v_steam:"{{ v.steam }}"} -->4.0<!-- {/v_steam} -->                                                            | macos                      | Steam video game digital distribution service                                 |
 | [surfpool](#surfpool)                                 | <!-- {~v_surfpool:"{{ v.surfpool }}"} -->1.2.1<!-- {/v_surfpool} -->                                                 | linux (x64), macos         | A drop-in replacement for solana-test-validator with mainnet state simulation |
@@ -267,12 +269,14 @@ Solana validator client and CLI toolchain by Anza. Pre-built binary from GitHub 
 - **License:** Apache-2.0
 - **Source:** <https://github.com/anza-xyz/agave>
 - **Tracks:**
-  - `agave` (latest 3.1.x)
+  - `agave` (latest 3.1.x, alias: `solana`)
+  - `agave-4_0`
   - `agave-3_1`
   - `agave-3_0`
   - `agave-2_3`
   - `agave-2_2`
   - `agave-2_1`
+  - `agave-2_0`
 
 Examples:
 

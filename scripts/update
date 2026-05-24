@@ -253,18 +253,43 @@ def replace-rev [content: string, new_rev: string] {
 }
 
 def github-latest-tag-with-prefix [owner: string, repo: string, prefix: string] {
-  let tags = try {
-    github-api-get $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=100"
-  } catch {
-    fail $"Failed to fetch tags for ($owner)/($repo)"
-  }
+  let headers = (github-headers)
+  mut page = 1
+  mut matched = ""
 
-  let matched = (
-    $tags
-    | where {|tag| $tag.name | str starts-with $prefix }
-    | get -o 0.name
-    | default ""
-  )
+  loop {
+    let tags = try {
+      if ($headers | is-empty) {
+        http get $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=100&page=($page)"
+      } else {
+        http get -H $headers $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=100&page=($page)"
+      }
+    } catch {
+      fail $"Failed to fetch tags for ($owner)/($repo) (page ($page))"
+    }
+
+    if ($tags | is-empty) {
+      break
+    }
+
+    let found = (
+      $tags
+      | where {|tag| $tag.name | str starts-with $prefix }
+      | get -o 0.name
+      | default ""
+    )
+
+    if ($found | is-not-empty) {
+      $matched = $found
+      break
+    }
+
+    if ($tags | length) < 100 {
+      break
+    }
+
+    $page += 1
+  }
 
   if ($matched | is-empty) {
     fail $"No tag with prefix \"($prefix)\" for ($owner)/($repo)"
@@ -274,18 +299,43 @@ def github-latest-tag-with-prefix [owner: string, repo: string, prefix: string] 
 }
 
 def github-latest-stable-tag [owner: string, repo: string] {
-  let tags = try {
-    github-api-get $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=100"
-  } catch {
-    fail $"Failed to fetch tags for ($owner)/($repo)"
-  }
+  let headers = (github-headers)
+  mut page = 1
+  mut matched = ""
 
-  let matched = (
-    $tags
-    | where {|tag| ($tag.name | str starts-with "v") and not ($tag.name | str contains "-") }
-    | get -o 0.name
-    | default ""
-  )
+  loop {
+    let tags = try {
+      if ($headers | is-empty) {
+        http get $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=100&page=($page)"
+      } else {
+        http get -H $headers $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=100&page=($page)"
+      }
+    } catch {
+      fail $"Failed to fetch tags for ($owner)/($repo) (page ($page))"
+    }
+
+    if ($tags | is-empty) {
+      break
+    }
+
+    let found = (
+      $tags
+      | where {|tag| ($tag.name | str starts-with "v") and not ($tag.name | str contains "-") }
+      | get -o 0.name
+      | default ""
+    )
+
+    if ($found | is-not-empty) {
+      $matched = $found
+      break
+    }
+
+    if ($tags | length) < 100 {
+      break
+    }
+
+    $page += 1
+  }
 
   if ($matched | is-empty) {
     fail $"No stable tag found for ($owner)/($repo)"
@@ -656,8 +706,12 @@ def update-agave [packages_dir: string, dry_run: bool] {
   update-agave-package $packages_dir "agave" $latest_version $dry_run
 }
 
+def update-agave-2-0 [packages_dir: string, dry_run: bool] {
+  update-agave-track $packages_dir "agave-2_0" "2.0" $dry_run
+}
+
 def update-agave-4-0 [packages_dir: string, dry_run: bool] {
-  update-agave-beta-track $packages_dir "agave-4_0" "4.0" $dry_run
+  update-agave-track $packages_dir "agave-4_0" "4.0" $dry_run
 }
 
 def update-agave-3-1 [packages_dir: string, dry_run: bool] {
@@ -1508,6 +1562,7 @@ def main [
 
   mut steps = [
     { name: "agave", run: {|| update-agave $packages_dir $dry_run } }
+    { name: "agave-2_0", run: {|| update-agave-2-0 $packages_dir $dry_run } }
     { name: "agave-2_1", run: {|| update-agave-2-1 $packages_dir $dry_run } }
     { name: "agave-2_2", run: {|| update-agave-2-2 $packages_dir $dry_run } }
     { name: "agave-2_3", run: {|| update-agave-2-3 $packages_dir $dry_run } }
