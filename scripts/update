@@ -258,6 +258,7 @@ def github-latest-tag-with-prefix [owner: string, repo: string, prefix: string] 
   mut matched = ""
 
   loop {
+    let page_num = $page
     let tags = try {
       if ($headers | is-empty) {
         http get $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=100&page=($page)"
@@ -265,7 +266,7 @@ def github-latest-tag-with-prefix [owner: string, repo: string, prefix: string] 
         http get -H $headers $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=100&page=($page)"
       }
     } catch {
-      fail $"Failed to fetch tags for ($owner)/($repo) (page ($page))"
+      fail $"Failed to fetch tags for ($owner)/($repo) (page ($page_num))"
     }
 
     if ($tags | is-empty) {
@@ -304,6 +305,7 @@ def github-latest-stable-tag [owner: string, repo: string] {
   mut matched = ""
 
   loop {
+    let page_num = $page
     let tags = try {
       if ($headers | is-empty) {
         http get $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=100&page=($page)"
@@ -311,7 +313,7 @@ def github-latest-stable-tag [owner: string, repo: string] {
         http get -H $headers $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=100&page=($page)"
       }
     } catch {
-      fail $"Failed to fetch tags for ($owner)/($repo) (page ($page))"
+      fail $"Failed to fetch tags for ($owner)/($repo) (page ($page_num))"
     }
 
     if ($tags | is-empty) {
@@ -702,6 +704,14 @@ def update-agave-beta-track [packages_dir: string, package_name: string, version
 }
 
 def update-agave [packages_dir: string, dry_run: bool] {
+  let file = $"($packages_dir)/agave/package.nix"
+  let content = (open $file --raw)
+  let current_version = (parse-capture $content 'version = "([^"]+)"')
+  if ($current_version | is-empty) {
+    log-ok "agave" "alias package — no version to update"
+    return false
+  }
+
   let latest_version = (github-latest-stable-tag "anza-xyz" "agave" | str replace --regex '^v' '')
   update-agave-package $packages_dir "agave" $latest_version $dry_run
 }
