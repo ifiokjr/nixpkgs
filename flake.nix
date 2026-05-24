@@ -14,7 +14,7 @@
     }:
     {
       overlays.default = final: _prev: rec {
-        agave = final.agave-3_1;
+        agave = final.agave-4_0;
         solana = final.agave;
         agave-2_0 = final.callPackage ./packages/agave-2_0/package.nix { };
         agave-2_1 = final.callPackage ./packages/agave-2_1/package.nix { };
@@ -65,7 +65,7 @@
         lib = pkgs.lib;
 
         packages = rec {
-          agave = agave-3_1;
+          agave = agave-4_0;
           solana = agave;
           agave-2_0 = pkgs.callPackage ./packages/agave-2_0/package.nix { };
           agave-2_1 = pkgs.callPackage ./packages/agave-2_1/package.nix { };
