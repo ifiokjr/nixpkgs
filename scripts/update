@@ -680,10 +680,6 @@ def update-agave-2-1 [packages_dir: string, dry_run: bool] {
   update-agave-track $packages_dir "agave-2_1" "2.1" $dry_run
 }
 
-def update-agave-2-0 [packages_dir: string, dry_run: bool] {
-  update-agave-track $packages_dir "agave-2_0" "2.0" $dry_run
-}
-
 def update-codex [packages_dir: string, dry_run: bool] {
   let tag = (github-latest-tag "openai" "codex")
   let latest_version = (parse-capture $tag 'rust-v(.+)')
@@ -1512,7 +1508,6 @@ def main [
 
   mut steps = [
     { name: "agave", run: {|| update-agave $packages_dir $dry_run } }
-    { name: "agave-2_0", run: {|| update-agave-2-0 $packages_dir $dry_run } }
     { name: "agave-2_1", run: {|| update-agave-2-1 $packages_dir $dry_run } }
     { name: "agave-2_2", run: {|| update-agave-2-2 $packages_dir $dry_run } }
     { name: "agave-2_3", run: {|| update-agave-2-3 $packages_dir $dry_run } }

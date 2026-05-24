@@ -1,7 +1,6 @@
 [data]
 v = { command = "./scripts/versions", format = "json", watch = [
 	"packages/agave/package.nix",
-	"packages/agave-2_0/package.nix",
 	"packages/agave-2_1/package.nix",
 	"packages/agave-2_2/package.nix",
 	"packages/agave-2_3/package.nix",
