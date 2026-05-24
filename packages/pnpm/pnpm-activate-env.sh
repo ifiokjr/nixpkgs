@@ -7,7 +7,19 @@ usage() {
 	cat <<'EOF'
 Usage: pnpm-activate-env [--print-export] [--workspace-file <path>]
 
-Reads useNodeVersion from a pnpm workspace file and prepares PATH for that Node.js version.
+Detects the required Node.js version and prepares PATH.
+
+Version resolution order (pnpm v11+ / runtime mode):
+  1. devEngines.runtime in package.json
+  2. engines.runtime in package.json
+  3. .nvmrc file (walked up from CWD)
+  4. useNodeVersion in pnpm-workspace.yaml (deprecated)
+
+Version resolution order (pnpm v10 / env mode):
+  1. useNodeVersion in pnpm-workspace.yaml
+  2. devEngines.runtime in package.json
+  3. engines.runtime in package.json
+  4. .nvmrc file (walked up from CWD)
 
 Options:
   --print-export         Print shell code that updates PATH (use with eval).
@@ -24,14 +36,14 @@ trim() {
 }
 
 shell_quote() {
-	printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\''/g")"
+	printf '%s' "$(printf '%s' "$1" | sed "s/'/'\\''/g")"
 }
 
 path_has_entry() {
 	local path_value="$1"
 	local entry="$2"
 	case ":${path_value}:" in
-	*":${entry}:") return 0 ;;
+	*":${entry}:"*) return 0 ;;
 	*) return 1 ;;
 	esac
 }
@@ -76,6 +88,32 @@ find_package_json() {
 	done
 }
 
+find_nvmrc() {
+	local search_dir="$PWD"
+
+	while :; do
+		if [ -f "${search_dir}/.nvmrc" ]; then
+			printf '%s\n' "${search_dir}/.nvmrc"
+			return 0
+		fi
+
+		if [ "$search_dir" = "/" ]; then
+			return 1
+		fi
+
+		search_dir="$(dirname "$search_dir")"
+	done
+}
+
+read_nvmrc() {
+	local nvmrc_file="$1"
+	local value
+
+	value="$(trim "$(cat "$nvmrc_file")")"
+	# Strip leading 'v' prefix
+	printf '%s\n' "${value#v}"
+}
+
 extract_use_node_version() {
 	local workspace_file="$1"
 	local line raw value
@@ -95,11 +133,11 @@ extract_use_node_version() {
 			fi
 
 			case "$value" in
-			"\""*"\"")
+			\"\"*\")
 				value="${value#\"}"
 				value="${value%\"}"
 				;;
-			"'"*"'")
+			\'*\')
 				value="${value#\'}"
 				value="${value%\'}"
 				;;
@@ -109,6 +147,36 @@ extract_use_node_version() {
 			return 0
 		fi
 	done <"$workspace_file"
+
+	return 1
+}
+
+# Extract the node version from a JSON runtime object or array.
+# Handles both object and array forms of devEngines.runtime / engines.runtime.
+# Input: compact JSON string containing the runtime value
+extract_runtime_version_from_json() {
+	local runtime="$1"
+	local version
+
+	# Try object form: {"name":"node","version":"^20"}
+	# Try both key orderings: name-before-version and version-before-name
+	version="$(printf '%s\n' "$runtime" | sed -n 's/.*"name"[[:space:]]*:[[:space:]]*"node"[^}]*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
+	if [ -z "$version" ]; then
+		version="$(printf '%s\n' "$runtime" | sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)"[^}]*"name"[[:space:]]*:[[:space:]]*"node".*/\1/p')"
+	fi
+
+	# Try array form: iterate elements looking for node runtime
+	if [ -z "$version" ]; then
+		version="$(printf '%s\n' "$runtime" | sed -n 's/.*{[^{}]*"name"[[:space:]]*:[[:space:]]*"node"[^{}]*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)"[^{}]*}.*/\1/p')"
+		if [ -z "$version" ]; then
+			version="$(printf '%s\n' "$runtime" | sed -n 's/.*{[^{}]*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)"[^{}]*"name"[[:space:]]*:[[:space:]]*"node"[^{}]*}.*/\1/p')"
+		fi
+	fi
+
+	if [ -n "$version" ]; then
+		printf '%s\n' "$version"
+		return 0
+	fi
 
 	return 1
 }
@@ -126,16 +194,39 @@ extract_dev_engines_node_version() {
 	*) return 1 ;;
 	esac
 
-	runtime="$(printf '%s\n' "$compact" | sed -n 's/.*"runtime"[[:space:]]*:[[:space:]]*\(\[[^]]*\]\|{[^}]*}\).*/\1/p')"
+	runtime="$(printf '%s\n' "$compact" | sed -n 's/.*"devEngines"[[:space:]]*:[[:space:]]*{[^{}]*"runtime"[[:space:]]*:[[:space:]]*\(\[[^]]*\]\|{[^}]*}\).*/\1/p')"
 	if [ -z "$runtime" ]; then
 		return 1
 	fi
 
-	version="$(printf '%s\n' "$runtime" | sed -n 's/.*"name"[[:space:]]*:[[:space:]]*"node".*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
-	if [ -z "$version" ]; then
-		version="$(printf '%s\n' "$runtime" | sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*"name"[[:space:]]*:[[:space:]]*"node".*/\1/p')"
+	version="$(extract_runtime_version_from_json "$runtime")"
+	if [ -n "$version" ]; then
+		printf '%s\n' "$version"
+		return 0
 	fi
 
+	return 1
+}
+
+extract_engines_runtime_node_version() {
+	local package_json="$1"
+	local compact
+	local runtime
+	local version
+
+	compact="$(tr -d '\n\r' <"$package_json")"
+
+	case "$compact" in
+	*'"engines"'*'"runtime"'*) ;;
+	*) return 1 ;;
+	esac
+
+	runtime="$(printf '%s\n' "$compact" | sed -n 's/.*"engines"[[:space:]]*:[[:space:]]*{[^{}]*"runtime"[[:space:]]*:[[:space:]]*\(\[[^]]*\]\|{[^}]*}\).*/\1/p')"
+	if [ -z "$runtime" ]; then
+		return 1
+	fi
+
+	version="$(extract_runtime_version_from_json "$runtime")"
 	if [ -n "$version" ]; then
 		printf '%s\n' "$version"
 		return 0
@@ -366,17 +457,80 @@ main() {
 	local requested_version=""
 	local requested_source=""
 
-	if [ -n "$workspace_file" ] && [ -f "$workspace_file" ]; then
-		requested_version="$(extract_use_node_version "$workspace_file" || true)"
-		requested_source="$workspace_file"
-	fi
+	# Resolve Node version from all available sources.
+	# Priority order for runtime mode (v11+):
+	#   1. devEngines.runtime  2. engines.runtime  3. .nvmrc  4. useNodeVersion
+	# Priority order for env mode (v10):
+	#   1. useNodeVersion  2. devEngines.runtime  3. engines.runtime  4. .nvmrc
 
-	if [ -z "$requested_version" ] && [ "$PNPM_ACTIVATE_USE_RUNTIME" = "1" ]; then
-		local package_json=""
-		package_json="$(find_package_json || true)"
-		if [ -n "$package_json" ] && [ -f "$package_json" ]; then
+	local package_json
+	package_json="$(find_package_json || true)"
+
+	if [ "$PNPM_ACTIVATE_USE_RUNTIME" = "1" ]; then
+		# v11+ runtime mode
+		if [ -z "$requested_version" ] && [ -n "$package_json" ] && [ -f "$package_json" ]; then
 			requested_version="$(extract_dev_engines_node_version "$package_json" || true)"
-			requested_source="$package_json"
+			if [ -n "$requested_version" ]; then
+				requested_source="$package_json (devEngines.runtime)"
+			fi
+		fi
+
+		if [ -z "$requested_version" ] && [ -n "$package_json" ] && [ -f "$package_json" ]; then
+			requested_version="$(extract_engines_runtime_node_version "$package_json" || true)"
+			if [ -n "$requested_version" ]; then
+				requested_source="$package_json (engines.runtime)"
+			fi
+		fi
+
+		if [ -z "$requested_version" ]; then
+			local nvmrc_file
+			nvmrc_file="$(find_nvmrc || true)"
+			if [ -n "$nvmrc_file" ]; then
+				requested_version="$(read_nvmrc "$nvmrc_file")"
+				if [ -n "$requested_version" ]; then
+					requested_source="$nvmrc_file"
+				fi
+			fi
+		fi
+
+		if [ -z "$requested_version" ] && [ -n "$workspace_file" ] && [ -f "$workspace_file" ]; then
+			requested_version="$(extract_use_node_version "$workspace_file" || true)"
+			if [ -n "$requested_version" ]; then
+				requested_source="$workspace_file (useNodeVersion)"
+			fi
+		fi
+	else
+		# v10 env mode
+		if [ -z "$requested_version" ] && [ -n "$workspace_file" ] && [ -f "$workspace_file" ]; then
+			requested_version="$(extract_use_node_version "$workspace_file" || true)"
+			if [ -n "$requested_version" ]; then
+				requested_source="$workspace_file"
+			fi
+		fi
+
+		if [ -z "$requested_version" ] && [ -n "$package_json" ] && [ -f "$package_json" ]; then
+			requested_version="$(extract_dev_engines_node_version "$package_json" || true)"
+			if [ -n "$requested_version" ]; then
+				requested_source="$package_json (devEngines.runtime)"
+			fi
+		fi
+
+		if [ -z "$requested_version" ] && [ -n "$package_json" ] && [ -f "$package_json" ]; then
+			requested_version="$(extract_engines_runtime_node_version "$package_json" || true)"
+			if [ -n "$requested_version" ]; then
+				requested_source="$package_json (engines.runtime)"
+			fi
+		fi
+
+		if [ -z "$requested_version" ]; then
+			local nvmrc_file
+			nvmrc_file="$(find_nvmrc || true)"
+			if [ -n "$nvmrc_file" ]; then
+				requested_version="$(read_nvmrc "$nvmrc_file")"
+				if [ -n "$requested_version" ]; then
+					requested_source="$nvmrc_file"
+				fi
+			fi
 		fi
 	fi
 
@@ -386,7 +540,7 @@ main() {
 
 	if [ "$PNPM_ACTIVATE_USE_RUNTIME" = "1" ]; then
 		if ! is_valid_runtime_version "$requested_version"; then
-			echo "pnpm-activate-env: ignoring unsupported Node.js runtime '${requested_version}' in ${requested_source}" >&2
+			echo "pnpm-activate-env: ignoring unsupported Node.js version '${requested_version}' in ${requested_source}" >&2
 			return 0
 		fi
 	elif ! is_valid_node_version "$requested_version"; then
