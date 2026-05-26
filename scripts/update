@@ -764,13 +764,45 @@ def update-codex [packages_dir: string, dry_run: bool] {
 def update-deno [packages_dir: string, dry_run: bool] {
   let latest_version = (github-latest-tag "denoland" "deno" | str replace --regex '^v' '')
   let file = $"($packages_dir)/deno/package.nix"
-  let entries = [
-    { key: "aarch64-apple-darwin", url: $"https://github.com/denoland/deno/releases/download/v($latest_version)/deno-aarch64-apple-darwin.zip" }
-    { key: "x86_64-apple-darwin", url: $"https://github.com/denoland/deno/releases/download/v($latest_version)/deno-x86_64-apple-darwin.zip" }
-    { key: "aarch64-unknown-linux-gnu", url: $"https://github.com/denoland/deno/releases/download/v($latest_version)/deno-aarch64-unknown-linux-gnu.zip" }
-    { key: "x86_64-unknown-linux-gnu", url: $"https://github.com/denoland/deno/releases/download/v($latest_version)/deno-x86_64-unknown-linux-gnu.zip" }
+  let content = (open $file --raw)
+  let current_version = (parse-capture $content 'version = "([^"]+)"')
+  if ($current_version | is-empty) {
+    fail "could not parse version for deno"
+  }
+
+  if $current_version == $latest_version {
+    log-ok "deno" $"up to date \(v($current_version)\)"
+    return false
+  }
+
+  log-update "deno" $"v($current_version) → v($latest_version)"
+  if $dry_run {
+    return true
+  }
+
+  let platforms = [
+    { key: "aarch64-apple-darwin", suffix: "aarch64-apple-darwin" }
+    { key: "x86_64-apple-darwin", suffix: "x86_64-apple-darwin" }
+    { key: "aarch64-unknown-linux-gnu", suffix: "aarch64-unknown-linux-gnu" }
+    { key: "x86_64-unknown-linux-gnu", suffix: "x86_64-unknown-linux-gnu" }
   ]
-  update-versioned-keyed-hashes "deno" $file $latest_version $entries $dry_run
+
+  mut updated = (replace-version $content $latest_version)
+
+  for p in $platforms {
+    let bin_url = $"https://github.com/denoland/deno/releases/download/v($latest_version)/deno-($p.suffix).zip"
+    let sum_url = $"https://github.com/denoland/deno/releases/download/v($latest_version)/deno-($p.suffix).zip.sha256sum"
+    log-sub $"fetching ($p.key)..."
+    let new_hash = (prefetch-sri $bin_url)
+    $updated = (replace-key-hash $updated $p.key $new_hash)
+    log-sub $"fetching ($p.key) sha256sum..."
+    let sum_hash = (prefetch-sri $sum_url)
+    $updated = (replace-key-hash $updated $"sha256sum-($p.key)" $sum_hash)
+  }
+
+  $updated | save -f $file
+  log-ok "deno" "updated"
+  true
 }
 
 def update-godot [packages_dir: string, dry_run: bool] {

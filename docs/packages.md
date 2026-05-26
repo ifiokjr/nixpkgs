@@ -10,7 +10,7 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 | `cargo-clean-all`                                                                                            | linux, macOS           | Recursively clean Cargo project targets                      |
 | `cargo-interactive-update`                                                                                   | linux, macOS           | Interactively update Cargo dependencies                      |
 | `codex-cli`                                                                                                  | linux, macOS           | OpenAI Codex CLI                                             |
-| `deno`                                                                                                       | linux, macOS           | Deno runtime from pre-built releases                         |
+| `deno`                                                                                                       | linux, macOS           | Deno runtime from pre-built releases (with SHA-256SUMS verification) |
 | `dylint`                                                                                                     | linux, macOS           | Rust lint tooling                                            |
 | `godot`                                                                                                      | linux, macOS           | Godot editor/launcher from upstream binaries                 |
 | `gpg-suite`                                                                                                  | macOS                  | GPG Suite app bundle                                         |

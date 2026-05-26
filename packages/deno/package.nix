@@ -7,7 +7,7 @@
 }:
 
 let
-  version = "2.7.14";
+  version = "2.8.0";
   tag = "v${version}";
 
   platformSuffix =
@@ -20,10 +20,23 @@ let
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
   hashes = {
-    "aarch64-apple-darwin" = "sha256-rrWCX4O0qc1/k1WhxN3WZiBdrPdsy3uYwrEOBmvJ5Ls=";
-    "x86_64-apple-darwin" = "sha256-yJFJUTv46Cq1s1HaxUT4wMrakHU70vV29GMl+2eZeuE=";
-    "aarch64-unknown-linux-gnu" = "sha256-uBXJGUUrWZOnwi3wGKiML3Bu6mteCqeAKysHCe3eAeg=";
-    "x86_64-unknown-linux-gnu" = "sha256-Mofv71NgaWZGnLagJ4Eye+IrkIlZOX+XbimW3Btkrg8=";
+    "aarch64-apple-darwin" = "sha256-26gTuLadYhjP+xElK55OYDbKLJ15hDzeNntLNpqvljQ=";
+    "x86_64-apple-darwin" = "sha256-1utkO38a+yITn0qhfE2Xv33atOAeGCDtyzC5rlw6c5E=";
+    "aarch64-unknown-linux-gnu" = "sha256-kzpqfSmFlXJxzSCFpaWhgyOYqiIaNU2qtWNRls8su64=";
+    "x86_64-unknown-linux-gnu" = "sha256-viyLU8jKHWa+dv65saUkQZ2nCLANTKB0z1xjPIHBYns=";
+  };
+
+  # SHA-256 hashes of the .sha256sum files published alongside each release.
+  # These are fetched and verified by Nix, providing a second trust anchor:
+  # even if the binary hashes were maliciously replaced in our package definition,
+  # the sha256sum files would also need to be compromised in the same way.
+  # During installPhase, the downloaded ZIP is verified against the contents
+  # of these checksums, catching supply-chain attacks on the release artifacts.
+  sha256sumHashes = {
+    "sha256sum-aarch64-apple-darwin" = "sha256-QOaZ5KQmj/F1Z0wb6kRAxTq6aeSwOIDzKiWDaQkmweg=";
+    "sha256sum-x86_64-apple-darwin" = "sha256-yLyBGqeNf5eNyN8xoRCe3RetfDQk9akzPC6g6xCgQJc=";
+    "sha256sum-aarch64-unknown-linux-gnu" = "sha256-dg3Da/bInL6w4qGI3fW0zr+Mva/ccbXjQuKVCCTHVFM=";
+    "sha256sum-x86_64-unknown-linux-gnu" = "sha256-lrDgLvYRp6CiPKpjcwyg/aU/cSte4E7EemkQSayIEmU=";
   };
 in
 stdenv.mkDerivation {
@@ -33,6 +46,14 @@ stdenv.mkDerivation {
   src = fetchurl {
     url = "https://github.com/denoland/deno/releases/download/${tag}/deno-${platformSuffix}.zip";
     sha256 = hashes.${platformSuffix} or lib.fakeSha256;
+  };
+
+  # Fetched separately so we can verify the binary against Deno's
+  # published checksums, providing supply-chain assurance beyond the
+  # Nix fetchurl hash alone.
+  checksums = fetchurl {
+    url = "https://github.com/denoland/deno/releases/download/${tag}/deno-${platformSuffix}.zip.sha256sum";
+    sha256 = sha256sumHashes.${"sha256sum-${platformSuffix}"} or lib.fakeSha256;
   };
 
   dontBuild = true;
@@ -45,6 +66,20 @@ stdenv.mkDerivation {
 
   installPhase = ''
     runHook preInstall
+
+    # Verify the downloaded ZIP matches Deno's published SHA-256 checksum.
+    # This cross-checks our Nix fetchurl hash against what Deno published,
+    # catching supply-chain attacks that replace both the binary AND our hashes.
+    expected=$(awk '{print $1}' "$checksums")
+    actual=$(sha256sum "$src" 2>/dev/null | awk '{print $1}' || shasum -a 256 "$src" 2>/dev/null | awk '{print $1}')
+
+    if [ -n "$actual" ] && [ "$actual" != "$expected" ]; then
+      echo "deno: SHA-256 checksum verification failed!" >&2
+      echo "  expected: $expected" >&2
+      echo "  got:      $actual" >&2
+      echo "  The downloaded ZIP does not match Deno's published checksum." >&2
+      exit 1
+    fi
 
     mkdir -p $out/bin
     cp deno $out/bin/deno
