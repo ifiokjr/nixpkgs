@@ -24,6 +24,7 @@
         agave-3_1 = final.callPackage ./packages/agave-3_1/package.nix { };
         agave-4_0 = final.callPackage ./packages/agave-4_0/package.nix { };
         cargo-clean-all = final.callPackage ./packages/cargo-clean-all/package.nix { };
+        ccase = final.callPackage ./packages/ccase/package.nix { };
         dylint = final.callPackage ./packages/dylint/package.nix { };
         cargo-interactive-update = final.callPackage ./packages/cargo-interactive-update/package.nix { };
         codex-cli = final.callPackage ./packages/codex-cli/package.nix { };
@@ -75,6 +76,7 @@
           agave-3_1 = pkgs.callPackage ./packages/agave-3_1/package.nix { };
           agave-4_0 = pkgs.callPackage ./packages/agave-4_0/package.nix { };
           cargo-clean-all = pkgs.callPackage ./packages/cargo-clean-all/package.nix { };
+          ccase = pkgs.callPackage ./packages/ccase/package.nix { };
           dylint = pkgs.callPackage ./packages/dylint/package.nix { };
           cargo-interactive-update = pkgs.callPackage ./packages/cargo-interactive-update/package.nix { };
           codex-cli = pkgs.callPackage ./packages/codex-cli/package.nix { };

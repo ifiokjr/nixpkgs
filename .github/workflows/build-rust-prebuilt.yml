@@ -14,6 +14,7 @@ on:
           - cargo-interactive-update
           - sbpf-linker
           - keyring
+          - ccase
       version:
         description: "Version to build (without v prefix)"
         required: true
@@ -76,6 +77,11 @@ jobs:
             keyring)
               echo "repo=open-source-cooperative/keyring-rs" >> "$GITHUB_OUTPUT"
               echo "bin=keyring" >> "$GITHUB_OUTPUT"
+              ;;
+            ccase)
+              echo "repo=stringcase/ccase" >> "$GITHUB_OUTPUT"
+              echo "bin=ccase" >> "$GITHUB_OUTPUT"
+              echo "ref=${VERSION}" >> "$GITHUB_OUTPUT"
               ;;
           esac
 
