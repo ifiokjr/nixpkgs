@@ -6,7 +6,7 @@
 }:
 
 let
-  version = "0.28.2";
+  version = "0.29.0";
 
   platformSuffix =
     {
@@ -18,10 +18,10 @@ let
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
   hashes = {
-    "aarch64-apple-darwin" = "sha256-DnKCuEaQ684J421S3xICYskHX8inuHaSx6YCGtCCGC4=";
-    "x86_64-apple-darwin" = "sha256-BhN6ZX445ULdJCEbm+kPssREnPeFBcDloBJdZzI+gVI=";
-    "aarch64-unknown-linux-musl" = "sha256-TsHZjrnagjwa8EHnTfLrMzjcfF1s2yHtcKahLHrWgD0=";
-    "x86_64-unknown-linux-musl" = "sha256-yyKNpVxct9yzhzi2czAgZF1JyHhoFk8S+oSA4zODR3Q=";
+    "aarch64-apple-darwin" = "sha256-6FWUArG52RIKUuEufhbL0rf8LIX5BVGArKaURpqnYps=";
+    "x86_64-apple-darwin" = "sha256-ikIN38Dk+q13rwPZ9XU1v/ZECr0dJrHJjgrOTkI9Qgo=";
+    "aarch64-unknown-linux-musl" = "sha256-jrdeHUSdeKRgKSjYFKvtXfkpzgvIsCNpReLuBXBVzAM=";
+    "x86_64-unknown-linux-musl" = "sha256-cgxiLYact/RcMoB/cRCcPTYOzlOzrF7UQCp/qeG9aK0=";
   };
 in
 stdenv.mkDerivation {
@@ -37,6 +37,8 @@ stdenv.mkDerivation {
   dontStrip = true;
   dontFixup = true;
 
+  nativeBuildInputs = [ installShellFiles ];
+
   installPhase = ''
     runHook preInstall
 
@@ -49,6 +51,12 @@ stdenv.mkDerivation {
       cp sandbox_daemon $out/bin/
       chmod +x $out/bin/sandbox_daemon
     fi
+
+    # Install shell completions
+    installShellCompletion --cmd ironclaw \
+      --bash <($out/bin/ironclaw completion --shell bash) \
+      --fish <($out/bin/ironclaw completion --shell fish) \
+      --zsh <($out/bin/ironclaw completion --shell zsh)
 
     runHook postInstall
   '';
