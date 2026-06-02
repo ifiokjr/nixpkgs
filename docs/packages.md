@@ -10,6 +10,7 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 | `cargo-clean-all`                                                                                            | linux, macOS           | Recursively clean Cargo project targets                              |
 | `cargo-interactive-update`                                                                                   | linux, macOS           | Interactively update Cargo dependencies                              |
 | `codex-cli`                                                                                                  | linux, macOS           | OpenAI Codex CLI                                                     |
+| `flutter_launcher_icons`, `flutter_native_splash`                                                            | linux, macOS           | Flutter asset generation CLIs                                        |
 | `deno`                                                                                                       | linux, macOS           | Deno runtime from pre-built releases (with SHA-256SUMS verification) |
 | `dylint`                                                                                                     | linux, macOS           | Rust lint tooling                                                    |
 | `godot`                                                                                                      | linux, macOS           | Godot editor/launcher from upstream binaries                         |
@@ -19,6 +20,7 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 | `kani`                                                                                                       | linux, macOS           | Rust model checker                                                   |
 | `keyring`                                                                                                    | linux, macOS           | Rust Keyring CLI; repo-hosted prebuilts with source fallback         |
 | `knope`                                                                                                      | linux, macOS           | Release/changelog/version automation                                 |
+| `melos`                                                                                                      | linux, macOS           | Dart and Flutter monorepo manager                                    |
 | `mdt`                                                                                                        | linux, macOS           | Markdown templating updater                                          |
 | `monochange`                                                                                                 | linux, macOS           | Monorepo version and release manager                                 |
 | `nordvpn`                                                                                                    | macOS                  | NordVPN client                                                       |
@@ -29,6 +31,7 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 | `racket-minimal`                                                                                             | linux, macOS           | Minimal Racket distribution                                          |
 | `sbpf-linker`                                                                                                | macOS                  | SBPF linker                                                          |
 | `secretspec`                                                                                                 | linux, macOS           | Declarative secrets CLI                                              |
+| `serverpod_cli`                                                                                              | linux, macOS           | Serverpod command-line tools                                         |
 | `solana-verify`                                                                                              | linux x64, macOS arm64 | Verifiable Solana builds                                             |
 | `steam`                                                                                                      | macOS                  | Steam app bundle                                                     |
 | `surfpool`                                                                                                   | linux x64, macOS       | Solana test-validator replacement                                    |

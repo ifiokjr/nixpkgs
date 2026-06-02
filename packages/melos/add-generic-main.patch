@@ -1,0 +1,29 @@
+diff --git a/packages/melos/bin/melos.dart b/packages/melos/bin/melos.dart
+index 2476436..2801a4c 100644
+--- a/packages/melos/bin/melos.dart
++++ b/packages/melos/bin/melos.dart
+@@ -1,11 +1,19 @@
++import 'dart:io';
++
+ import 'package:cli_launcher/cli_launcher.dart';
+ import 'package:melos/src/command_runner.dart';
+ 
+-Future<void> main(List<String> arguments) async => launchExecutable(
++Future<void> main(List<String> arguments) async => melosEntryPoint(
+   arguments,
+-  LaunchConfig(
+-    name: ExecutableName('melos'),
+-    launchFromSelf: false,
+-    entrypoint: melosEntryPoint,
++  LaunchContext(
++    directory: Directory.current,
++    globalInstallation: ExecutableInstallation(
++      name: ExecutableName('melos'),
++      version: '7.8.0',
++      isSelf: true,
++      isFromPath: false,
++      requiresFlutter: false,
++      packageRoot: Directory('@out@'),
++    ),
+   ),
+ );
