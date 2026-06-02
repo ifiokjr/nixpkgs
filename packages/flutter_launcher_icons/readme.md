@@ -8,6 +8,8 @@ Use it to create Android, iOS, web, Windows, macOS, and Linux launcher icons for
 
 ```bash
 nix run github:ifiokjr/nixpkgs#flutter_launcher_icons -- --help
+# alias:
+nix run github:ifiokjr/nixpkgs#flutter-launcher-icons -- --help
 ```
 
 The installed executable is `flutter_launcher_icons`.
