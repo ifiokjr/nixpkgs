@@ -29,6 +29,8 @@
         cargo-interactive-update = final.callPackage ./packages/cargo-interactive-update/package.nix { };
         codex-cli = final.callPackage ./packages/codex-cli/package.nix { };
         deno = final.callPackage ./packages/deno/package.nix { };
+        flutter-launcher-icons = flutter_launcher_icons;
+        flutter-native-splash = flutter_native_splash;
         flutter_launcher_icons = final.callPackage ./packages/flutter_launcher_icons/package.nix { };
         flutter_native_splash = final.callPackage ./packages/flutter_native_splash/package.nix { };
         godot = final.callPackage ./packages/godot/package.nix { };
@@ -39,6 +41,7 @@
         keyring = final.callPackage ./packages/keyring/package.nix { };
         knope = final.callPackage ./packages/knope/package.nix { };
         mdt = final.callPackage ./packages/mdt/package.nix { };
+        melos-cli = melos;
         melos = final.callPackage ./packages/melos/package.nix { };
         monochange = final.callPackage ./packages/monochange/package.nix { };
         nordvpn = final.callPackage ./packages/nordvpn/package.nix { };
@@ -53,6 +56,8 @@
         racket-minimal = final.callPackage ./packages/racket-minimal/package.nix { };
         sbpf-linker = final.callPackage ./packages/sbpf-linker/package.nix { };
         solana-verify = final.callPackage ./packages/solana-verify/package.nix { };
+        serverpod = serverpod_cli;
+        serverpod-cli = serverpod_cli;
         serverpod_cli = final.callPackage ./packages/serverpod_cli/package.nix { };
         steam = final.callPackage ./packages/steam/package.nix { };
         surfpool = final.callPackage ./packages/surfpool/package.nix { };
@@ -85,6 +90,8 @@
           cargo-interactive-update = pkgs.callPackage ./packages/cargo-interactive-update/package.nix { };
           codex-cli = pkgs.callPackage ./packages/codex-cli/package.nix { };
           deno = pkgs.callPackage ./packages/deno/package.nix { };
+          flutter-launcher-icons = flutter_launcher_icons;
+          flutter-native-splash = flutter_native_splash;
           flutter_launcher_icons = pkgs.callPackage ./packages/flutter_launcher_icons/package.nix { };
           flutter_native_splash = pkgs.callPackage ./packages/flutter_native_splash/package.nix { };
           godot = pkgs.callPackage ./packages/godot/package.nix { };
@@ -95,6 +102,7 @@
           keyring = pkgs.callPackage ./packages/keyring/package.nix { };
           knope = pkgs.callPackage ./packages/knope/package.nix { };
           mdt = pkgs.callPackage ./packages/mdt/package.nix { };
+          melos-cli = melos;
           melos = pkgs.callPackage ./packages/melos/package.nix { };
           monochange = pkgs.callPackage ./packages/monochange/package.nix { };
           nordvpn = pkgs.callPackage ./packages/nordvpn/package.nix { };
@@ -109,6 +117,8 @@
           racket-minimal = pkgs.callPackage ./packages/racket-minimal/package.nix { };
           sbpf-linker = pkgs.callPackage ./packages/sbpf-linker/package.nix { };
           solana-verify = pkgs.callPackage ./packages/solana-verify/package.nix { };
+          serverpod = serverpod_cli;
+          serverpod-cli = serverpod_cli;
           serverpod_cli = pkgs.callPackage ./packages/serverpod_cli/package.nix { };
           steam = pkgs.callPackage ./packages/steam/package.nix { };
           surfpool = pkgs.callPackage ./packages/surfpool/package.nix { };

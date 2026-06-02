@@ -8,6 +8,8 @@ Use it to create or remove launch splash screens for Android, iOS, web, Windows,
 
 ```bash
 nix run github:ifiokjr/nixpkgs#flutter_native_splash -- --help
+# alias:
+nix run github:ifiokjr/nixpkgs#flutter-native-splash -- --help
 ```
 
 The package installs two executables:

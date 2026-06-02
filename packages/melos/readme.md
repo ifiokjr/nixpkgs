@@ -8,6 +8,8 @@ Use it to bootstrap package workspaces, run scripts across packages, manage depe
 
 ```bash
 nix run github:ifiokjr/nixpkgs#melos -- --help
+# alias:
+nix run github:ifiokjr/nixpkgs#melos-cli -- --help
 ```
 
 The installed executable is `melos`.

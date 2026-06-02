@@ -8,6 +8,9 @@ Use it to create Serverpod projects, generate protocol and serialization code, r
 
 ```bash
 nix run github:ifiokjr/nixpkgs#serverpod_cli -- --help
+# aliases:
+nix run github:ifiokjr/nixpkgs#serverpod -- --help
+nix run github:ifiokjr/nixpkgs#serverpod-cli -- --help
 ```
 
 The installed executable is `serverpod`.
