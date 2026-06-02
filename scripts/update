@@ -1230,15 +1230,21 @@ def update-rust-dylint [packages_dir: string, dry_run: bool] {
   update-rust-cargo-lock-package $packages_dir "dylint" $latest_version $rev "trailofbits" "dylint" $dry_run
 }
 
-def update-rust-knope [repo_root: string, packages_dir: string, dry_run: bool] {
+def update-knope [packages_dir: string, dry_run: bool] {
   let tag = (github-latest-tag "knope-dev" "knope")
   let latest_version = if ($tag | str starts-with "knope/v") {
     $tag | str replace "knope/v" ""
   } else {
     $tag | str replace --regex '^v' ''
   }
-  let rev = $"knope/v($latest_version)"
-  update-rust-package $repo_root $packages_dir "knope" $latest_version $rev "knope-dev" "knope" $dry_run
+  let file = $"($packages_dir)/knope/package.nix"
+  let entries = [
+    { key: "aarch64-apple-darwin", url: $"https://github.com/knope-dev/knope/releases/download/knope/v($latest_version)/knope-aarch64-apple-darwin.tgz" }
+    { key: "x86_64-apple-darwin", url: $"https://github.com/knope-dev/knope/releases/download/knope/v($latest_version)/knope-x86_64-apple-darwin.tgz" }
+    { key: "aarch64-unknown-linux-musl", url: $"https://github.com/knope-dev/knope/releases/download/knope/v($latest_version)/knope-aarch64-unknown-linux-musl.tgz" }
+    { key: "x86_64-unknown-linux-musl", url: $"https://github.com/knope-dev/knope/releases/download/knope/v($latest_version)/knope-x86_64-unknown-linux-musl.tgz" }
+  ]
+  update-versioned-keyed-hashes "knope" $file $latest_version $entries $dry_run
 }
 
 def update-herdr [packages_dir: string, dry_run: bool] {
@@ -1622,7 +1628,7 @@ def main [
     { name: "ironclaw", run: {|| update-ironclaw $packages_dir $dry_run } }
     { name: "kani", run: {|| update-kani $packages_dir $dry_run } }
     { name: "keyring", run: {|| update-prebuilt-keyring $packages_dir $dry_run } }
-    { name: "knope", run: {|| update-rust-knope $root $packages_dir $dry_run } }
+    { name: "knope", run: {|| update-knope $packages_dir $dry_run } }
     { name: "mdt", run: {|| update-mdt $packages_dir $dry_run } }
     { name: "monochange", run: {|| update-monochange $packages_dir $dry_run } }
     { name: "nordvpn", run: {|| update-nordvpn $packages_dir $dry_run } }
