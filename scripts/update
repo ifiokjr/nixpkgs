@@ -1416,7 +1416,7 @@ def update-rolling-steam [packages_dir: string, dry_run: bool] {
 # These packages use binaries built by our CI and hosted in this repo.
 # Instead of updating hashes directly, we trigger the build-rust-prebuilt workflow.
 
-const PREBUILT_PACKAGES = ["dylint" "pina" "cargo-clean-all" "cargo-interactive-update" "keyring" "sbpf-linker"]
+const PREBUILT_PACKAGES = ["ccase" "dylint" "pina" "cargo-clean-all" "cargo-interactive-update" "keyring" "sbpf-linker"]
 
 def is-prebuilt-package [package: string] {
   $PREBUILT_PACKAGES | any {|p| $p == $package }
@@ -1536,6 +1536,12 @@ def update-prebuilt-sbpf-linker [packages_dir: string, dry_run: bool] {
   update-prebuilt-package $packages_dir "sbpf-linker" $latest_version "blueshift-gg" "sbpf-linker" $dry_run
 }
 
+def update-prebuilt-ccase [packages_dir: string, dry_run: bool] {
+  let tag = (github-latest-tag "stringcase" "ccase")
+  let latest_version = ($tag | str replace --regex '^v' '')
+  update-prebuilt-package $packages_dir "ccase" $latest_version "stringcase" "ccase" $dry_run
+}
+
 # Runner
 
 def run-step [name: string, updater: closure] {
@@ -1627,6 +1633,7 @@ def main [
     { name: "gpg-suite", run: {|| update-gpg-suite $packages_dir $dry_run } }
     { name: "ironclaw", run: {|| update-ironclaw $packages_dir $dry_run } }
     { name: "kani", run: {|| update-kani $packages_dir $dry_run } }
+    { name: "ccase", run: {|| update-prebuilt-ccase $packages_dir $dry_run } }
     { name: "keyring", run: {|| update-prebuilt-keyring $packages_dir $dry_run } }
     { name: "knope", run: {|| update-knope $packages_dir $dry_run } }
     { name: "mdt", run: {|| update-mdt $packages_dir $dry_run } }
