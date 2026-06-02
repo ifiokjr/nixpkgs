@@ -4,15 +4,15 @@
   fetchurl,
   fetchFromGitHub,
   rustPlatform,
-  pkg-config,
   autoPatchelfHook,
-  libgit2,
   openssl,
   zlib,
+  pkg-config,
 }:
 
 let
-  version = "5.0.0";
+  version = "6.0.1";
+  tag = "v${version}";
 
   platformSuffix =
     {
@@ -23,15 +23,14 @@ let
     }
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
-  hashes = {
-    "aarch64-apple-darwin" = "sha256-cE2uDt6/3dIgEwaYxP6EIPjBEnBSLLtH23o6Ijk2Bp0=";
-    "x86_64-apple-darwin" = lib.fakeHash;
-    "aarch64-unknown-linux-gnu" = "sha256-YPB68MZGpaQd6mw6lftHLrB5lHxCNRgJAlYXzaXkSpU=";
-    "x86_64-unknown-linux-gnu" = "sha256-XxogF6QOWyG5Eeyy5VLaCcRxqLvmdZHwHmcQgGQTYz0=";
+  upstreamLinuxHashes = {
+    "cargo-dylint-aarch64-unknown-linux-gnu" = "sha256-sihkFkv+tvqjkfA03BHZU3x9nIwyhrtSghnym601xgM=";
+    "dylint-link-aarch64-unknown-linux-gnu" = "sha256-DU2dLjFUoCvp1EOD1v95SlYYsnMjuWhCS3DQDsKiguo=";
+    "cargo-dylint-x86_64-unknown-linux-gnu" = "sha256-nxMNkV77/R0EFgrJh0xhel10tIlxiB4ltepsaedFl/c=";
+    "dylint-link-x86_64-unknown-linux-gnu" = "sha256-xHwxR5pE7W1siq9D3+ah22X15MS4NMfnNlodMJ58G/0=";
   };
 
-  prebuiltHash = hashes.${platformSuffix} or lib.fakeHash;
-  hasPrebuilt = prebuiltHash != lib.fakeHash;
+  hasUpstreamBinary = stdenv.isLinux;
 
   meta = {
     description = "Dylint tools for running Rust lints and building Dylint libraries";
@@ -47,6 +46,8 @@ let
       "x86_64-darwin"
       "aarch64-darwin"
     ];
+    sourceProvenance =
+      if hasUpstreamBinary then [ lib.sourceTypes.binaryNativeCode ] else [ lib.sourceTypes.fromSource ];
     tags = [
       "cli"
       "dev-tool"
@@ -57,8 +58,8 @@ let
   src = fetchFromGitHub {
     owner = "trailofbits";
     repo = "dylint";
-    rev = "v${version}";
-    hash = "sha256-Q06arUQ0p6nWtAbpTGJdW34F9Gg6k2rXqRqkLHGe7Zs=";
+    rev = tag;
+    hash = "sha256-SteI8+BZ5ej38goCOD+PRJozt7qVSTp/IFJXyeBblAw=";
   };
 
   sourceBuild = rustPlatform.buildRustPackage {
@@ -81,56 +82,69 @@ let
     ];
     nativeBuildInputs = [ pkg-config ];
     buildInputs = [
-      libgit2
       openssl
       zlib
     ];
     doCheck = false;
     doInstallCheck = true;
     installCheckPhase = "$out/bin/cargo-dylint --help > /dev/null";
-    env = {
-      LIBGIT2_NO_VENDOR = "1";
-    };
     meta = meta // {
       sourceProvenance = [ lib.sourceTypes.fromSource ];
     };
   };
 
-  prebuilt = stdenv.mkDerivation {
+  cargoDylintSrc = fetchurl {
+    url = "https://github.com/trailofbits/dylint/releases/download/${tag}/cargo-dylint-${platformSuffix}-${tag}.tar.gz";
+    hash = upstreamLinuxHashes."cargo-dylint-${platformSuffix}";
+  };
+
+  dylintLinkSrc = fetchurl {
+    url = "https://github.com/trailofbits/dylint/releases/download/${tag}/dylint-link-${platformSuffix}-${tag}.tar.gz";
+    hash = upstreamLinuxHashes."dylint-link-${platformSuffix}";
+  };
+
+  upstreamLinux = stdenv.mkDerivation {
     pname = "dylint";
     inherit version;
-    src = fetchurl {
-      url = "https://github.com/ifiokjr/nixpkgs/releases/download/prebuilt/dylint/${version}/dylint-${platformSuffix}.tar.gz";
-      hash = prebuiltHash;
-    };
-    dontUnpack = true;
+
+    srcs = [
+      cargoDylintSrc
+      dylintLinkSrc
+    ];
+
+    sourceRoot = ".";
+
+    nativeBuildInputs = [ autoPatchelfHook ];
+    buildInputs = [ stdenv.cc.cc.lib ];
+
     dontBuild = true;
     dontStrip = true;
-    nativeBuildInputs = lib.optionals stdenv.isLinux [ autoPatchelfHook ];
-    buildInputs = [
-      libgit2
-      openssl
-      zlib
-    ]
-    ++ lib.optionals stdenv.isLinux [ stdenv.cc.cc.lib ];
+
     installPhase = ''
       runHook preInstall
 
       mkdir -p $out/bin
-      tar xzf $src -C $out/bin/
-      chmod +x $out/bin/cargo-dylint $out/bin/dylint-link
+
+      tar xzf ${cargoDylintSrc} -C $out/bin/
+      chmod +x $out/bin/cargo-dylint
+
+      tar xzf ${dylintLinkSrc} -C $out/bin/
+      chmod +x $out/bin/dylint-link
 
       runHook postInstall
     '';
+
     doInstallCheck = true;
     installCheckPhase = ''
       runHook preInstallCheck
       $out/bin/cargo-dylint --help > /dev/null
+      $out/bin/dylint-link --help > /dev/null
       runHook postInstallCheck
     '';
+
     meta = meta // {
       sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     };
   };
 in
-if hasPrebuilt then prebuilt else sourceBuild
+if hasUpstreamBinary then upstreamLinux else sourceBuild

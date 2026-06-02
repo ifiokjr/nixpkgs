@@ -1416,7 +1416,7 @@ def update-rolling-steam [packages_dir: string, dry_run: bool] {
 # These packages use binaries built by our CI and hosted in this repo.
 # Instead of updating hashes directly, we trigger the build-rust-prebuilt workflow.
 
-const PREBUILT_PACKAGES = ["ccase" "dylint" "pina" "cargo-clean-all" "cargo-interactive-update" "keyring" "sbpf-linker"]
+const PREBUILT_PACKAGES = ["ccase" "pina" "cargo-clean-all" "cargo-interactive-update" "keyring" "sbpf-linker"]
 
 def is-prebuilt-package [package: string] {
   $PREBUILT_PACKAGES | any {|p| $p == $package }
@@ -1483,109 +1483,25 @@ def update-prebuilt-package [
   trigger-prebuilt-build $package $latest_version $dry_run
 }
 
-# Dart and Flutter pub packages
-
-def pub-latest-version [package: string] {
-  let data = (http get $"https://pub.dev/api/packages/($package)")
-  $data.latest.version
-}
-
-def update-dart-pub-archive [packages_dir: string, package_name: string, dry_run: bool] {
-  let latest_version = (pub-latest-version $package_name)
-  let file = $"($packages_dir)/($package_name)/package.nix"
-  let content = (open $file --raw)
-  let current_version = (parse-capture $content 'version = "([^"]+)"')
-
-  if $current_version == $latest_version {
-    log-ok $package_name $"up to date \(v($current_version)\)"
-    return false
-  }
-
-  log-update $package_name $"v($current_version) → v($latest_version)"
-  if $dry_run {
-    return true
-  }
-
-  let url = $"https://pub.dev/api/archives/($package_name)-($latest_version).tar.gz"
-  log-sub "fetching Pub archive hash..."
-  let source_hash = (prefetch-sri $url)
-
-  let staged_version = (replace-version $content $latest_version)
-  let staged = (set-src-hash $staged_version $source_hash)
-  $staged | save --force $file
-  log-sub "updated package.nix; refresh pubspec.lock.json when dependencies change"
-  true
-}
-
-def update-flutter-launcher-icons [packages_dir: string, dry_run: bool] {
-  update-dart-pub-archive $packages_dir "flutter_launcher_icons" $dry_run
-}
-
-def update-flutter-native-splash [packages_dir: string, dry_run: bool] {
-  update-dart-pub-archive $packages_dir "flutter_native_splash" $dry_run
-}
-
-def update-melos-pub [packages_dir: string, dry_run: bool] {
-  let package_name = "melos"
-  let latest_version = (pub-latest-version $package_name)
-  let file = $"($packages_dir)/melos/package.nix"
-  let content = (open $file --raw)
-  let current_version = (parse-capture $content 'version = "([^"]+)"')
-
-  if $current_version == $latest_version {
-    log-ok $package_name $"up to date \(v($current_version)\)"
-    return false
-  }
-
-  log-update $package_name $"v($current_version) → v($latest_version)"
-  if $dry_run {
-    return true
-  }
-
-  let source_url = $"https://github.com/invertase/melos/archive/refs/tags/melos-v($latest_version).tar.gz"
-  log-sub "fetching GitHub source hash..."
-  let source_hash = (prefetch-sri-unpack $source_url)
-
-  let staged_version = (replace-version $content $latest_version)
-  let staged_hash = (set-src-hash $staged_version $source_hash)
-  let staged = ($staged_hash | str replace --regex "version: '[^']+'" $"version: '($latest_version)'")
-  $staged | save --force $file
-  log-sub "updated package.nix; refresh pubspec.lock.json from packages/melos when dependencies change"
-  true
-}
-
-def update-serverpod-cli [packages_dir: string, dry_run: bool] {
-  let package_name = "serverpod_cli"
-  let latest_version = (pub-latest-version $package_name)
-  let file = $"($packages_dir)/serverpod_cli/package.nix"
-  let content = (open $file --raw)
-  let current_version = (parse-capture $content 'version = "([^"]+)"')
-
-  if $current_version == $latest_version {
-    log-ok $package_name $"up to date \(v($current_version)\)"
-    return false
-  }
-
-  log-update $package_name $"v($current_version) → v($latest_version)"
-  if $dry_run {
-    return true
-  }
-
-  let source_url = $"https://github.com/serverpod/serverpod/archive/refs/tags/($latest_version).tar.gz"
-  log-sub "fetching GitHub source hash..."
-  let source_hash = (prefetch-sri-unpack $source_url)
-
-  let staged_version = (replace-version $content $latest_version)
-  let staged = (set-src-hash $staged_version $source_hash)
-  $staged | save --force $file
-  log-sub "updated package.nix; refresh pubspec.lock.json from tools/serverpod_cli when dependencies change"
-  true
-}
-
-def update-prebuilt-dylint [packages_dir: string, dry_run: bool] {
+def update-dylint [packages_dir: string, dry_run: bool] {
   let tag = (github-latest-tag "trailofbits" "dylint")
   let latest_version = ($tag | str replace --regex '^v' '')
-  update-prebuilt-package $packages_dir "dylint" $latest_version "trailofbits" "dylint" $dry_run
+  let file = $"($packages_dir)/dylint/package.nix"
+  let entries = [
+    { key: "cargo-dylint-aarch64-unknown-linux-gnu", url: $"https://github.com/trailofbits/dylint/releases/download/($tag)/cargo-dylint-aarch64-unknown-linux-gnu-($tag).tar.gz" }
+    { key: "dylint-link-aarch64-unknown-linux-gnu", url: $"https://github.com/trailofbits/dylint/releases/download/($tag)/dylint-link-aarch64-unknown-linux-gnu-($tag).tar.gz" }
+    { key: "cargo-dylint-x86_64-unknown-linux-gnu", url: $"https://github.com/trailofbits/dylint/releases/download/($tag)/cargo-dylint-x86_64-unknown-linux-gnu-($tag).tar.gz" }
+    { key: "dylint-link-x86_64-unknown-linux-gnu", url: $"https://github.com/trailofbits/dylint/releases/download/($tag)/dylint-link-x86_64-unknown-linux-gnu-($tag).tar.gz" }
+  ]
+  let changed = (update-versioned-keyed-hashes "dylint" $file $latest_version $entries $dry_run)
+  # Also update the source archive hash for macOS sourceBuild
+  if $changed and not $dry_run {
+    let source_url = $"https://github.com/trailofbits/dylint/archive/($tag).tar.gz"
+    let new_hash = (prefetch-sri-unpack $source_url)
+    let content = (open $file --raw)
+    let updated = (set-src-hash $content $new_hash)
+    $updated | save -f $file
+  }
 }
 
 def update-prebuilt-pina [packages_dir: string, dry_run: bool] {
@@ -1726,9 +1642,7 @@ def main [
     { name: "cargo-interactive-update", run: {|| update-prebuilt-cargo-interactive $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
     { name: "deno", run: {|| update-deno $packages_dir $dry_run } }
-    { name: "flutter_launcher_icons", run: {|| update-flutter-launcher-icons $packages_dir $dry_run } }
-    { name: "flutter_native_splash", run: {|| update-flutter-native-splash $packages_dir $dry_run } }
-    { name: "dylint", run: {|| update-prebuilt-dylint $packages_dir $dry_run } }
+    { name: "dylint", run: {|| update-dylint $packages_dir $dry_run } }
     { name: "godot", run: {|| update-godot $packages_dir $dry_run } }
     { name: "herdr", run: {|| update-herdr $packages_dir $dry_run } }
     { name: "gpg-suite", run: {|| update-gpg-suite $packages_dir $dry_run } }
@@ -1738,7 +1652,6 @@ def main [
     { name: "keyring", run: {|| update-prebuilt-keyring $packages_dir $dry_run } }
     { name: "knope", run: {|| update-knope $packages_dir $dry_run } }
     { name: "mdt", run: {|| update-mdt $packages_dir $dry_run } }
-    { name: "melos", run: {|| update-melos-pub $packages_dir $dry_run } }
     { name: "monochange", run: {|| update-monochange $packages_dir $dry_run } }
     { name: "nordvpn", run: {|| update-nordvpn $packages_dir $dry_run } }
     { name: "ollama", run: {|| update-ollama $packages_dir $dry_run } }
@@ -1751,7 +1664,6 @@ def main [
     { name: "racket-minimal", run: {|| update-racket $packages_dir $dry_run } }
     { name: "sbpf-linker", run: {|| update-prebuilt-sbpf-linker $packages_dir $dry_run } }
     { name: "solana-verify", run: {|| update-solana-verify $packages_dir $dry_run } }
-    { name: "serverpod_cli", run: {|| update-serverpod-cli $packages_dir $dry_run } }
     { name: "steam", run: {|| update-rolling-steam $packages_dir $dry_run } }
     { name: "surfpool", run: {|| update-surfpool $packages_dir $dry_run } }
     { name: "wait-for-them", run: {|| update-rust-wait-for-them $root $packages_dir $dry_run } }
