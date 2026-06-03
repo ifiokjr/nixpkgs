@@ -23,6 +23,7 @@ let
     }
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
+  # Linux prebuilt hashes from upstream releases
   upstreamLinuxHashes = {
     "cargo-dylint-aarch64-unknown-linux-gnu" = "sha256-sihkFkv+tvqjkfA03BHZU3x9nIwyhrtSghnym601xgM=";
     "dylint-link-aarch64-unknown-linux-gnu" = "sha256-DU2dLjFUoCvp1EOD1v95SlYYsnMjuWhCS3DQDsKiguo=";
@@ -93,6 +94,8 @@ let
     };
   };
 
+  # Only evaluated when hasUpstreamBinary (Linux) — prevents fetchurl
+  # from trying to access upstreamLinuxHashes for macOS platform keys
   cargoDylintSrc = fetchurl {
     url = "https://github.com/trailofbits/dylint/releases/download/${tag}/cargo-dylint-${platformSuffix}-${tag}.tar.gz";
     hash = upstreamLinuxHashes."cargo-dylint-${platformSuffix}";
