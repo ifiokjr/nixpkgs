@@ -6,7 +6,7 @@
 }:
 
 let
-  version = "0.4.15";
+  version = "0.5.0";
 
   platformSuffix =
     {
@@ -16,8 +16,8 @@ let
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
   hashes = {
-    "linux" = "sha256-JR2yUwQKPCY39VHrZieq55LaeHpfjf3ttZh04T8nwto=";
-    "macos" = "sha256-x62yC/SBxRCJI3CFPCmnERAKNYntisATh9rHG7p2xw8=";
+    "linux" = "sha256-QRx7xM1gAfIVyiGrfeXdIhQBdf72ng5IPEdoAY9lHrY=";
+    "macos" = "sha256-fqUP4MoTPjBhS4MEjoqYXOanBZ7oISZ25P9eRqycfCQ=";
   };
 in
 stdenv.mkDerivation {
