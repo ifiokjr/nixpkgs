@@ -442,11 +442,13 @@ CLI for Pina, a performant Solana smart contract framework. Built from source us
 
 ### pnpm
 
-Standalone pnpm binary with no Node.js dependency. Downloaded directly from GitHub releases. `pnpm` tracks the latest release, while `pnpm-11` and `pnpm-10` are explicit versioned tracks. `pnpm-standalone` is kept as a compatibility alias for the latest track. Includes `pnpm-activate-env` to read `useNodeVersion` from `pnpm-workspace.yaml`, install that Node.js version with the appropriate pnpm runtime/env command, and emit PATH export commands.
+Standalone pnpm binary with no Node.js dependency. Downloaded directly from GitHub releases. `pnpm` tracks the latest release, while `pnpm-11` and `pnpm-10` are explicit versioned tracks. `pnpm-standalone` is kept as a compatibility alias for the latest track. The wrapper sets mutable state defaults for PNPM-managed Node and package stores without writing to the Nix store. Includes `pnpm-activate-env` to read `useNodeVersion` from `pnpm-workspace.yaml`, install that Node.js version with the appropriate pnpm runtime/env command, and emit PATH export commands.
 
 - **Binary:** `pnpm`, `pnpm-activate-env`
 - **Packages:** `pnpm`, `pnpm-11`, `pnpm-10`, `pnpm-standalone`
 - **Activate workspace Node version:** `eval "$(pnpm-activate-env)"`
+- **Mutable state defaults:** sets `PNPM_HOME` when unset (`$XDG_DATA_HOME/pnpm`, `~/Library/pnpm` on macOS, or `~/.local/share/pnpm` on Linux)
+- **Store location:** PNPM stores packages and managed Node runtimes under `PNPM_HOME` (for example, `PNPM_HOME/store` and `PNPM_HOME/bin` on v11)
 - **Runtime support:** v11 uses `pnpm runtime set node`; v10 uses `pnpm env add --global`
 - **License:** MIT
 - **Source:** <https://github.com/pnpm/pnpm>

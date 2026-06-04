@@ -89,20 +89,31 @@ stdenv.mkDerivation {
     cp -r . $out/libexec/pnpm/
     chmod +x $out/libexec/pnpm/pnpm
 
+    install -m 644 ${./pnpm-default-env.sh} $out/libexec/pnpm-default-env
+    substituteInPlace $out/libexec/pnpm-default-env \
+      --replace-fail '@PNPM_USE_RUNTIME_COMMAND@' '${if useRuntimeCommand then "1" else "0"}'
+
     ${
       if stdenv.isLinux then
         ''
           INTERP=$(cat $NIX_CC/nix-support/dynamic-linker)
-          makeWrapper "$INTERP" $out/bin/pnpm \
-            --add-flags "$out/libexec/pnpm/pnpm" \
-            --set _REAL_EXE "$out/libexec/pnpm/pnpm" \
-            --set LD_PRELOAD "${fixExePath}/lib/fixexe.so" \
-            --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ stdenv.cc.cc.lib ]}"
+          cat > $out/bin/pnpm <<EOF
+          #!${stdenv.shell}
+          . "$out/libexec/pnpm-default-env"
+          pnpm_prepend_global_bin
+          export _REAL_EXE="$out/libexec/pnpm/pnpm"
+          export LD_PRELOAD="${fixExePath}/lib/fixexe.so"
+          export LD_LIBRARY_PATH="${lib.makeLibraryPath [ stdenv.cc.cc.lib ]}:\''${LD_LIBRARY_PATH:-}"
+          exec "$INTERP" "$out/libexec/pnpm/pnpm" "\$@"
+          EOF
+          chmod +x $out/bin/pnpm
         ''
       else
         ''
           cat > $out/bin/pnpm <<EOF
           #!${stdenv.shell}
+          . "$out/libexec/pnpm-default-env"
+          pnpm_prepend_global_bin
           exec "$out/libexec/pnpm/pnpm" "\$@"
           EOF
           chmod +x $out/bin/pnpm
@@ -122,30 +133,9 @@ stdenv.mkDerivation {
     patchShebangs $out/bin/pnpm-activate-env
 
     mkdir -p $out/nix-support
-    cat > $out/nix-support/setup-hook <<'EOF'
-    if [ -z "''${PNPM_HOME:-}" ]; then
-      if [ -n "''${XDG_DATA_HOME:-}" ]; then
-        export PNPM_HOME="''${XDG_DATA_HOME}/pnpm"
-      elif [ -n "''${HOME:-}" ] && [ "''${HOME}" != /homeless-shelter ]; then
-        case "$(uname -s)" in
-          Darwin)
-            export PNPM_HOME="''${HOME}/Library/pnpm"
-            ;;
-          *)
-            export PNPM_HOME="''${HOME}/.local/share/pnpm"
-            ;;
-        esac
-      fi
-    fi
-
-    if [ -n "''${PNPM_HOME:-}" ]; then
-      PNPM_GLOBAL_BIN="''${PNPM_HOME}${if useRuntimeCommand then "/bin" else ""}"
-      case ":''${PATH:-}:" in
-        *":''${PNPM_GLOBAL_BIN}:"*) ;;
-        *) export PATH="''${PNPM_GLOBAL_BIN}:''${PATH:-}" ;;
-      esac
-      unset PNPM_GLOBAL_BIN
-    fi
+    cat > $out/nix-support/setup-hook <<EOF
+    . "$out/libexec/pnpm-default-env"
+    pnpm_prepend_global_bin
     EOF
 
     runHook postInstall
@@ -163,6 +153,55 @@ stdenv.mkDerivation {
         cd "$WORK"
         $out/bin/pnpm init
         test -f package.json
+
+        echo "Checking pnpm wrapper mutable state defaults..."
+        WRAPPER_ROOT=$(mktemp -d)
+        WRAPPER_GLOBAL_SUFFIX="${if useRuntimeCommand then "/bin" else ""}"
+        (
+          export HOME="$WRAPPER_ROOT/home"
+          unset PNPM_HOME XDG_DATA_HOME
+          case "$(uname -s)" in
+            Darwin)
+              expected_pnpm_home="$HOME/Library/pnpm"
+              ;;
+            *)
+              expected_pnpm_home="$HOME/.local/share/pnpm"
+              ;;
+          esac
+
+          store_path="$($out/bin/pnpm store path)"
+          test "$store_path" = "$expected_pnpm_home/store/v${lib.versions.major version}"
+          test -d "$expected_pnpm_home"
+          test -d "$expected_pnpm_home$WRAPPER_GLOBAL_SUFFIX"
+        )
+        (
+          export HOME="$WRAPPER_ROOT/home"
+          export XDG_DATA_HOME="$WRAPPER_ROOT/xdg-data"
+          unset PNPM_HOME
+          store_path="$($out/bin/pnpm store path)"
+          test "$store_path" = "$XDG_DATA_HOME/pnpm/store/v${lib.versions.major version}"
+          test -d "$XDG_DATA_HOME/pnpm"
+          test -d "$XDG_DATA_HOME/pnpm$WRAPPER_GLOBAL_SUFFIX"
+        )
+        (
+          export HOME="$WRAPPER_ROOT/home"
+          export PNPM_HOME="$WRAPPER_ROOT/custom-pnpm-home"
+          store_path="$($out/bin/pnpm store path)"
+          test "$store_path" = "$PNPM_HOME/store/v${lib.versions.major version}"
+          test -d "$PNPM_HOME"
+          test -d "$PNPM_HOME$WRAPPER_GLOBAL_SUFFIX"
+        )
+        (
+          export HOME="/homeless-shelter"
+          unset PNPM_HOME XDG_DATA_HOME
+          store_path="$($out/bin/pnpm store path)"
+          case "$store_path" in
+            /homeless-shelter/*)
+              echo "pnpm wrapper should not create state below /homeless-shelter" >&2
+              exit 1
+              ;;
+          esac
+        )
 
         echo "Checking PNPM_HOME setup hook..."
         SETUP_ROOT=$(mktemp -d)

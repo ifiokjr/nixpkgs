@@ -1319,7 +1319,12 @@ def update-secretspec [repo_root: string, dry_run: bool] {
   let owner = "ifiokjr"
   let repo = "secretspec"
   let branch = "feat/provider-secret-locations"
-  let rev = (github-head-rev $owner $repo $branch)
+  let rev = (try {
+    github-head-rev $owner $repo $branch
+  } catch {|err|
+    log-warn $"secretspec lookup failed, using current version \(($err.msg)\)"
+    return false
+  })
   let source_url = $"https://github.com/($owner)/($repo)/archive/refs/heads/($branch).tar.gz"
   let file = $"($repo_root)/packages/secretspec/package.nix"
   let content = (open $file --raw)
