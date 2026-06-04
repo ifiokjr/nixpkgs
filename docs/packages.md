@@ -71,3 +71,5 @@ in {
 - `pnpm-11` tracks the latest v11 release and uses `pnpm runtime set node` in `pnpm-activate-env`.
 - `pnpm-10` tracks the latest v10 release and uses `pnpm env add --global` in `pnpm-activate-env`.
 - `pnpm-standalone` is a compatibility alias for `pnpm`.
+- The wrapper sets `PNPM_HOME` when unset so PNPM-managed Node runtimes, global bins, and the package store live in mutable user state outside `/nix/store`.
+- Default `PNPM_HOME` is `$XDG_DATA_HOME/pnpm`, `~/Library/pnpm` on macOS, or `~/.local/share/pnpm` on Linux; user-provided `PNPM_HOME` is preserved.
