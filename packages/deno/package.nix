@@ -7,7 +7,7 @@
 }:
 
 let
-  version = "2.8.1";
+  version = "2.8.2";
   tag = "v${version}";
 
   platformSuffix =
@@ -20,10 +20,10 @@ let
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
   hashes = {
-    "aarch64-apple-darwin" = "sha256-gVTi3g7owcrjH6iOB4ckqu8Clfq5/SrW+FIDic7pCPY=";
-    "x86_64-apple-darwin" = "sha256-R0c4ReBSK6Ed0nnj3TGOLYTuIAxWuCgFlOCuCw+CdGA=";
-    "aarch64-unknown-linux-gnu" = "sha256-Z+nfkYcP0K9wDfkkFz4wCep/9pVuLDw7uGBl1gcND9Y=";
-    "x86_64-unknown-linux-gnu" = "sha256-LXu2GVImrIMuC/cQmhFfCvZe5prHl6S73lsnoGzCQtk=";
+    "aarch64-apple-darwin" = "sha256-AuXreVyfdjdy39CBQpzq2QKeCkpqr/bU5fPtbS6U02E=";
+    "x86_64-apple-darwin" = "sha256-d88n+DXxkh5JQ0RJZ1xXQyxjFNVO3HJeJHTMglVG4gY=";
+    "aarch64-unknown-linux-gnu" = "sha256-SGRxia7mRU7ZuYUvpwCnf5KzlGXATGJZAdFlvI6Tevw=";
+    "x86_64-unknown-linux-gnu" = "sha256-GE2npSZ6tkm8CIIbO8POaAXY5phfuCcHy41en9ZTU2I=";
   };
 
   # SHA-256 hashes of the .sha256sum files published alongside each release.
@@ -33,10 +33,10 @@ let
   # During installPhase, the downloaded ZIP is verified against the contents
   # of these checksums, catching supply-chain attacks on the release artifacts.
   sha256sumHashes = {
-    "sha256sum-aarch64-apple-darwin" = "sha256-oV6XJXCgTecjqLOdBnWCibnn4UiwTCmLuMC8BZKFv20=";
-    "sha256sum-x86_64-apple-darwin" = "sha256-Q4+SvAVibUxB89OoBMbbfz7R7GWOBUjmf99+JVGgUik=";
-    "sha256sum-aarch64-unknown-linux-gnu" = "sha256-HX8IYnxIwK33GgB6NKDV2/IWAuemmKAGGRx0ORblm1c=";
-    "sha256sum-x86_64-unknown-linux-gnu" = "sha256-tkE++Q8CQm7XUPkwSJPLm3sGktuPBIBdzUS10+wnPPM=";
+    "sha256sum-aarch64-apple-darwin" = "sha256-UP4z8eMC/LlFIB+nWyspr68k5g19yF9jwvikzICnyAg=";
+    "sha256sum-x86_64-apple-darwin" = "sha256-D8xpGsB74tP2bEm/tvrZwXP8/1MX0zzpo8nqR9OFoAQ=";
+    "sha256sum-aarch64-unknown-linux-gnu" = "sha256-Lg8DVb51mrIhwZxRinMQOMszJpqRSBS6XRufOpb2ulQ=";
+    "sha256sum-x86_64-unknown-linux-gnu" = "sha256-RPHhjHScuUvmkKBc7RFLEd2cHoZQ92hlU9uCJ8hzc4g=";
   };
 in
 stdenv.mkDerivation {
