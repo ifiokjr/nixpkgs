@@ -10,12 +10,12 @@
 }:
 
 let
-  version = "4.0.1";
+  version = "4.0.2";
 
   hashes = {
-    "aarch64-apple-darwin" = "sha256-edAnJaqEMoJnRzXAVqhHDZFo+eVrN8Og3jdGr9gcJQY=";
-    "x86_64-apple-darwin" = "sha256-839mSli42h+Yp46SFbjdGTDd5JGBsel19GCGS/4wLhw=";
-    "x86_64-unknown-linux-gnu" = "sha256-+3hliJXE16jb3StQ9U8Wfbh7QHJBfnPIyF2hKjtVUgk=";
+    "aarch64-apple-darwin" = "sha256-yoHA6Njt9W0IvTR9o9RJ92t9bL5n1axYKDK6tRsdU7I=";
+    "x86_64-apple-darwin" = "sha256-UG+vd2ka1d+k0GGaSt+zshHDn/rxJ+sPs3Z5rHbWqdE=";
+    "x86_64-unknown-linux-gnu" = "sha256-7JLe1FU22Cxze033BAS7wFLsFxF3PstWokDBHQ1xk3o=";
   };
 in
 import ../agave/common.nix {
