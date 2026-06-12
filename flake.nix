@@ -64,6 +64,8 @@
         steam = final.callPackage ./packages/steam/package.nix { };
         surfpool = final.callPackage ./packages/surfpool/package.nix { };
         wait-for-them = final.callPackage ./packages/wait-for-them/package.nix { };
+        zed = final.callPackage ./packages/zed/package.nix { };
+        zed-preview = final.callPackage ./packages/zed-preview/package.nix { };
         zoom = final.callPackage ./packages/zoom/package.nix { };
       };
     }
@@ -127,6 +129,8 @@
           steam = pkgs.callPackage ./packages/steam/package.nix { };
           surfpool = pkgs.callPackage ./packages/surfpool/package.nix { };
           wait-for-them = pkgs.callPackage ./packages/wait-for-them/package.nix { };
+          zed = pkgs.callPackage ./packages/zed/package.nix { };
+          zed-preview = pkgs.callPackage ./packages/zed-preview/package.nix { };
           zoom = pkgs.callPackage ./packages/zoom/package.nix { };
         };
 

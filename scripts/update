@@ -3,7 +3,7 @@
 #
 # The script covers:
 # - Flake inputs (nix flake update → flake.lock)
-# - Versioned GitHub release packages (agave, codex-cli, deno, godot, kani, mdt, monochange, ollama, solana-verify, surfpool, etc.)
+# - Versioned GitHub release packages (agave, codex-cli, deno, godot, kani, mdt, monochange, ollama, solana-verify, surfpool, zed, etc.)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (steam)
 # - Rust packages built from source (cargo-clean-all, cargo-interactive-update, dylint, knope, pina, sbpf-linker)
@@ -522,6 +522,22 @@ def derive-cargo-hash [repo_root: string, package: string] {
 }
 
 # Generic update strategies
+
+def github-latest-prerelease-tag [owner: string, repo: string] {
+  let releases = (github-api-get $"https://api.github.com/repos/($owner)/($repo)/releases?per_page=100")
+  let found = (
+    $releases
+    | where {|release| $release.prerelease }
+    | get -o 0.tag_name
+    | default ""
+  )
+
+  if ($found | is-empty) {
+    fail $"No prerelease found for ($owner)/($repo)"
+  }
+
+  $found
+}
 
 def update-versioned-keyed-hashes [
   name: string,
@@ -1488,6 +1504,28 @@ def update-prebuilt-package [
   trigger-prebuilt-build $package $latest_version $dry_run
 }
 
+def update-zed-release [packages_dir: string, package_name: string, tag: string, dry_run: bool] {
+  let latest_version = ($tag | str replace --regex '^v' '')
+  let file = $"($packages_dir)/($package_name)/package.nix"
+  let entries = [
+    { key: "aarch64-darwin", url: $"https://github.com/zed-industries/zed/releases/download/($tag)/Zed-aarch64.dmg" }
+    { key: "x86_64-darwin", url: $"https://github.com/zed-industries/zed/releases/download/($tag)/Zed-x86_64.dmg" }
+    { key: "aarch64-linux", url: $"https://github.com/zed-industries/zed/releases/download/($tag)/zed-linux-aarch64.tar.gz" }
+    { key: "x86_64-linux", url: $"https://github.com/zed-industries/zed/releases/download/($tag)/zed-linux-x86_64.tar.gz" }
+  ]
+  update-versioned-keyed-hashes $package_name $file $latest_version $entries $dry_run
+}
+
+def update-zed [packages_dir: string, dry_run: bool] {
+  let tag = (github-latest-stable-tag "zed-industries" "zed")
+  update-zed-release $packages_dir "zed" $tag $dry_run
+}
+
+def update-zed-preview [packages_dir: string, dry_run: bool] {
+  let tag = (github-latest-prerelease-tag "zed-industries" "zed")
+  update-zed-release $packages_dir "zed-preview" $tag $dry_run
+}
+
 def update-dylint [packages_dir: string, dry_run: bool] {
   let tag = (github-latest-tag "trailofbits" "dylint")
   let latest_version = ($tag | str replace --regex '^v' '')
@@ -1672,6 +1710,8 @@ def main [
     { name: "steam", run: {|| update-rolling-steam $packages_dir $dry_run } }
     { name: "surfpool", run: {|| update-surfpool $packages_dir $dry_run } }
     { name: "wait-for-them", run: {|| update-rust-wait-for-them $root $packages_dir $dry_run } }
+    { name: "zed", run: {|| update-zed $packages_dir $dry_run } }
+    { name: "zed-preview", run: {|| update-zed-preview $packages_dir $dry_run } }
     { name: "zoom", run: {|| update-zoom $packages_dir $dry_run } }
   ]
 
