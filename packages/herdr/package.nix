@@ -5,7 +5,7 @@
 }:
 
 let
-  version = "0.6.9";
+  version = "0.6.10";
 
   platformSuffix =
     {
@@ -17,10 +17,10 @@ let
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
   hashes = {
-    "macos-aarch64" = "sha256-ZRO3W3VHM/q4cAWfrYt+9nrnP12BElDsRa2ZH82fd5Q=";
-    "macos-x86_64" = "sha256-bdcriSeDIZVDXrOUQG72MBvZnksC5W3DEu0MUJ9SpGs=";
-    "linux-aarch64" = "sha256-pFpiZTM2PopGiR2Ab7wksJBKY9ZfheO0TJPMwBJBDSE=";
-    "linux-x86_64" = "sha256-4Vmg+svgoXzosEGXJNJLuEd9c0XKulFl91lBwSaotLk=";
+    "macos-aarch64" = "sha256-9Iu6r9YLOjPXg+yk3+ckOj+W5VflUkD27VPdC5tzZws=";
+    "macos-x86_64" = "sha256-yZgmuII2OVHyJAXYiewMVXSIcJODDTkMmbKGwJSaDHM=";
+    "linux-aarch64" = "sha256-sxRKQd82TwVBu73+hA+mHb1n2vbjE+4xf+SV0sz0kno=";
+    "linux-x86_64" = "sha256-eNKY1aHvB2tGB+jjyS2Y9d6fDLMNrzGqkQoabpq7T6E=";
   };
 in
 stdenv.mkDerivation {
