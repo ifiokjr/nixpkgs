@@ -136,6 +136,21 @@
         };
       in
       {
+        checks.github-workflows =
+          pkgs.runCommand "github-workflows"
+            {
+              nativeBuildInputs = [
+                pkgs.actionlint
+                pkgs.zizmor
+              ];
+            }
+            ''
+              cd ${./.}
+              actionlint .github/workflows/*.yml
+              zizmor --offline --min-severity=high .github/workflows
+              touch $out
+            '';
+
         packages = packages // {
           all = allPkg;
           default = allPkg;

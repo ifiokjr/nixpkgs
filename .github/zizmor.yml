@@ -1,0 +1,5 @@
+rules:
+  # Existing workflows use version tags such as actions/checkout@v4. Keep the
+  # audit enabled elsewhere while avoiding a large unrelated SHA-pinning change.
+  unpinned-uses:
+    disable: true

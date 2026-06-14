@@ -121,6 +121,9 @@ jobs:
       - name: 🔍 check mdt blocks
         run: nix run .#mdt -- check
 
+      - name: 🔍 check github workflows
+        run: nix build .#checks.x86_64-linux.github-workflows
+
   test-update-script:
     name: "test update script (${{ matrix.os }})"
     runs-on: ${{ matrix.os }}

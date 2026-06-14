@@ -40,14 +40,17 @@ jobs:
     steps:
       - name: Configure package
         id: config
+        env:
+          PACKAGE: ${{ inputs.package }}
+          VERSION: ${{ inputs.version }}
         run: |
-          VERSION="${{ inputs.version }}"
-          echo "tag=prebuilt/${{ inputs.package }}/${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "ref=v${VERSION}" >> "$GITHUB_OUTPUT"
+          {
+            echo "tag=prebuilt/${PACKAGE}/${VERSION}"
+            echo "ref=v${VERSION}"
+            echo 'matrix={"include":[{"target":"aarch64-apple-darwin","os":"macos-latest"},{"target":"x86_64-apple-darwin","os":"macos-latest"},{"target":"aarch64-unknown-linux-gnu","os":"ubuntu-24.04-arm"},{"target":"x86_64-unknown-linux-gnu","os":"ubuntu-latest"}]}'
+          } >> "$GITHUB_OUTPUT"
 
-          echo 'matrix={"include":[{"target":"aarch64-apple-darwin","os":"macos-latest"},{"target":"x86_64-apple-darwin","os":"macos-latest"},{"target":"aarch64-unknown-linux-gnu","os":"ubuntu-24.04-arm"},{"target":"x86_64-unknown-linux-gnu","os":"ubuntu-latest"}]}' >> "$GITHUB_OUTPUT"
-
-          case "${{ inputs.package }}" in
+          case "${PACKAGE}" in
             pina)
               echo "repo=pina-rs/pina" >> "$GITHUB_OUTPUT"
               echo "bin=pina" >> "$GITHUB_OUTPUT"
@@ -173,7 +176,7 @@ jobs:
         run: find artifacts -type f | sort
 
       - name: Create release and upload
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare.outputs.tag }}
           name: ${{ inputs.package }} ${{ inputs.version }}
@@ -213,10 +216,10 @@ jobs:
       - name: Get release hashes and update package.nix
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGE: ${{ inputs.package }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          VERSION: ${{ inputs.version }}
         run: |
-          PACKAGE="${{ inputs.package }}"
-          VERSION="${{ inputs.version }}"
-          TAG="${{ needs.prepare.outputs.tag }}"
           FILE="packages/${PACKAGE}/package.nix"
 
           echo "Fetching hashes for ${TAG}..."
@@ -241,7 +244,8 @@ jobs:
             if echo "${ASSETS}" | grep -q "${ASSET_NAME}"; then
               URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/${ASSET_NAME}"
               echo "Computing hash for ${PLATFORM}..."
-              HASH=$(nix hash to-sri --type sha256 $(nix-prefetch-url "${URL}" 2>/dev/null) 2>/dev/null)
+              PREFETCH_HASH=$(nix-prefetch-url "${URL}" 2>/dev/null)
+              HASH=$(nix hash to-sri --type sha256 "${PREFETCH_HASH}" 2>/dev/null)
               echo "${PLATFORM}: ${HASH}"
 
               # Update the hash in package.nix.
@@ -252,13 +256,16 @@ jobs:
           echo "Updated ${FILE}"
 
       - name: Commit and push changes
+        env:
+          PACKAGE: ${{ inputs.package }}
+          VERSION: ${{ inputs.version }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           if [ -n "$(git diff --name-only)" ]; then
             git add -A
-            git commit -m "chore(${{ inputs.package }}): update to v${{ inputs.version }}"
+            git commit -m "chore(${PACKAGE}): update to v${VERSION}"
             git push
           else
             echo "No changes detected."
