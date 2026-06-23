@@ -54,7 +54,9 @@
         secretspec = final.callPackage ./packages/secretspec/package.nix { };
         pnpm-standalone = final.callPackage ./packages/pnpm-standalone/package.nix { inherit pnpm; };
         racket-minimal = final.callPackage ./packages/racket-minimal/package.nix { };
-        sbpf-linker = final.callPackage ./packages/sbpf-linker/package.nix { };
+        sbpf-linker = sbpf-linker-22;
+        sbpf-linker-21 = final.callPackage ./packages/sbpf-linker/package.nix { variant = "21"; };
+        sbpf-linker-22 = final.callPackage ./packages/sbpf-linker/package.nix { variant = "22"; };
         solana-verify = final.callPackage ./packages/solana-verify/package.nix { };
         serverpod = serverpod_cli;
         serverpod-cli = serverpod_cli;
@@ -115,7 +117,9 @@
           secretspec = pkgs.callPackage ./packages/secretspec/package.nix { };
           pnpm-standalone = pkgs.callPackage ./packages/pnpm-standalone/package.nix { inherit pnpm; };
           racket-minimal = pkgs.callPackage ./packages/racket-minimal/package.nix { };
-          sbpf-linker = pkgs.callPackage ./packages/sbpf-linker/package.nix { };
+          sbpf-linker = sbpf-linker-22;
+          sbpf-linker-21 = pkgs.callPackage ./packages/sbpf-linker/package.nix { variant = "21"; };
+          sbpf-linker-22 = pkgs.callPackage ./packages/sbpf-linker/package.nix { variant = "22"; };
           solana-verify = pkgs.callPackage ./packages/solana-verify/package.nix { };
           serverpod = serverpod_cli;
           serverpod-cli = serverpod_cli;
