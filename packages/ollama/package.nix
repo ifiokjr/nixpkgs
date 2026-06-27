@@ -9,7 +9,7 @@
 }:
 
 let
-  version = "0.30.10";
+  version = "0.30.11";
 
   platformKey =
     {
@@ -23,15 +23,15 @@ let
   assets = {
     "darwin" = {
       url = "https://github.com/ollama/ollama/releases/download/v${version}/Ollama-darwin.zip";
-      hash = "sha256-GP8v1m4UFZXtu3n6aIeAbtL+bgj9/ouR7Mk3amv8sp8=";
+      hash = "sha256-j+ZoG98//YUMJyi1eFVZCMcdsvM713w24gI7lncZcDo=";
     };
     "linux-amd64" = {
       url = "https://github.com/ollama/ollama/releases/download/v${version}/ollama-linux-amd64.tar.zst";
-      hash = "sha256-BG2PKOWNWEd6SVWNjRvLLoHKiyh/k8RLEv+RnBDReN0=";
+      hash = "sha256-EdyJtsaPE2+F7xDgCVdTD/q2HDXyJ2ltv4oRFptH8WU=";
     };
     "linux-arm64" = {
       url = "https://github.com/ollama/ollama/releases/download/v${version}/ollama-linux-arm64.tar.zst";
-      hash = "sha256-tiau9yLdudZN0gp27rqSZ6vF6UlPqruXg524VGK3B9c=";
+      hash = "sha256-d3lXDvtcmtcfZ3luf4ULuhr99jT4/i0VvKpk7IyspcU=";
     };
   };
 in
