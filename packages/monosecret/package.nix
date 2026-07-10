@@ -9,20 +9,20 @@
 }:
 
 let
-  version = "0.10.1";
+  version = "0.1.0";
 in
 rustPlatform.buildRustPackage {
-  pname = "secretspec";
+  pname = "monosecret";
   inherit version;
 
   src = fetchFromGitHub {
     owner = "ifiokjr";
-    repo = "secretspec";
-    rev = "0848257f05e9e64892689afdf5f658812babd6f8";
-    hash = "sha256-17T8UUAGYTBgZnaYhONPicGNQKzfbgY/RzbEr3RqeLc=";
+    repo = "monosecret";
+    rev = "v${version}";
+    hash = "sha256-TQqqlwoC41LKo8wbS5zHY+y8zOOB+r7vWsullfuRaQc=";
   };
 
-  cargoHash = "sha256-rzWzjAkK0keqFnt3TsXKTrFc0yIWQXiGBy2zIG+k4H4=";
+  cargoHash = "sha256-v9p4KiDeRRdsKTjR3z/kHLaOP+foUJfKz+sAUG9fZkQ=";
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -34,7 +34,7 @@ rustPlatform.buildRustPackage {
   ];
 
   # Only build the CLI binary (not the derive macro crate or examples)
-  buildAndTestSubcommand = "secretspec";
+  buildAndTestSubcommand = "monosecret";
 
   # Keyring tests need system keyring access which doesn't work in the Nix sandbox
   doCheck = false;
@@ -43,18 +43,18 @@ rustPlatform.buildRustPackage {
   installCheckPhase = ''
     runHook preInstallCheck
 
-    echo "Checking secretspec version..."
-    $out/bin/secretspec --version
+    echo "Checking monosecret version..."
+    $out/bin/monosecret --version
 
-    echo "Checking secretspec help..."
-    $out/bin/secretspec --help
+    echo "Checking monosecret help..."
+    $out/bin/monosecret --help
 
     runHook postInstallCheck
   '';
 
   meta = {
     description = "Declarative secrets, every environment, any provider";
-    homepage = "https://secretspec.dev";
+    homepage = "https://ifiokjr.github.io/monosecret";
     license = lib.licenses.asl20;
     platforms = [
       "x86_64-linux"
@@ -62,7 +62,7 @@ rustPlatform.buildRustPackage {
       "x86_64-darwin"
       "aarch64-darwin"
     ];
-    mainProgram = "secretspec";
+    mainProgram = "monosecret";
     tags = [
       "cli"
       "dev-tool"
