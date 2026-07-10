@@ -30,7 +30,7 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 | `pnpm`, `pnpm-11`, `pnpm-10`, `pnpm-standalone`                                                              | linux, macOS           | Standalone pnpm tracks and compatibility alias                       |
 | `racket-minimal`                                                                                             | linux, macOS           | Minimal Racket distribution                                          |
 | `sbpf-linker`                                                                                                | macOS                  | SBPF linker                                                          |
-| `secretspec`                                                                                                 | linux, macOS           | Declarative secrets CLI                                              |
+| `monosecret`                                                                                                 | linux, macOS           | Declarative secrets CLI                                              |
 | `serverpod`, `serverpod-cli`, `serverpod_cli`                                                                | linux, macOS           | Serverpod command-line tools                                         |
 | `solana-verify`                                                                                              | linux x64, macOS arm64 | Verifiable Solana builds                                             |
 | `steam`                                                                                                      | macOS                  | Steam app bundle                                                     |
@@ -43,7 +43,7 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 Run a package directly:
 
 ```bash
-nix run github:ifiokjr/nixpkgs#secretspec -- --version
+nix run github:ifiokjr/nixpkgs#monosecret -- --version
 nix run github:ifiokjr/nixpkgs#herdr -- --version
 nix run github:ifiokjr/nixpkgs#pnpm -- --version
 ```
@@ -60,7 +60,7 @@ in {
     extra.keyring
     extra.op
     extra.pnpm
-    extra.secretspec
+    extra.monosecret
   ];
 }
 ```

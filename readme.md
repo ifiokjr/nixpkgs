@@ -34,16 +34,16 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [melos](#melos), [melos-cli](#melos)                                                                 | <!-- {~v_melos:"{{ v.melos }}"} -->7.8.0<!-- {/v_melos} -->                                                          | linux, macos               | Manage Dart and Flutter monorepos with multiple packages                         |
 | [monochange](#monochange)                                                                            | <!-- {~v_monochange:"{{ v.monochange }}"} -->0.8.3<!-- {/v_monochange} -->                                           | linux, macos               | Manage versions and releases for your multiplatform monorepo                     |
 | [nordvpn](#nordvpn)                                                                                  | <!-- {~v_nordvpn:"{{ v.nordvpn }}"} -->10.6.0<!-- {/v_nordvpn} -->                                                   | macos                      | NordVPN macOS client                                                             |
-| [ollama](#ollama)                                                                                    | <!-- {~v_ollama:"{{ v.ollama }}"} -->0.31.2<!-- {/v_ollama} -->                                                     | linux, macos               | Run local LLMs with Ollama via CLI and desktop app                               |
+| [ollama](#ollama)                                                                                    | <!-- {~v_ollama:"{{ v.ollama }}"} -->0.31.2<!-- {/v_ollama} -->                                                      | linux, macos               | Run local LLMs with Ollama via CLI and desktop app                               |
 | [op](#op)                                                                                            | <!-- {~v_op:"{{ v.op }}"} -->2.31.0-beta.01<!-- {/v_op} -->                                                          | linux, macos               | 1Password CLI beta channel with environment support                              |
 | [pina](#pina)                                                                                        | <!-- {~v_pina:"{{ v.pina }}"} -->0.8.0<!-- {/v_pina} -->                                                             | linux, macos               | CLI for Pina, a performant Solana smart contract framework                       |
-| [pnpm](#pnpm)                                                                                        | <!-- {~v_pnpm:"{{ v.pnpm }}"} -->11.11.0<!-- {/v_pnpm} -->                                                            | linux, macos               | Fast, disk-space efficient package manager (latest standalone track)             |
+| [pnpm](#pnpm)                                                                                        | <!-- {~v_pnpm:"{{ v.pnpm }}"} -->11.11.0<!-- {/v_pnpm} -->                                                           | linux, macos               | Fast, disk-space efficient package manager (latest standalone track)             |
 | [pnpm-10](#pnpm)                                                                                     | <!-- {~v_pnpm_10:"{{ v.pnpm_10 }}"} -->10.34.3<!-- {/v_pnpm_10} -->                                                  | linux, macos               | Standalone pnpm pinned to the latest v10 release track                           |
-| [pnpm-11](#pnpm)                                                                                     | <!-- {~v_pnpm_11:"{{ v.pnpm_11 }}"} -->11.11.0<!-- {/v_pnpm_11} -->                                                   | linux, macos               | Standalone pnpm pinned to the latest v11 release track                           |
+| [pnpm-11](#pnpm)                                                                                     | <!-- {~v_pnpm_11:"{{ v.pnpm_11 }}"} -->11.11.0<!-- {/v_pnpm_11} -->                                                  | linux, macos               | Standalone pnpm pinned to the latest v11 release track                           |
 | [pnpm-standalone](#pnpm)                                                                             | <!-- {~v_pnpm_standalone:"{{ v.pnpm_standalone }}"} --><!-- {/v_pnpm_standalone} -->                                 | linux, macos               | Fast, disk-space efficient package manager (no Node.js dependency)               |
 | [racket-minimal](#racket-minimal)                                                                    | <!-- {~v_racket_minimal:"{{ v.racket_minimal }}"} -->9.2<!-- {/v_racket_minimal} -->                                 | linux, macos               | Racket programming language (minimal distribution, pre-built)                    |
 | [sbpf-linker](#sbpf-linker)                                                                          | <!-- {~v_sbpf_linker:"{{ v.sbpf_linker }}"} -->0.1.6<!-- {/v_sbpf_linker} -->                                        | macos                      | Upstream BPF linker for SBPF V0 programs                                         |
-| [secretspec](#secretspec)                                                                            | <!-- {~v_secretspec:"{{ v.secretspec }}"} -->0.10.1<!-- {/v_secretspec} -->                                          | linux, macos               | Declarative secrets, every environment, any provider                             |
+| [monosecret](#monosecret)                                                                            | <!-- {~v_monosecret:"{{ v.monosecret }}"} -->0.1.0<!-- {/v_monosecret} -->                                           | linux, macos               | Declarative secrets, every environment, any provider                             |
 | [solana](#agave)                                                                                     | <!-- {~v_solana:"{{ v.agave_4_0 }}"} -->4.0.3<!-- {/v_solana} -->                                                    | linux (x64), macos         | Alias for agave-4_0 (Solana validator client and CLI for mainnet)                |
 | [solana-verify](#solana-verify)                                                                      | <!-- {~v_solana_verify:"{{ v.solana_verify }}"} -->0.5.1<!-- {/v_solana_verify} -->                                  | linux (x64), macos (arm64) | CLI tool for building verifiable Solana programs                                 |
 | [serverpod](#serverpod_cli), [serverpod-cli](#serverpod_cli), [serverpod_cli](#serverpod_cli)        | <!-- {~v_serverpod_cli:"{{ v.serverpod_cli }}"} -->3.4.8<!-- {/v_serverpod_cli} -->                                  | linux, macos               | Command line tools for Serverpod                                                 |
@@ -69,7 +69,7 @@ nix run github:ifiokjr/nixpkgs#herdr
 nix run github:ifiokjr/nixpkgs#ironclaw
 nix run github:ifiokjr/nixpkgs#op
 nix run github:ifiokjr/nixpkgs#pnpm
-nix run github:ifiokjr/nixpkgs#secretspec
+nix run github:ifiokjr/nixpkgs#monosecret
 nix run github:ifiokjr/nixpkgs#keyring -- --help
 ```
 
@@ -102,7 +102,7 @@ nix run github:ifiokjr/nixpkgs#keyring -- --help
           extra.keyring
           extra.op
           extra.pnpm
-          extra.secretspec
+          extra.monosecret
         ];
       };
     };
@@ -141,7 +141,7 @@ The overlay adds all packages into your nixpkgs set so you can reference them as
           pkgs.keyring
           pkgs.op
           pkgs.pnpm
-          pkgs.secretspec
+          pkgs.monosecret
         ];
       };
     };
@@ -177,7 +177,7 @@ in
     extra.keyring
     extra.op
     extra.pnpm
-    extra.secretspec
+    extra.monosecret
   ];
 }
 ```
@@ -214,7 +214,7 @@ in
               extra.keyring
               extra.op
               extra.pnpm
-              extra.secretspec
+              extra.monosecret
             ];
           }
         ];
@@ -254,7 +254,7 @@ in
               extra.keyring
               extra.op
               extra.pnpm
-              extra.secretspec
+              extra.monosecret
             ];
           }
         ];
@@ -526,14 +526,14 @@ Upstream BPF linker for SBPF V0 programs. Built from source using `rustPlatform.
 - **License:** MIT
 - **Source:** <https://github.com/blueshift-gg/sbpf-linker>
 
-### secretspec
+### monosecret
 
-Declarative secrets tooling for every environment and any provider. Built from the `ifiokjr/secretspec` source branch with keyring support enabled on Linux.
+Declarative secrets tooling for every environment and any provider. Built from the latest `ifiokjr/monosecret` release tag with keyring support enabled on Linux.
 
-- **Binary:** `secretspec`
+- **Binary:** `monosecret`
 - **License:** Apache-2.0
-- **Source:** <https://github.com/ifiokjr/secretspec>
-- **Homepage:** <https://secretspec.dev>
+- **Source:** <https://github.com/ifiokjr/monosecret>
+- **Homepage:** <https://ifiokjr.github.io/monosecret>
 
 ### solana-verify
 
@@ -590,7 +590,7 @@ The script updates:
 - GitHub release packages (version + platform hashes, including `herdr`, `ironclaw`, `keyring`, `op`, and `pnpm`)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
 - Rolling URL packages (`steam`)
-- Rust packages built from source (`cargo-clean-all`, `cargo-interactive-update`, `dylint`, `knope`, `pina`, `sbpf-linker`, `secretspec`)
+- Rust packages built from source (`cargo-clean-all`, `cargo-interactive-update`, `dylint`, `knope`, `pina`, `sbpf-linker`, `monosecret`)
 
 ### binary packages (pre-built)
 
