@@ -7,7 +7,7 @@
 }:
 
 let
-  version = "1.11.1-pre";
+  version = "1.11.2-pre";
 in
 import ../zed/package.nix {
   inherit
@@ -20,9 +20,9 @@ import ../zed/package.nix {
   channel = "preview";
   overrideVersion = version;
   zedHashes = {
-    "aarch64-darwin" = "sha256-y/qjxsqIdgIMDACEPnHaVKHFIu/yX3I9fsj+eEM5phc=";
-    "x86_64-darwin" = "sha256-bRYZ/4ZD+vE9quPQyhijeRIzHObxTHkVdk8eIE5VFGQ=";
-    "aarch64-linux" = "sha256-/JJReR8/sUXiUV0EfbdCftxaa87ZPy1HIWOGQlMmeLg=";
-    "x86_64-linux" = "sha256-l8gZZKHj1AJz2i8fRyspVQBag8itr99S6GMiR+fPxzU=";
+    "aarch64-darwin" = "sha256-ZDwfWfP5U0JNTvX96IEtKSiLdH7SyBHGNJPw9OFZHAM=";
+    "x86_64-darwin" = "sha256-5MlxSMz8aXjtdbKXzcGB53E/kllupossREO69QwJZxw=";
+    "aarch64-linux" = "sha256-PT7RiTStzd+JN1aFgRwNKCVBCKe31n0mJKR+l1VvCOo=";
+    "x86_64-linux" = "sha256-BJpcLENuyUmgyvNJ7tqtmp9owNauqNzOGwU3AEN1AHU=";
   };
 }
