@@ -2,12 +2,12 @@
 
 callPackage ../pnpm/common.nix {
   pname = "pnpm-11";
-  version = "11.15.0";
+  version = "11.15.1";
   description = "Fast, disk space efficient package manager (standalone, no Node.js dependency) — v11";
-  exeHash = "sha256-YbReaERSjSle/+XjNgUylfmSbpQcGlpVf41FOrB3+j4=";
+  exeHash = "sha256-T2k7/7gcyIq4Fq+caEq8h6fotQUlPtPpuI6GDonp3Fo=";
   hashes = {
-    "x86_64-linux" = "sha256-Rk5fGa3a5bRheH8hJhulKc24jgpExPgeNLckcsPa31U=";
-    "aarch64-linux" = "sha256-Ng6Vj0uhp/ZvUImtoVdlJjU2ZmPNIbOp11OhD1+qRrs=";
-    "aarch64-darwin" = "sha256-x63HjZ+RLSTYqbObi6G+XgWPTGei97dTQmHzZgMWIyc=";
+    "x86_64-linux" = "sha256-hiZXdU6zIrm4VCdTquLPMSHafK5q7QdcopNze71zYCM=";
+    "aarch64-linux" = "sha256-hHCFSt2nFO0rura/FiJFAHjn/Ym5NP7IOWahOCX0kd0=";
+    "aarch64-darwin" = "sha256-K6PNQvMlTKA+eBdTRCKYvSRtFXwNWX3eO4yBVmKT1yA=";
   };
 }
