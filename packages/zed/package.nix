@@ -7,16 +7,16 @@
   channel ? "stable",
   overrideVersion ? null,
   zedHashes ? {
-    "aarch64-darwin" = "sha256-FBlxuYqZ94i7spy/nuYiQK5mIiG3nlCIBYYkiN6c2Rw=";
-    "x86_64-darwin" = "sha256-Ucgg/5CTe5SD0c+gaK73+Db2UFEzWQ5yWUGS4BHPC5w=";
-    "aarch64-linux" = "sha256-cIvzZCqGwaxzZ3ZLm0uzL8PJvBiq/fO1DitAH33xCNs=";
-    "x86_64-linux" = "sha256-RFCIhr7SR8dUT2S2bga9OI7D1AZ3a1RXhovBSmcTByQ=";
+    "aarch64-darwin" = "sha256-+d9QH0McDiugKPtvNk1jMvLTFGQXWhHWVn4/WZkP4NI=";
+    "x86_64-darwin" = "sha256-Ei83KEcUOcvrwyWzl+rabmcSpduz/H3Jv00XJdeXZhc=";
+    "aarch64-linux" = "sha256-HB1FqGo0MB0ekzjKNEv/+ePeoyelTsJKYedChRcrH3g=";
+    "x86_64-linux" = "sha256-bEdhA7Sah9xixGuMxNyoTARY7VNTfeZk69vJm0fa7i0=";
   },
 }:
 
 let
   pname = if channel == "preview" then "zed-preview" else "zed";
-  version = "1.13.2";
+  version = "1.14.2";
   resolvedVersion = if overrideVersion == null then version else overrideVersion;
   tag = "v${resolvedVersion}";
   arch = if stdenv.hostPlatform.isAarch64 then "aarch64" else "x86_64";
