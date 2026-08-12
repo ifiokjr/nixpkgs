@@ -31,7 +31,7 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 | `racket-minimal`                                                                                             | linux, macOS           | Minimal Racket distribution                                          |
 | `sbpf-linker`                                                                                                | macOS                  | SBPF linker                                                          |
 | `monosecret`                                                                                                 | linux, macOS           | Declarative secrets CLI                                              |
-| `serverpod`, `serverpod-cli`, `serverpod_cli`                                                                | linux, macOS           | Serverpod command-line tools                                         |
+| `serverpod`, `serverpod-cli`, `serverpod_cli`, `serverpod_cli-3`, `serverpod_cli-4`                          | linux, macOS           | Serverpod command-line tools (3.x default; 4.x beta track)           |
 | `solana-verify`                                                                                              | linux x64, macOS arm64 | Verifiable Solana builds                                             |
 | `steam`                                                                                                      | macOS                  | Steam app bundle                                                     |
 | `surfpool`                                                                                                   | linux x64, macOS       | Solana test-validator replacement                                    |

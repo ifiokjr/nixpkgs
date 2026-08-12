@@ -8,7 +8,7 @@
 }:
 
 buildDartApplication rec {
-  pname = "serverpod_cli";
+  pname = "serverpod_cli-3";
   version = "3.4.8";
 
   src = fetchFromGitHub {
