@@ -1045,6 +1045,106 @@ def update-solana-verify [packages_dir: string, dry_run: bool] {
   update-versioned-keyed-hashes "solana-verify" $file $latest_version $entries $dry_run
 }
 
+# pub.dev version helpers for `serverpod_cli`. The package builds from the
+# Serverpod GitHub monorepo tag matching the published version, so pub.dev is
+# the source of truth for what shipped.
+
+def pub-serverpod-cli-versions [] {
+  http get "https://pub.dev/api/packages/serverpod_cli" | get versions | get version
+}
+
+# Latest stable (non-prerelease) version with the given major prefix, e.g. "3.".
+# pub.dev lists versions in publish order, so the last match is the newest.
+def pub-serverpod-cli-latest-stable-with-prefix [prefix: string] {
+  pub-serverpod-cli-versions
+    | where {|v| ($v | str starts-with $prefix) and not ($v | str contains "-") }
+    | last
+}
+
+# Latest version with the given prefix (including prereleases), e.g. "4.".
+def pub-serverpod-cli-latest-with-prefix [prefix: string] {
+  pub-serverpod-cli-versions
+    | where {|v| $v | str starts-with $prefix }
+    | last
+}
+
+# Regenerate `pubspec.lock.json` for a Serverpod release by shallow-cloning the
+# tag, stripping the monorepo `dependency_overrides` (so sibling `serverpod_*`
+# packages resolve from pub.dev), running `dart pub get`, and converting the
+# resulting `pubspec.lock` to the JSON shape `buildDartApplication` expects.
+def regenerate-serverpod-pubspec-lock [version: string, dest: string] {
+  let tmp = (^mktemp -d | str trim)
+  let repo = $"($tmp)/serverpod"
+  let cli_dir = $"($repo)/tools/serverpod_cli"
+
+  log-sub $"cloning tag ($version)..."
+  ^git clone --quiet --depth 1 --branch $version https://github.com/serverpod/serverpod $repo
+
+  # `nix shell` provides `dart` and `yq`; run inside bash so nushell's cwd is
+  # untouched. Suppress `dart pub get` stdout (the "Changed N dependencies"
+  # line) so only the `yq` JSON reaches stdout.
+  let script = $"cd '($cli_dir)' && yq -i 'del\(.dependency_overrides\)' pubspec.yaml && dart pub get 1>/dev/null && yq -o=json '.' pubspec.lock"
+  let res = (^nix shell nixpkgs#dart nixpkgs#yq-go --command bash -c $script | complete)
+
+  ^rm -rf $tmp
+
+  if $res.exit_code != 0 {
+    fail $"pubspec.lock regeneration failed for ($version): ($res.stderr | str trim)"
+  }
+  $res.stdout | save -f $dest
+}
+
+# Shared updater for both Serverpod CLI tracks. Bumps the version + src hash and
+# regenerates `pubspec.lock.json` (only when a new version is detected).
+def update-serverpod-cli-track [
+  packages_dir: string,
+  package: string,
+  latest_version: string,
+  dry_run: bool,
+] {
+  let file = $"($packages_dir)/($package)/package.nix"
+  if not ($file | path exists) {
+    fail $"missing file: ($file)"
+  }
+
+  let original = (open $file --raw)
+  let current_version = (parse-capture $original 'version = "([^"]+)"')
+  if ($current_version | is-empty) {
+    fail $"could not parse version for ($package)"
+  }
+
+  if $current_version == $latest_version {
+    log-ok $package $"up to date \(v($current_version)\)"
+    return false
+  }
+
+  log-update $package $"v($current_version) → v($latest_version)"
+  if $dry_run {
+    return true
+  }
+
+  log-sub "fetching source archive..."
+  let source_url = $"https://github.com/serverpod/serverpod/archive/refs/tags/($latest_version).tar.gz"
+  let source_hash = (prefetch-sri-unpack $source_url)
+
+  regenerate-serverpod-pubspec-lock $latest_version $"($packages_dir)/($package)/pubspec.lock.json"
+
+  let updated = (set-src-hash (replace-version $original $latest_version) $source_hash)
+  $updated | save -f $file
+  log-ok $package "updated"
+  true
+}
+
+def update-serverpod-cli-3 [packages_dir: string, dry_run: bool] {
+  let latest = (pub-serverpod-cli-latest-stable-with-prefix "3.")
+  update-serverpod-cli-track $packages_dir "serverpod_cli-3" $latest $dry_run
+}
+
+def update-serverpod-cli-4 [packages_dir: string, dry_run: bool] {
+  let latest = (pub-serverpod-cli-latest-with-prefix "4.")
+  update-serverpod-cli-track $packages_dir "serverpod_cli-4" $latest $dry_run
+}
+
 def update-op [packages_dir: string, dry_run: bool] {
   let rss = (try {
     http get --raw "https://releases.1password.com/developers/cli-beta/index.xml"
@@ -1690,6 +1790,8 @@ def main [
     { name: "racket-minimal", run: {|| update-racket $packages_dir $dry_run } }
     { name: "sbpf-linker", run: {|| update-prebuilt-sbpf-linker $packages_dir $dry_run } }
     { name: "solana-verify", run: {|| update-solana-verify $packages_dir $dry_run } }
+    { name: "serverpod_cli-3", run: {|| update-serverpod-cli-3 $packages_dir $dry_run } }
+    { name: "serverpod_cli-4", run: {|| update-serverpod-cli-4 $packages_dir $dry_run } }
     { name: "steam", run: {|| update-rolling-steam $packages_dir $dry_run } }
     { name: "surfpool", run: {|| update-surfpool $packages_dir $dry_run } }
     { name: "wait-for-them", run: {|| update-rust-wait-for-them $root $packages_dir $dry_run } }
