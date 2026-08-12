@@ -1,8 +1,8 @@
 # serverpod_cli-3
 
-`serverpod_cli-3` is the command-line tool for [Serverpod](https://serverpod.dev) 3.x — the current stable track. A Dart and Flutter backend framework.
+`serverpod_cli` is the command-line tool for [Serverpod](https://serverpod.dev), a Dart and Flutter backend framework.
 
-This is the default track: the `serverpod`, `serverpod-cli`, and `serverpod_cli` aliases all resolve to `serverpod_cli-3`. Use `serverpod_cli-4` for the 4.0 beta track.
+This is the stable 3.x track and the default — the `serverpod`, `serverpod-cli`, and `serverpod_cli` aliases all resolve here. Use `serverpod_cli-4` for the 4.x beta track.
 
 Use it to create Serverpod projects, generate protocol and serialization code, run migrations, and manage Serverpod application workflows.
 
@@ -20,7 +20,7 @@ The installed executable is `serverpod`.
 
 ## updates
 
-This package tracks the latest `serverpod_cli` 3.x version published to Pub and builds from the matching Serverpod GitHub monorepo tag because the CLI depends on sibling packages in that repository.
+This package tracks the latest 3.x stable `serverpod_cli` version published to Pub and builds from the matching Serverpod GitHub monorepo tag because the CLI depends on sibling packages in that repository.
 
 Run the repository updater from the repo root:
 
