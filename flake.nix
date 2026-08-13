@@ -14,7 +14,7 @@
     }:
     {
       overlays.default = final: _prev: rec {
-        agave = final.agave-4_0;
+        agave = final.agave-4_2;
         solana = final.agave;
         agave-2_0 = final.callPackage ./packages/agave-2_0/package.nix { };
         agave-2_1 = final.callPackage ./packages/agave-2_1/package.nix { };
@@ -23,6 +23,9 @@
         agave-3_0 = final.callPackage ./packages/agave-3_0/package.nix { };
         agave-3_1 = final.callPackage ./packages/agave-3_1/package.nix { };
         agave-4_0 = final.callPackage ./packages/agave-4_0/package.nix { };
+        agave-4_1 = final.callPackage ./packages/agave-4_1/package.nix { };
+        agave-4_2 = final.callPackage ./packages/agave-4_2/package.nix { };
+        agave-4_3 = final.callPackage ./packages/agave-4_3/package.nix { };
         cargo-clean-all = final.callPackage ./packages/cargo-clean-all/package.nix { };
         ccase = final.callPackage ./packages/ccase/package.nix { };
         dylint = final.callPackage ./packages/dylint/package.nix { };
@@ -84,7 +87,7 @@
         lib = pkgs.lib;
 
         packages = rec {
-          agave = agave-4_0;
+          agave = agave-4_2;
           solana = agave;
           agave-2_0 = pkgs.callPackage ./packages/agave-2_0/package.nix { };
           agave-2_1 = pkgs.callPackage ./packages/agave-2_1/package.nix { };
@@ -93,6 +96,9 @@
           agave-3_0 = pkgs.callPackage ./packages/agave-3_0/package.nix { };
           agave-3_1 = pkgs.callPackage ./packages/agave-3_1/package.nix { };
           agave-4_0 = pkgs.callPackage ./packages/agave-4_0/package.nix { };
+          agave-4_1 = pkgs.callPackage ./packages/agave-4_1/package.nix { };
+          agave-4_2 = pkgs.callPackage ./packages/agave-4_2/package.nix { };
+          agave-4_3 = pkgs.callPackage ./packages/agave-4_3/package.nix { };
           cargo-clean-all = pkgs.callPackage ./packages/cargo-clean-all/package.nix { };
           ccase = pkgs.callPackage ./packages/ccase/package.nix { };
           dylint = pkgs.callPackage ./packages/dylint/package.nix { };
