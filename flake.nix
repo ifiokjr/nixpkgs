@@ -47,6 +47,9 @@
         nordvpn = final.callPackage ./packages/nordvpn/package.nix { };
         ollama = final.callPackage ./packages/ollama/package.nix { };
         op = final.callPackage ./packages/op/package.nix { };
+        patrol = patrol_cli;
+        patrol-cli = patrol_cli;
+        patrol_cli = final.callPackage ./packages/patrol_cli/package.nix { };
         pina = final.callPackage ./packages/pina/package.nix { };
         pnpm = final.callPackage ./packages/pnpm/package.nix { };
         pnpm-10 = final.callPackage ./packages/pnpm-10/package.nix { };
@@ -114,6 +117,9 @@
           nordvpn = pkgs.callPackage ./packages/nordvpn/package.nix { };
           ollama = pkgs.callPackage ./packages/ollama/package.nix { };
           op = pkgs.callPackage ./packages/op/package.nix { };
+          patrol = patrol_cli;
+          patrol-cli = patrol_cli;
+          patrol_cli = pkgs.callPackage ./packages/patrol_cli/package.nix { };
           pina = pkgs.callPackage ./packages/pina/package.nix { };
           pnpm = pkgs.callPackage ./packages/pnpm/package.nix { };
           pnpm-10 = pkgs.callPackage ./packages/pnpm-10/package.nix { };
