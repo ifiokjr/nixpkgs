@@ -740,6 +740,18 @@ def update-agave-4-0 [packages_dir: string, dry_run: bool] {
   update-agave-track $packages_dir "agave-4_0" "4.0" $dry_run
 }
 
+def update-agave-4-1 [packages_dir: string, dry_run: bool] {
+  update-agave-track $packages_dir "agave-4_1" "4.1" $dry_run
+}
+
+def update-agave-4-2 [packages_dir: string, dry_run: bool] {
+  update-agave-track $packages_dir "agave-4_2" "4.2" $dry_run
+}
+
+def update-agave-4-3 [packages_dir: string, dry_run: bool] {
+  update-agave-track $packages_dir "agave-4_3" "4.3" $dry_run
+}
+
 def update-agave-3-1 [packages_dir: string, dry_run: bool] {
   update-agave-track $packages_dir "agave-3_1" "3.1" $dry_run
 }
@@ -1764,6 +1776,9 @@ def main [
     { name: "agave-3_0", run: {|| update-agave-3-0 $packages_dir $dry_run } }
     { name: "agave-3_1", run: {|| update-agave-3-1 $packages_dir $dry_run } }
     { name: "agave-4_0", run: {|| update-agave-4-0 $packages_dir $dry_run } }
+    { name: "agave-4_1", run: {|| update-agave-4-1 $packages_dir $dry_run } }
+    { name: "agave-4_2", run: {|| update-agave-4-2 $packages_dir $dry_run } }
+    { name: "agave-4_3", run: {|| update-agave-4-3 $packages_dir $dry_run } }
     { name: "cargo-clean-all", run: {|| update-prebuilt-cargo-clean-all $packages_dir $dry_run } }
     { name: "cargo-interactive-update", run: {|| update-prebuilt-cargo-interactive $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
