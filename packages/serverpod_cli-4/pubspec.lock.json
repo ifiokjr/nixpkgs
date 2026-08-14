@@ -594,11 +594,11 @@
       "dependency": "direct main",
       "description": {
         "name": "nocterm",
-        "sha256": "240efc18c483f1d727bb7cdf8712f703e1fc8f8ae59fe9547b5b63b08ec0c0dc",
+        "sha256": "b2e3160cadb4bab94d246e20e393820f09a2e1e8e6ed7a2d6a46f7358d65d083",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "0.8.0"
+      "version": "0.9.0"
     },
     "node_preamble": {
       "dependency": "transitive",
@@ -754,41 +754,41 @@
       "dependency": "transitive",
       "description": {
         "name": "serverpod_client",
-        "sha256": "f69cd34fc93db8a104df7c7dc902aa95ac67849f5bf2ebedc461edeae9ed4dd8",
+        "sha256": "f99aba2c51f90ac5295c3112b78fcb7f2b25fe0b2b75976634a72c5de8eeac76",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.0-beta.2"
+      "version": "4.0.0-beta.3"
     },
     "serverpod_database": {
       "dependency": "direct main",
       "description": {
         "name": "serverpod_database",
-        "sha256": "03681b43412209206929e9730e6fe19f795d92881158833e50d1e53cc9c22b32",
+        "sha256": "7e76ae0d32fe855e074c65ee6596dfa5ecde6425edd042ba0f81877de5a42f76",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.0-beta.2"
+      "version": "4.0.0-beta.3"
     },
     "serverpod_embedded_postgres": {
       "dependency": "direct main",
       "description": {
         "name": "serverpod_embedded_postgres",
-        "sha256": "b81a3a9383ffe6bce1086560d1b14fb6809c3e3c5332c63c9f7c430b2f8b3bd0",
+        "sha256": "8ebdfabf18a0bafbf6dda0ff621c0d6c635572d69b5d1076c84d0d934a4a3045",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.0-beta.2"
+      "version": "4.0.0-beta.3"
     },
     "serverpod_lints": {
       "dependency": "direct dev",
       "description": {
         "name": "serverpod_lints",
-        "sha256": "ac7e112495d9c5d15073ccf99ae1eb0d908ab48b2986f8d41254922b375cd4be",
+        "sha256": "4c72ab8073d1ed873f8f114daf15e2ca45e8f3eefbf135d0ec02373ed7e4a95f",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.0-beta.2"
+      "version": "4.0.0-beta.3"
     },
     "serverpod_logging": {
       "dependency": "transitive",
@@ -814,41 +814,41 @@
       "dependency": "direct main",
       "description": {
         "name": "serverpod_serialization",
-        "sha256": "ef6f88fd1b0862fe11e9f6cb6a0f7d1df534deacca3621e03a629ed2606e30da",
+        "sha256": "d73128327f7c25a53d7f6cdbb2dce8aeeebb81599f40d660d8ee57dbbd4b4fee",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.0-beta.2"
+      "version": "4.0.0-beta.3"
     },
     "serverpod_service_client": {
       "dependency": "direct main",
       "description": {
         "name": "serverpod_service_client",
-        "sha256": "c97fd4a9b3a126c462bda74814751c16b4b3430a9d96b51ab879f441d2610092",
+        "sha256": "90d02b3a7829b72c76d7593199b168093d1dc457a0a054bdf81674a60ecf7c64",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.0-beta.2"
+      "version": "4.0.0-beta.3"
     },
     "serverpod_shared": {
       "dependency": "direct main",
       "description": {
         "name": "serverpod_shared",
-        "sha256": "fd3b4491099fd40dd5d788eacc890bde8f1b175b417275078f966e05d74422c6",
+        "sha256": "912c492f786bdb96d875f9f207c5d2dec2a13815302bfddbd389187573e7af5b",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.0-beta.2"
+      "version": "4.0.0-beta.3"
     },
     "serverpod_tui": {
       "dependency": "direct main",
       "description": {
         "name": "serverpod_tui",
-        "sha256": "5735c6b01e1f30ee596a7cfc1db581fcd38f16eab0a12dc2d2c094bf5e1caacc",
+        "sha256": "8dc665ecdd4ebb99672cf2e0929af1fb990fa2253d1fc11dd4a4897e145bfb67",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "0.10.2"
+      "version": "0.12.0"
     },
     "shelf": {
       "dependency": "transitive",
