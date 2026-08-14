@@ -7,6 +7,28 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Packages that can be built on each platform (names must match the
+# directories under packages/). Keep in sync with the flake's package set.
+env:
+  LINUX_PACKAGES: >-
+    agave agave-2_0 agave-2_1 agave-2_2 agave-2_3 agave-3_0 agave-3_1
+    agave-4_0 agave-4_1 agave-4_2 agave-4_3 cargo-clean-all
+    cargo-interactive-update ccase codex-cli deno dylint
+    flutter_launcher_icons flutter_native_splash godot herdr ironclaw kani
+    keyring knope mdt melos monochange monosecret ollama op patrol_cli pina
+    pnpm pnpm-10 pnpm-11 pnpm-standalone racket-minimal sbpf-linker
+    serverpod_cli-3 serverpod_cli-4 solana-verify surfpool wait-for-them zed
+    zed-preview
+  MACOS_PACKAGES: >-
+    agave agave-2_0 agave-2_1 agave-2_2 agave-2_3 agave-3_0 agave-3_1
+    agave-4_0 agave-4_1 agave-4_2 agave-4_3 cargo-clean-all
+    cargo-interactive-update ccase codex-cli deno dylint
+    flutter_launcher_icons flutter_native_splash godot gpg-suite herdr
+    ironclaw kani keyring knope mdt melos monochange monosecret nordvpn
+    ollama op patrol_cli pina pnpm pnpm-10 pnpm-11 pnpm-standalone
+    racket-minimal sbpf-linker serverpod_cli-3 serverpod_cli-4 solana-verify
+    steam surfpool wait-for-them zed zed-preview zoom
+
 jobs:
   detect-changes:
     name: detect changed packages
