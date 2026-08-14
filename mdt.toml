@@ -22,6 +22,7 @@ v = { command = "./scripts/versions", format = "json", watch = [
 	"packages/knope/package.nix",
 	"packages/mdt/package.nix",
 	"packages/monochange/package.nix",
+	"packages/monosecret/package.nix",
 	"packages/nordvpn/package.nix",
 	"packages/ollama/package.nix",
 	"packages/patrol_cli/package.nix",
