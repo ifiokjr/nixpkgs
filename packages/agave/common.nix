@@ -7,14 +7,6 @@
   zlib,
   openssl,
   udev,
-  zstd,
-  # Libraries required to auto-patch the bundled platform-tools SDK binaries
-  # (llvm/lldb) on Linux.
-  ncurses,
-  libedit,
-  libxml2,
-  libffi,
-  python3,
   pname ? "agave",
   version,
   hashes,
@@ -58,11 +50,20 @@ let
   # Unpack the platform-tools SDK next to the binaries. cargo-build-sbf will
   # find it via a symlink in ~/.cache/solana/<version>/platform-tools (see the
   # wrapper below); it accepts a symlink as a valid installation.
+  #
+  # lldb is pruned: it is not used by cargo-build-sbf, and the upstream
+  # binaries link a python (3.10 on Linux, a hardcoded homebrew path on
+  # macOS) that is not available in nixpkgs, so it cannot run anyway.
   platformToolsInstallPhase =
     if platformToolsSrc != null then
       ''
         mkdir -p $out/lib/platform-tools
         tar -xjf ${platformToolsSrc} -C $out/lib/platform-tools --strip-components=1
+        rm -rf \
+          $out/lib/platform-tools/llvm/bin/lldb* \
+          $out/lib/platform-tools/llvm/bin/solana-lldb \
+          $out/lib/platform-tools/llvm/lib/liblldb* \
+          $out/lib/platform-tools/llvm/lib/python*
         find $out/lib/platform-tools -type f -path '*/bin/*' -exec chmod +x {} \; 2>/dev/null || true
         # The upstream tarball ships a few dangling symlinks in the lldb
         # python bindings; drop them so the nix noBrokenSymlinks check passes.
@@ -91,12 +92,6 @@ stdenv.mkDerivation {
     zlib
     openssl
     udev
-    zstd
-    ncurses
-    libedit
-    libxml2
-    libffi
-    python3
   ];
 
   sourceRoot = "solana-release";
