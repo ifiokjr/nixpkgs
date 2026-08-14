@@ -7,6 +7,12 @@
   zlib,
   openssl,
   udev,
+  zstd,
+  ncurses,
+  libedit,
+  libxml2,
+  libffi,
+  python3,
 }:
 
 let
@@ -28,6 +34,12 @@ import ../agave/common.nix {
     zlib
     openssl
     udev
+    zstd
+    ncurses
+    libedit
+    libxml2
+    libffi
+    python3
     version
     hashes
     ;

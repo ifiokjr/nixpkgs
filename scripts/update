@@ -701,6 +701,43 @@ def update-agave-package [packages_dir: string, package_name: string, latest_ver
     { key: "x86_64-unknown-linux-gnu", url: $"https://github.com/anza-xyz/agave/releases/download/v($latest_version)/solana-release-x86_64-unknown-linux-gnu.tar.bz2" }
   ]
   update-versioned-keyed-hashes $package_name $file $latest_version $entries $dry_run
+  update-agave-platform-tools $file $dry_run
+}
+
+# Refresh the platform-tools SDK hashes for a track (modern agave >= 4.0
+# tracks bundle the SDK so cargo-build-sbf works offline and on NixOS). The
+# platform-tools version is pinned per track and only changes when the
+# embedded cargo-build-sbf changes its default, e.g. "v1.54" — check with
+# `cargo-build-sbf --version`. If the pinned version ever drifts from what
+# the shipped cargo-build-sbf wants, builds still work: cargo-build-sbf
+# falls back to downloading platform-tools itself.
+def update-agave-platform-tools [file: string, dry_run: bool] {
+  let content = (open $file --raw)
+  let pt_version = (parse-capture $content 'platformToolsVersion = "([^"]+)"')
+  if ($pt_version | is-empty) {
+    return false
+  }
+
+  let entries = [
+    { key: "aarch64-apple-darwin", url: $"https://github.com/anza-xyz/platform-tools/releases/download/($pt_version)/platform-tools-osx-aarch64.tar.bz2" }
+    { key: "x86_64-apple-darwin", url: $"https://github.com/anza-xyz/platform-tools/releases/download/($pt_version)/platform-tools-osx-x86_64.tar.bz2" }
+    { key: "x86_64-unknown-linux-gnu", url: $"https://github.com/anza-xyz/platform-tools/releases/download/($pt_version)/platform-tools-linux-x86_64.tar.bz2" }
+  ]
+
+  if $dry_run {
+    log-update "agave platform-tools" $"refreshing hashes for ($pt_version)"
+    return true
+  }
+
+  mut updated = $content
+  for entry in $entries {
+    log-sub $"fetching platform-tools ($entry.key)..."
+    let new_hash = (prefetch-sri $entry.url)
+    $updated = (replace-key-hash $updated $entry.key $new_hash)
+  }
+  $updated | save -f $file
+  log-ok "agave platform-tools" $"refreshed hashes for ($pt_version)"
+  true
 }
 
 def update-agave-track [packages_dir: string, package_name: string, version_prefix: string, dry_run: bool] {
