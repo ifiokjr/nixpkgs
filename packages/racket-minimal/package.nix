@@ -9,16 +9,16 @@
 }:
 
 let
-  version = "9.2";
+  version = "9.3";
 
   arch = if stdenv.isAarch64 then "aarch64" else "x86_64";
   os = if stdenv.isDarwin then "macosx" else "linux-buster";
 
   hashes = {
-    "aarch64-macosx" = "sha256-V0w17viu96lLdQOaS3pOQCyOtwvSDD45SNShC7q8v7g=";
-    "x86_64-macosx" = "sha256-Z0XWSnDTe+Ts8OhZBhZ6BF6qrjumR6JZzTeBzI7ZupU=";
-    "aarch64-linux-buster" = "sha256-DlcgiOPV4bUbGY1gK9JTgOF2oDkh4ioCgorT33G90c4=";
-    "x86_64-linux-buster" = "sha256-hNLDTAuntPIGtbTwzp6BJ8FTpV9lsNvSvdmx4gkbaCI=";
+    "aarch64-macosx" = "sha256-k8SYxUgElFxTQSOV6ex7M8VoNPVBcQwrPhYRgr4MJnA=";
+    "x86_64-macosx" = "sha256-9CeUShPVMJfa1Y8m5idJt4g/+k5d1uhtzWIk4W5Xxq4=";
+    "aarch64-linux-buster" = "sha256-Ihofd7oRqwkOxf93xalav+H3LTuLh51pT8XYB1ZwFb4=";
+    "x86_64-linux-buster" = "sha256-j0abfpNkX8h2WURw2IR3Wq//doj1MP04voc/tExxymo=";
   };
 in
 stdenv.mkDerivation {
