@@ -9,13 +9,13 @@
 
 buildDartApplication rec {
   pname = "serverpod_cli-3";
-  version = "3.4.11";
+  version = "3.4.12";
 
   src = fetchFromGitHub {
     owner = "serverpod";
     repo = "serverpod";
     tag = version;
-    hash = "sha256-IYsTP1ruidXO/FNa72sU6n7w2hzZ181hSjR74HxBAFM=";
+    hash = "sha256-Za1AWzLkPL/EcJFunOrMwaE5C51/llTif7DYbTYirHs=";
   };
 
   sourceRoot = "${src.name}/tools/serverpod_cli";
