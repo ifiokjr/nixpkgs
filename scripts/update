@@ -95,12 +95,28 @@ def parse-key-hash [content: string, key: string] {
   parse-capture $content $pattern
 }
 
-def replace-key-hash [content: string, key: string, new_hash: string] {
-  let current = (parse-key-hash $content $key)
-  if ($current | is-empty) {
-    fail $"Could not find keyed hash for \"($key)\""
+def replace-key-hash [content: string, key: string, new_hash: string, block?: string] {
+  if $block == null {
+    let current = (parse-key-hash $content $key)
+    if ($current | is-empty) {
+      fail $"Could not find keyed hash for \"($key)\""
+    }
+    $content | str replace $"\"($key)\" = \"($current)\"" $"\"($key)\" = \"($new_hash)\""
+  } else {
+    # Scope the replacement to a named block (e.g. `platformToolsHashes`) so
+    # we don't clobber other blocks that use the same keys (e.g. `hashes`).
+    let block_re = ('(?s)(' + $block + ' = \{(?:[^{}]|\{[^{}]*\})*?\})')
+    let block_match = (parse-capture $content $block_re)
+    if ($block_match | is-empty) {
+      fail $"Could not find block \"($block)\""
+    }
+    let current = (parse-capture $block_match ('"' + $key + '" = "([^"]+)"'))
+    if ($current | is-empty) {
+      fail $"Could not find keyed hash for \"($key)\" in block \"($block)\""
+    }
+    let updated_block = ($block_match | str replace $"\"($key)\" = \"($current)\"" $"\"($key)\" = \"($new_hash)\"")
+    $content | str replace $block_match $updated_block
   }
-  $content | str replace $"\"($key)\" = \"($current)\"" $"\"($key)\" = \"($new_hash)\""
 }
 
 def parse-single-hash [content: string] {
@@ -733,7 +749,7 @@ def update-agave-platform-tools [file: string, dry_run: bool] {
   for entry in $entries {
     log-sub $"fetching platform-tools ($entry.key)..."
     let new_hash = (prefetch-sri $entry.url)
-    $updated = (replace-key-hash $updated $entry.key $new_hash)
+    $updated = (replace-key-hash $updated $entry.key $new_hash "platformToolsHashes")
   }
   $updated | save -f $file
   log-ok "agave platform-tools" $"refreshed hashes for ($pt_version)"
