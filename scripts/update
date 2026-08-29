@@ -1429,14 +1429,14 @@ def update-knope [packages_dir: string, dry_run: bool] {
 }
 
 def update-herdr [packages_dir: string, dry_run: bool] {
-  let tag = (github-latest-tag "ogulcancelik" "herdr")
+  let tag = (github-latest-tag "herdrdev" "herdr")
   let latest_version = ($tag | str replace --regex '^v' '')
   let file = $"($packages_dir)/herdr/package.nix"
   let entries = [
-    { key: "macos-aarch64", url: $"https://github.com/ogulcancelik/herdr/releases/download/($tag)/herdr-macos-aarch64" }
-    { key: "macos-x86_64", url: $"https://github.com/ogulcancelik/herdr/releases/download/($tag)/herdr-macos-x86_64" }
-    { key: "linux-aarch64", url: $"https://github.com/ogulcancelik/herdr/releases/download/($tag)/herdr-linux-aarch64" }
-    { key: "linux-x86_64", url: $"https://github.com/ogulcancelik/herdr/releases/download/($tag)/herdr-linux-x86_64" }
+    { key: "macos-aarch64", url: $"https://github.com/herdrdev/herdr/releases/download/($tag)/herdr-macos-aarch64" }
+    { key: "macos-x86_64", url: $"https://github.com/herdrdev/herdr/releases/download/($tag)/herdr-macos-x86_64" }
+    { key: "linux-aarch64", url: $"https://github.com/herdrdev/herdr/releases/download/($tag)/herdr-linux-aarch64" }
+    { key: "linux-x86_64", url: $"https://github.com/herdrdev/herdr/releases/download/($tag)/herdr-linux-x86_64" }
   ]
   update-versioned-keyed-hashes "herdr" $file $latest_version $entries $dry_run
 }
