@@ -3,6 +3,9 @@
   fetchurl,
   autoPatchelfHook,
   makeWrapper,
+  cargo,
+  rustc,
+  rustup,
   lib,
   zlib,
   openssl,
@@ -124,6 +127,30 @@ stdenv.mkDerivation {
         cat > "$out/bin/$bin" <<'EOF'
     #!${stdenv.shell}
 
+    # cargo-build-sbf links the selected platform-tools Rust toolchain with
+    # rustup, then invokes it through `cargo +<toolchain>`. Preserve the
+    # consumer's host Cargo and Rust compiler for metadata before putting the
+    # rustup proxies first on PATH for that explicit toolchain invocation.
+    if [ "__SUBCOMMAND__" = "build-sbf" ]; then
+      if [ -z "''${CARGO:-}" ]; then
+        host_cargo="$(command -v cargo || true)"
+        if [ -n "$host_cargo" ]; then
+          export CARGO="$host_cargo"
+        fi
+      fi
+      if [ -z "''${RUSTC:-}" ]; then
+        host_rustc="$(command -v rustc || true)"
+        if [ -n "$host_rustc" ]; then
+          export RUSTC="$host_rustc"
+        fi
+      fi
+      export PATH="${rustup}/bin:$PATH"
+    else
+      # cargo-test-sbf resolves cargo-build-sbf by name. Keep the package's
+      # wrapper available without shadowing the consumer's host Cargo.
+      export PATH="__OUT__/bin:$PATH"
+    fi
+
     # Legacy SDK (agave < 4.0): the release tarball ships the SDK next to the
     # binaries (bin/platform-tools-sdk or bin/sdk) and cargo-build-sbf reads
     # its location from SBF_SDK_PATH. The nix store is read-only and the SDK
@@ -203,6 +230,62 @@ stdenv.mkDerivation {
     done
 
     runHook postInstall
+  '';
+
+  nativeInstallCheckInputs = lib.optionals (platformToolsVersion != null) [
+    cargo
+    rustc
+  ];
+  doInstallCheck = platformToolsVersion != null;
+  installCheckPhase = ''
+    runHook preInstallCheck
+
+    check_root="$(mktemp -d)"
+    cp -R ${./test-program} "$check_root/program"
+    chmod -R u+w "$check_root/program"
+    mkdir -p \
+      "$check_root/cache" \
+      "$check_root/cargo-home" \
+      "$check_root/deploy" \
+      "$check_root/home" \
+      "$check_root/host-bin" \
+      "$check_root/rustup"
+
+    real_cargo="$(command -v cargo)"
+    real_rustc="$(command -v rustc)"
+    host_cargo_log="$check_root/host-cargo.log"
+    cat > "$check_root/host-bin/cargo" <<EOF
+    #!${stdenv.shell}
+    printf '%s\n' "\$*" >> "$host_cargo_log"
+    exec "$real_cargo" "\$@"
+    EOF
+    chmod +x "$check_root/host-bin/cargo"
+
+    export CARGO_HOME="$check_root/cargo-home"
+    export HOME="$check_root/home"
+    export HOST_CARGO_LOG="$host_cargo_log"
+    export PATH="$check_root/host-bin:$(dirname "$real_rustc"):$PATH"
+    export RUSTUP_HOME="$check_root/rustup"
+    export XDG_CACHE_HOME="$check_root/cache"
+
+    "$out/bin/cargo-build-sbf" \
+      --manifest-path "$check_root/program/Cargo.toml" \
+      --sbf-out-dir "$check_root/deploy" \
+      --offline \
+      --quiet
+    test -f "$check_root/deploy/agave_install_check.so"
+    test "$(find "$RUSTUP_HOME/toolchains" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')" = 1
+    test -z "$(find "$RUSTUP_HOME/toolchains" -mindepth 1 -maxdepth 1 ! -name '*sbpf-solana*' -print -quit)"
+
+    "$out/bin/cargo-test-sbf" \
+      --manifest-path "$check_root/program/Cargo.toml" \
+      --sbf-out-dir "$check_root/deploy" \
+      --offline \
+      --no-run
+    grep -q '^metadata ' "$host_cargo_log"
+    grep -q '^test ' "$host_cargo_log"
+
+    runHook postInstallCheck
   '';
 
   meta = with lib; {
