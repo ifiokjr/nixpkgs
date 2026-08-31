@@ -175,17 +175,24 @@ stdenv.mkDerivation {
     # Modern SDK (agave >= 4.0): cargo-build-sbf ignores SBF_SDK_PATH and
     # manages platform-tools itself at $HOME/.cache/solana/<version>/
     # platform-tools (a symlink there counts as an installation). When this
-    # package bundles platform-tools, link it into that location so no
-    # download is required. The version is read from the tool itself so this
-    # keeps working across cargo-build-sbf releases.
+    # package bundles platform-tools, force that exact store path into the
+    # location so a stale mutable SDK can never override the pinned package.
+    # The version is read from the tool itself so this keeps working across
+    # cargo-build-sbf releases.
     if [ -d "__OUT__/lib/platform-tools" ]; then
       pt_version="$(__WRAPPED__ --version 2>/dev/null | sed -n 's/^platform-tools //p')"
-      if [ -n "$pt_version" ]; then
+      if [[ "$pt_version" =~ ^v[0-9]+(\.[0-9]+)*$ ]]; then
         pt_root="''${HOME}/.cache/solana"
         pt_dir="$pt_root/$pt_version/platform-tools"
-        if [ ! -e "$pt_dir" ]; then
-          mkdir -p "$(dirname "$pt_dir")"
-          ln -s "__OUT__/lib/platform-tools" "$pt_dir" 2>/dev/null || true
+        bundled_pt="__OUT__/lib/platform-tools"
+        if [ ! -L "$pt_dir" ] || [ "$(readlink "$pt_dir" 2>/dev/null || true)" != "$bundled_pt" ]; then
+          pt_parent="$(dirname "$pt_dir")"
+          replacement="$pt_parent/.platform-tools-nix-$$"
+          mkdir -p "$pt_parent"
+          rm -f "$replacement"
+          ln -s "$bundled_pt" "$replacement"
+          rm -rf "$pt_dir"
+          mv "$replacement" "$pt_dir"
         fi
       fi
     fi
@@ -268,12 +275,21 @@ stdenv.mkDerivation {
     export RUSTUP_HOME="$check_root/rustup"
     export XDG_CACHE_HOME="$check_root/cache"
 
+    # A prior cargo-build-sbf installation may have downloaded mutable tools
+    # into the canonical cache path. The wrapper must replace them with the
+    # exact platform-tools bundled in this derivation.
+    conflicting_pt="$HOME/.cache/solana/${platformToolsVersion}/platform-tools"
+    mkdir -p "$conflicting_pt"
+    touch "$conflicting_pt/stale-platform-tools"
+
     "$out/bin/cargo-build-sbf" \
       --manifest-path "$check_root/program/Cargo.toml" \
       --sbf-out-dir "$check_root/deploy" \
       --offline \
       --quiet
     test -f "$check_root/deploy/agave_install_check.so"
+    test -L "$conflicting_pt"
+    test "$(readlink "$conflicting_pt")" = "$out/lib/platform-tools"
     test "$(find "$RUSTUP_HOME/toolchains" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')" = 1
     test -z "$(find "$RUSTUP_HOME/toolchains" -mindepth 1 -maxdepth 1 ! -name '*sbpf-solana*' -print -quit)"
 
