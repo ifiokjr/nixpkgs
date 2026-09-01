@@ -5,7 +5,7 @@
 }:
 
 let
-  version = "0.11.1";
+  version = "0.12.0";
 
   platformSuffix =
     {
@@ -17,10 +17,10 @@ let
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
   hashes = {
-    "aarch64-apple-darwin" = "sha256-YhvIskPHqwkhRgIS0ujitAJ8Yp5hjPCykt5I9Y+NUQ4=";
-    "x86_64-apple-darwin" = "sha256-V4qCFEYq/Va6qgWkcOBXVNbOsEfjdr5p+vQ+V1qBMu0=";
-    "x86_64-unknown-linux-gnu" = "sha256-KMh2OY3Gq7+kLveGRbc0sWULAL3BLS7cs72/Qy614is=";
-    "aarch64-unknown-linux-gnu" = "sha256-RXM7zbhM20on9qXQcYe6vQvocXyoecKnjTQYo+2f5sI=";
+    "aarch64-apple-darwin" = "sha256-vK2tpWfYpwfT4IlExkf963GnuuBOz/klpZ1wJ/v9Lsk=";
+    "x86_64-apple-darwin" = "sha256-bk3dlSHzljCapaTIX/aeKNfseyQkOXjgERqOOtov/NA=";
+    "x86_64-unknown-linux-gnu" = "sha256-q59XN3p/3J7EsOGqgdlqgAegWLoYDiXLkTB00Yhw1gY=";
+    "aarch64-unknown-linux-gnu" = "sha256-U5Z3f8Iz4fT9ocp+8u3pKtr2Cjgu+uU/ku+e+wScbjw=";
   };
 in
 stdenv.mkDerivation {
