@@ -5,7 +5,7 @@
 }:
 
 let
-  version = "0.12.0";
+  version = "0.12.2";
 
   platformSuffix =
     {
