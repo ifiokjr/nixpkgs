@@ -1134,9 +1134,12 @@ def pub-serverpod-cli-latest-with-prefix [prefix: string] {
 }
 
 # Regenerate `pubspec.lock.json` for a Serverpod release by shallow-cloning the
-# tag, stripping the monorepo `dependency_overrides` (so sibling `serverpod_*`
-# packages resolve from pub.dev), running `dart pub get`, and converting the
-# resulting `pubspec.lock` to the JSON shape `buildDartApplication` expects.
+# tag, stripping `.dependency_overrides` (monorepo path overrides, so sibling
+# `serverpod_*` packages resolve from pub.dev) and `.resolution` (workspace
+# resolution — since 4.0.0-rc.1 the CLI joins the monorepo workspace, which
+# pulls in Flutter-SDK test packages that plain `dart pub get` cannot resolve),
+# running `dart pub get`, and converting the resulting `pubspec.lock` to the
+# JSON shape `buildDartApplication` expects.
 def regenerate-serverpod-pubspec-lock [version: string, dest: string] {
   let tmp = (^mktemp -d | str trim)
   let repo = $"($tmp)/serverpod"
@@ -1148,7 +1151,7 @@ def regenerate-serverpod-pubspec-lock [version: string, dest: string] {
   # `nix shell` provides `dart` and `yq`; run inside bash so nushell's cwd is
   # untouched. Suppress `dart pub get` stdout (the "Changed N dependencies"
   # line) so only the `yq` JSON reaches stdout.
-  let script = $"cd '($cli_dir)' && yq -i 'del\(.dependency_overrides\)' pubspec.yaml && dart pub get 1>/dev/null && yq -o=json '.' pubspec.lock"
+  let script = $"cd '($cli_dir)' && yq -i 'del\(.resolution, .dependency_overrides\)' pubspec.yaml && dart pub get 1>/dev/null && yq -o=json '.' pubspec.lock"
   let res = (^nix shell nixpkgs#dart nixpkgs#yq-go --command bash -c $script | complete)
 
   ^rm -rf $tmp
