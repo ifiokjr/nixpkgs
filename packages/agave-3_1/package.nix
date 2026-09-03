@@ -3,6 +3,9 @@
   fetchurl,
   autoPatchelfHook,
   makeWrapper,
+  cargo,
+  rustc,
+  rustup,
   lib,
   zlib,
   openssl,
@@ -24,6 +27,9 @@ import ../agave/common.nix {
     fetchurl
     autoPatchelfHook
     makeWrapper
+    cargo
+    rustc
+    rustup
     lib
     zlib
     openssl
