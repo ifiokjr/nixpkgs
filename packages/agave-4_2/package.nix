@@ -13,12 +13,12 @@
 }:
 
 let
-  version = "4.2.1";
+  version = "4.2.2";
 
   hashes = {
-    "aarch64-apple-darwin" = "sha256-n7dEkXh3rMaK4kIa741/RPDV6xZCjp09ssmLGuYf0jk=";
-    "x86_64-apple-darwin" = "sha256-+Ahi1M+1UouloLbBo9stMhidVQlksCvrjdsWAJbN0a4=";
-    "x86_64-unknown-linux-gnu" = "sha256-fzX5LBWGEmO8VAwAFGZnjS2iKBSaEHtR1bZc5JdgMHQ=";
+    "aarch64-apple-darwin" = "sha256-WAu0vNtDl1ZkWoPYVpZKjXtwBRI1atqBmtiaQL12vKQ=";
+    "x86_64-apple-darwin" = "sha256-ZSEoqONa2RhINHTShBWuP43nF8wjrJTxmluQGISBgm8=";
+    "x86_64-unknown-linux-gnu" = "sha256-X8hoT3QwA4EF/elT1DCO1Wrd9if2WNqmFwnzRUSCR+4=";
   };
   platformToolsVersion = "v1.54";
 
