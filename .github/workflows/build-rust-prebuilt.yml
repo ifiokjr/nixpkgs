@@ -31,6 +31,7 @@ jobs:
     outputs:
       repo: ${{ steps.config.outputs.repo }}
       bin: ${{ steps.config.outputs.bin }}
+      package: ${{ steps.config.outputs.package }}
       features: ${{ steps.config.outputs.features }}
       no-default-features: ${{ steps.config.outputs.no-default-features }}
       tag: ${{ steps.config.outputs.tag }}
@@ -48,12 +49,16 @@ jobs:
             echo "tag=prebuilt/${PACKAGE}/${VERSION}"
             echo "ref=v${VERSION}"
             echo 'matrix={"include":[{"target":"aarch64-apple-darwin","os":"macos-latest"},{"target":"x86_64-apple-darwin","os":"macos-latest"},{"target":"aarch64-unknown-linux-gnu","os":"ubuntu-24.04-arm"},{"target":"x86_64-unknown-linux-gnu","os":"ubuntu-latest"}]}'
+            echo "package="
           } >> "$GITHUB_OUTPUT"
 
           case "${PACKAGE}" in
             pina)
               echo "repo=pina-rs/pina" >> "$GITHUB_OUTPUT"
               echo "bin=pina" >> "$GITHUB_OUTPUT"
+              # Since 0.13.0 the `pina` binary lives in the `pina_cli` package
+              # rather than the root `pina` package.
+              echo "package=pina_cli" >> "$GITHUB_OUTPUT"
               ;;
             cargo-clean-all)
               echo "repo=dnlmlr/cargo-clean-all" >> "$GITHUB_OUTPUT"
@@ -141,6 +146,7 @@ jobs:
         uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: ${{ needs.prepare.outputs.bin }}
+          package: ${{ needs.prepare.outputs.package }}
           target: ${{ matrix.target }}
           archive: ${{ inputs.package }}-$target
           tar: unix
