@@ -8,7 +8,6 @@ on:
         required: true
         type: choice
         options:
-          - pina
           - cargo-clean-all
           - cargo-interactive-update
           - sbpf-linker
@@ -53,13 +52,6 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
           case "${PACKAGE}" in
-            pina)
-              echo "repo=pina-rs/pina" >> "$GITHUB_OUTPUT"
-              echo "bin=pina" >> "$GITHUB_OUTPUT"
-              # Since 0.13.0 the `pina` binary lives in the `pina_cli` package
-              # rather than the root `pina` package.
-              echo "package=pina_cli" >> "$GITHUB_OUTPUT"
-              ;;
             cargo-clean-all)
               echo "repo=dnlmlr/cargo-clean-all" >> "$GITHUB_OUTPUT"
               echo "bin=cargo-clean-all" >> "$GITHUB_OUTPUT"

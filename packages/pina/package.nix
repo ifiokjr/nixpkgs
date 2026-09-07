@@ -17,10 +17,10 @@ let
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
   hashes = {
-    "aarch64-apple-darwin" = "sha256-bAYv0imp2KbzGirOCOE0moP6kf37L4yP2dIvTzGvY8E=";
-    "x86_64-apple-darwin" = "sha256-xwiLsM4XFE+fKiG7zVsIgI+HKxN1AQrq2Xb9AqCudiE=";
-    "x86_64-unknown-linux-gnu" = "sha256-BPHE9UuXqFV7t5aAU4UAKbr4ZxhtbxN/IA4nP6pRAHI=";
-    "aarch64-unknown-linux-gnu" = "sha256-UcahrG6L0fnHc0etoY/X4sH72ac9zpY7hfdjszBlvZ4=";
+    "aarch64-apple-darwin" = "sha256-yDcvF/YGdocSARwVmvkYB0X8+84ArGBIf6QzgUL7sf4=";
+    "x86_64-apple-darwin" = "sha256-J7SvjR8mujKz3lLwQBvd4lt82NxGFmQaSepUbL/+Ms4=";
+    "x86_64-unknown-linux-gnu" = "sha256-tyvVkqgIfJ33JaQsQPx6zicewlNVII9sJ7J7lwaOQE4=";
+    "aarch64-unknown-linux-gnu" = "sha256-3JbxkituOd+Qj1pwysicCaM5sph1WJERSwPprMP0Uts=";
   };
 in
 stdenv.mkDerivation {
@@ -28,7 +28,7 @@ stdenv.mkDerivation {
   inherit version;
 
   src = fetchurl {
-    url = "https://github.com/ifiokjr/nixpkgs/releases/download/prebuilt/pina/${version}/pina-${platformSuffix}.tar.gz";
+    url = "https://github.com/pina-rs/pina/releases/download/v${version}/pina-${platformSuffix}-v${version}.tar.gz";
     hash = hashes.${platformSuffix} or (throw "No prebuilt for platform: ${platformSuffix}");
   };
 

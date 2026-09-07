@@ -1698,10 +1698,16 @@ def update-dylint [packages_dir: string, dry_run: bool] {
   }
 }
 
-def update-prebuilt-pina [packages_dir: string, dry_run: bool] {
-  let tag = (github-latest-tag "pina-rs" "pina")
-  let latest_version = ($tag | str replace --regex '^v' '')
-  update-prebuilt-package $packages_dir "pina" $latest_version "pina-rs" "pina" $dry_run
+def update-pina [packages_dir: string, dry_run: bool] {
+  let latest_version = (github-latest-tag "pina-rs" "pina" | str replace --regex '^v' '')
+  let file = $"($packages_dir)/pina/package.nix"
+  let entries = [
+    { key: "aarch64-apple-darwin", url: $"https://github.com/pina-rs/pina/releases/download/v($latest_version)/pina-aarch64-apple-darwin-v($latest_version).tar.gz" }
+    { key: "x86_64-apple-darwin", url: $"https://github.com/pina-rs/pina/releases/download/v($latest_version)/pina-x86_64-apple-darwin-v($latest_version).tar.gz" }
+    { key: "aarch64-unknown-linux-gnu", url: $"https://github.com/pina-rs/pina/releases/download/v($latest_version)/pina-aarch64-unknown-linux-gnu-v($latest_version).tar.gz" }
+    { key: "x86_64-unknown-linux-gnu", url: $"https://github.com/pina-rs/pina/releases/download/v($latest_version)/pina-x86_64-unknown-linux-gnu-v($latest_version).tar.gz" }
+  ]
+  update-versioned-keyed-hashes "pina" $file $latest_version $entries $dry_run
 }
 
 def update-prebuilt-cargo-clean-all [packages_dir: string, dry_run: bool] {
@@ -1853,7 +1859,7 @@ def main [
     { name: "nordvpn", run: {|| update-nordvpn $packages_dir $dry_run } }
     { name: "ollama", run: {|| update-ollama $packages_dir $dry_run } }
     { name: "op", run: {|| update-op $packages_dir $dry_run } }
-    { name: "pina", run: {|| update-prebuilt-pina $packages_dir $dry_run } }
+    { name: "pina", run: {|| update-pina $packages_dir $dry_run } }
     { name: "pnpm", run: {|| update-pnpm $packages_dir $dry_run } }
     { name: "pnpm-10", run: {|| update-pnpm-10 $packages_dir $dry_run } }
     { name: "pnpm-11", run: {|| update-pnpm-11 $packages_dir $dry_run } }
