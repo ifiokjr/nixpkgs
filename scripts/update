@@ -438,8 +438,8 @@ def connect-or-timeout [url: string] {
     } catch {|err|
       # If it's an HTTP error (not a timeout/connection error), the server
       # is reachable — proceed with the download.
-      let msg = ($err.msg | str lowercase)
-      if not (($msg | str contains "timeout") or ($msg | str contains "timed out") or ($msg | str contains "connect")) {
+      let msg = $err.msg
+      if not (($msg | str contains --ignore-case "timeout") or ($msg | str contains --ignore-case "timed out") or ($msg | str contains --ignore-case "connect")) {
         print -n $"\r\e[K"
         return
       }
