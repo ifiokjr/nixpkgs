@@ -315,7 +315,21 @@ def github-latest-tag-with-prefix [owner: string, repo: string, prefix: string] 
   $matched
 }
 
-def github-latest-stable-tag [owner: string, repo: string] {
+# True when every named asset is present in the release's uploaded assets.
+def release-has-all-assets [release: record, required: list<string>] {
+  let names = ($release | get -o assets | default [] | each {|asset| $asset | get -o name | default "" })
+  $required | all {|asset| $asset in $names }
+}
+
+# Latest stable release tag (published, not draft/prerelease, `v`-prefixed, no
+# hyphen), iterating release pages. With `required_assets` set, a release only
+# matches once all those files are uploaded — a tag can be published before its
+# artifacts finish uploading, and downloading too early 404s.
+def github-latest-stable-tag [
+  owner: string,
+  repo: string,
+  required_assets: list<string> = [],
+] {
   let headers = (github-headers)
   mut page = 1
   mut matched = ""
@@ -337,10 +351,14 @@ def github-latest-stable-tag [owner: string, repo: string] {
     }
 
     # Scan published releases (not git tags — a version tag can be pushed
-    # before its release and artifacts exist, as zed does).
+    # before its release and artifacts exist, as zed does). Keep paging until
+    # a release passes the stable filters and has every required asset.
     let found = (
       $releases
-      | where {|release| not $release.draft and not $release.prerelease and ($release.tag_name | str starts-with "v") and not ($release.tag_name | str contains "-") }
+      | where {|release|
+          let stable = (not $release.draft and not $release.prerelease and ($release.tag_name | str starts-with "v") and not ($release.tag_name | str contains "-"))
+          $stable and (release-has-all-assets $release $required_assets)
+        }
       | get -o 0.tag_name
       | default ""
     )
@@ -1692,7 +1710,14 @@ def update-zed-release [packages_dir: string, package_name: string, tag: string,
 }
 
 def update-zed [packages_dir: string, dry_run: bool] {
-  let tag = (github-latest-stable-tag "zed-industries" "zed")
+  # Zed uploads release assets gradually after publishing; only accept a tag
+  # once all four download targets exist or the fetches below would 404.
+  let tag = (github-latest-stable-tag "zed-industries" "zed" [
+    "Zed-aarch64.dmg"
+    "Zed-x86_64.dmg"
+    "zed-linux-aarch64.tar.gz"
+    "zed-linux-x86_64.tar.gz"
+  ])
   update-zed-release $packages_dir "zed" $tag $dry_run
 }
 
@@ -1926,7 +1951,14 @@ def main [
   print ""
   print-footer $updated $failed_count $skipped $failed_names
 
+  # Only exit 1 when failures meant nothing was applied — the workflow's commit
+  # step is gated on this exit code, so a failure must not discard updates that
+  # already landed. Dry-run never applies anything, so any failure there is
+  # still an error.
   if $failed_count > 0 {
-    exit 1
+    if $dry_run or $updated == 0 {
+      exit 1
+    }
+    print $"  ($YELLOW)($updated) update\(s\) landed despite ($failed_count) failure\(s\) — exiting 0 so they are committed.($RESET)"
   }
 }
