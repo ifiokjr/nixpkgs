@@ -5,6 +5,7 @@
   zstd,
   autoPatchelfHook,
   zlib,
+  vulkan-loader,
   lib,
 }:
 
@@ -57,6 +58,7 @@ stdenv.mkDerivation {
   buildInputs = lib.optionals stdenv.isLinux [
     stdenv.cc.cc.lib
     zlib
+    vulkan-loader
   ];
 
   autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.isLinux [ "libcuda.so.1" ];

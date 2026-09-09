@@ -88,7 +88,9 @@ let
     ];
     doCheck = false;
     doInstallCheck = true;
-    installCheckPhase = "$out/bin/cargo-dylint --help > /dev/null";
+    # cargo-dylint is a rustup-style proxy and refuses to run without a
+    # RUSTUP_TOOLCHAIN; any value is fine for --help.
+    installCheckPhase = "RUSTUP_TOOLCHAIN=stable $out/bin/cargo-dylint --help > /dev/null";
     meta = meta // {
       sourceProvenance = [ lib.sourceTypes.fromSource ];
     };
@@ -118,7 +120,11 @@ let
     sourceRoot = ".";
 
     nativeBuildInputs = [ autoPatchelfHook ];
-    buildInputs = [ stdenv.cc.cc.lib ];
+    # The prebuilt binaries link libz.so.1.
+    buildInputs = [
+      stdenv.cc.cc.lib
+      zlib
+    ];
 
     dontBuild = true;
     dontStrip = true;
@@ -143,10 +149,12 @@ let
     '';
 
     doInstallCheck = true;
+    # cargo-dylint is a rustup-style proxy and refuses to run without
+    # RUSTUP_TOOLCHAIN; any value is fine for --help.
     installCheckPhase = ''
       runHook preInstallCheck
-      $out/bin/cargo-dylint --help > /dev/null
-      $out/bin/dylint-link --help > /dev/null
+      RUSTUP_TOOLCHAIN=stable $out/bin/cargo-dylint --help > /dev/null
+      RUSTUP_TOOLCHAIN=stable $out/bin/dylint-link --help > /dev/null
       runHook postInstallCheck
     '';
 
