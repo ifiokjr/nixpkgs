@@ -161,12 +161,20 @@
               _: pkg: lib.meta.availableOn pkgs.stdenv.hostPlatform pkg
             ) packages;
 
+            # Package names for the CI build matrices. Derived from the flake so
+            # the lists can never drift from the real package set (hand-maintained
+            # lists silently rotted and disabled every build job). Aliases map to
+            # the same derivation and become instant cache hits in CI.
+            ciPackages = builtins.attrNames supportedPackages;
+
             allPkg = pkgs.symlinkJoin {
               name = "all-packages";
               paths = builtins.attrValues supportedPackages;
             };
           in
           {
+            ciPackages = ciPackages;
+
             checks.github-workflows =
               pkgs.runCommand "github-workflows"
                 {
