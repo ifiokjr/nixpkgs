@@ -7,6 +7,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# id-token: write lets magic-nix-cache mint the OIDC token FlakeHub Cache
+# authentication requires; without it every job logs a FlakeHub auth error.
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   detect-changes:
     name: detect changed packages
@@ -27,11 +33,6 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-        with:
-          # registration on FlakeHub pending; flip back to true after
-          # registering at flakehub.com to enable FlakeHub cache
-          use-flakehub: false
-
       - name: 🔍 detect changed packages
         id: changes
         run: |
@@ -100,11 +101,6 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-        with:
-          # registration on FlakeHub pending; flip back to true after
-          # registering at flakehub.com to enable FlakeHub cache
-          use-flakehub: false
-
       - name: 🔍 validate flake
         run: nix flake show
 
@@ -122,11 +118,6 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-        with:
-          # registration on FlakeHub pending; flip back to true after
-          # registering at flakehub.com to enable FlakeHub cache
-          use-flakehub: false
-
       - name: 🔍 lint
         run: nix shell nixpkgs#dprint nixpkgs#nixfmt-rfc-style nixpkgs#shfmt -c dprint check
 
@@ -154,11 +145,6 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-        with:
-          # registration on FlakeHub pending; flip back to true after
-          # registering at flakehub.com to enable FlakeHub cache
-          use-flakehub: false
-
       - name: 🧪 run update dry-run
         run: |
           if [ "${{ runner.os }}" = "macOS" ]; then
@@ -198,11 +184,6 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-        with:
-          # registration on FlakeHub pending; flip back to true after
-          # registering at flakehub.com to enable FlakeHub cache
-          use-flakehub: false
-
       - name: 🏗️ build ${{ matrix.package }}
         run: nix build .#${{ matrix.package }}
 
@@ -229,11 +210,6 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-        with:
-          # registration on FlakeHub pending; flip back to true after
-          # registering at flakehub.com to enable FlakeHub cache
-          use-flakehub: false
-
       - name: 📥 checkout downstream ${{ matrix.project }}
         uses: actions/checkout@v4
         with:
@@ -318,11 +294,6 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-        with:
-          # registration on FlakeHub pending; flip back to true after
-          # registering at flakehub.com to enable FlakeHub cache
-          use-flakehub: false
-
       - name: 🏗️ build ${{ matrix.package }}
         run: nix build .#${{ matrix.package }}
 
