@@ -118,7 +118,11 @@ let
     sourceRoot = ".";
 
     nativeBuildInputs = [ autoPatchelfHook ];
-    buildInputs = [ stdenv.cc.cc.lib ];
+    # The prebuilt binaries link libz.so.1.
+    buildInputs = [
+      stdenv.cc.cc.lib
+      zlib
+    ];
 
     dontBuild = true;
     dontStrip = true;
