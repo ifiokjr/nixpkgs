@@ -7,16 +7,20 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# id-token: write lets magic-nix-cache mint the OIDC token FlakeHub Cache
-# authentication requires; without it every job logs a FlakeHub auth error.
+# contents: read is the workflow-wide default. Each nix job additionally
+# requests id-token: write at job level (workflow-level is rejected by
+# zizmor as overly broad) so magic-nix-cache can mint the OIDC token
+# FlakeHub Cache authentication requires.
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   detect-changes:
     name: detect changed packages
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     outputs:
       linux-packages: ${{ steps.changes.outputs.linux-packages }}
       macos-packages: ${{ steps.changes.outputs.macos-packages }}
@@ -90,6 +94,9 @@ jobs:
   validate:
     name: validate flake
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: 📥 checkout repository
         uses: actions/checkout@v4
@@ -107,6 +114,9 @@ jobs:
   lint:
     name: lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: 📥 checkout repository
         uses: actions/checkout@v4
@@ -130,6 +140,9 @@ jobs:
   test-update-script:
     name: "test update script (${{ matrix.os }})"
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -166,6 +179,9 @@ jobs:
     needs: [detect-changes, validate, test-update-script]
     if: needs.detect-changes.outputs.linux-packages != '[]'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       # max-parallel caps concurrency to avoid GitHub API rate-limit
@@ -192,6 +208,9 @@ jobs:
     needs: [detect-changes, validate, test-update-script]
     if: contains(needs.detect-changes.outputs.linux-packages, 'pnpm') || contains(needs.detect-changes.outputs.macos-packages, 'pnpm') || github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -276,6 +295,9 @@ jobs:
     needs: [detect-changes, validate, test-update-script]
     if: needs.detect-changes.outputs.macos-packages != '[]'
     runs-on: macos-latest
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       # max-parallel caps concurrency to avoid GitHub API rate-limit
