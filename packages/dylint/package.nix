@@ -88,7 +88,9 @@ let
     ];
     doCheck = false;
     doInstallCheck = true;
-    installCheckPhase = "$out/bin/cargo-dylint --help > /dev/null";
+    # cargo-dylint is a rustup-style proxy and refuses to run without a
+    # RUSTUP_TOOLCHAIN; any value is fine for --help.
+    installCheckPhase = "RUSTUP_TOOLCHAIN=stable $out/bin/cargo-dylint --help > /dev/null";
     meta = meta // {
       sourceProvenance = [ lib.sourceTypes.fromSource ];
     };

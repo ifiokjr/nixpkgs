@@ -43,7 +43,7 @@ stdenv.mkDerivation {
   # librustc_driver is provided at runtime by the rust toolchain that kani
   # setup manages (kani-driver sets LD_LIBRARY_PATH when spawning
   # kani-compiler); it is not shipped in the release bundle.
-  autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.isLinux [ "librustc_driver-.*\\.so" ];
+  autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.isLinux [ "librustc_driver-*.so" ];
   buildInputs = lib.optionals stdenv.isLinux [
     stdenv.cc.cc.lib
     zlib
