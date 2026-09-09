@@ -181,6 +181,12 @@ stdenv.mkDerivation {
   installCheckPhase = ''
         runHook preInstallCheck
 
+        # pnpm 12+ treats devEngines.packageManager as a config dependency and
+        # resolves it from the registry on every invocation inside such a
+        # project; disable self-version management so the checks never need the
+        # network (the sandbox has none).
+        export npm_config_manage_package_manager_versions=false
+
         echo "Checking pnpm version..."
         $out/bin/pnpm --version
 

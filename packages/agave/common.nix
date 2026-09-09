@@ -244,7 +244,10 @@ stdenv.mkDerivation {
     rustc
   ];
   doInstallCheck = platformToolsVersion != null;
-  installCheckPhase = ''
+  # Guard the whole phase on platformToolsVersion: without this the phase
+  # string interpolates null at eval time (doInstallCheck alone does not stop
+  # Nix from evaluating the string).
+  installCheckPhase = lib.optionalString (platformToolsVersion != null) ''
     runHook preInstallCheck
 
     check_root="$(mktemp -d)"

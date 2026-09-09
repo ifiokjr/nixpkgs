@@ -1612,7 +1612,7 @@ def update-rolling-steam [packages_dir: string, dry_run: bool] {
 # These packages use binaries built by our CI and hosted in this repo.
 # Instead of updating hashes directly, we trigger the build-rust-prebuilt workflow.
 
-const PREBUILT_PACKAGES = ["ccase" "pina" "cargo-clean-all" "cargo-interactive-update" "keyring" "sbpf-linker"]
+const PREBUILT_PACKAGES = ["ccase" "pina" "cargo-clean-all" "cargo-interactive-update" "sbpf-linker"]
 
 def is-prebuilt-package [package: string] {
   $PREBUILT_PACKAGES | any {|p| $p == $package }
@@ -1746,11 +1746,6 @@ def update-prebuilt-cargo-interactive [packages_dir: string, dry_run: bool] {
   update-prebuilt-package $packages_dir "cargo-interactive-update" $latest_version "benjeau" "cargo-interactive-update" $dry_run
 }
 
-def update-prebuilt-keyring [packages_dir: string, dry_run: bool] {
-  let latest_version = (crates-io-latest-version "keyring")
-  update-prebuilt-package $packages_dir "keyring" $latest_version "open-source-cooperative" "keyring-rs" $dry_run
-}
-
 def update-prebuilt-sbpf-linker [packages_dir: string, dry_run: bool] {
   # sbpf-linker doesn't have GitHub releases, so we fetch version from Cargo.toml
   let file = $"($packages_dir)/sbpf-linker/package.nix"
@@ -1876,7 +1871,6 @@ def main [
     { name: "ironclaw", run: {|| update-ironclaw $packages_dir $dry_run } }
     { name: "kani", run: {|| update-kani $packages_dir $dry_run } }
     { name: "ccase", run: {|| update-prebuilt-ccase $packages_dir $dry_run } }
-    { name: "keyring", run: {|| update-prebuilt-keyring $packages_dir $dry_run } }
     { name: "knope", run: {|| update-knope $packages_dir $dry_run } }
     { name: "mdt", run: {|| update-mdt $packages_dir $dry_run } }
     { name: "monochange", run: {|| update-monochange $packages_dir $dry_run } }

@@ -41,7 +41,6 @@
         herdr = final.callPackage ./packages/herdr/package.nix { };
         ironclaw = final.callPackage ./packages/ironclaw/package.nix { };
         kani = final.callPackage ./packages/kani/package.nix { };
-        keyring = final.callPackage ./packages/keyring/package.nix { };
         knope = final.callPackage ./packages/knope/package.nix { };
         mdt = final.callPackage ./packages/mdt/package.nix { };
         melos-cli = melos;
@@ -121,7 +120,6 @@
               herdr = pkgs.callPackage ./packages/herdr/package.nix { };
               ironclaw = pkgs.callPackage ./packages/ironclaw/package.nix { };
               kani = pkgs.callPackage ./packages/kani/package.nix { };
-              keyring = pkgs.callPackage ./packages/keyring/package.nix { };
               knope = pkgs.callPackage ./packages/knope/package.nix { };
               mdt = pkgs.callPackage ./packages/mdt/package.nix { };
               melos-cli = melos;

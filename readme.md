@@ -31,7 +31,6 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [herdr](#herdr)                                                                                      | <!-- {~v_herdr:"{{ v.herdr }}"} -->0.9.0<!-- {/v_herdr} -->                                                          | linux, macos               | Terminal agent multiplexer - tmux for coding agents                              |
 | [ironclaw](#ironclaw)                                                                                | <!-- {~v_ironclaw:"{{ v.ironclaw }}"} -->1.4.0<!-- {/v_ironclaw} -->                                                 | linux, macos               | Agent OS focused on privacy, security, and extensibility (NEAR AI)               |
 | [kani](#kani)                                                                                        | <!-- {~v_kani:"{{ v.kani }}"} -->0.67.0<!-- {/v_kani} -->                                                            | linux, macos               | Bit-precise model checker for Rust                                               |
-| [keyring](#keyring)                                                                                  | <!-- {~v_keyring:"{{ v.keyring }}"} -->4.2.0<!-- {/v_keyring} -->                                                    | linux, macos               | Sample code and CLI for the Rust Keyring                                         |
 | [knope](#knope)                                                                                      | <!-- {~v_knope:"{{ v.knope }}"} -->0.23.0<!-- {/v_knope} -->                                                         | linux, macos               | Automate common development tasks (changelogs, releases, versioning)             |
 | [mdt](#mdt)                                                                                          | <!-- {~v_mdt:"{{ v.mdt }}"} -->0.9.2<!-- {/v_mdt} -->                                                                | linux, macos               | Update markdown content anywhere using comments as template tags                 |
 | [melos](#melos), [melos-cli](#melos)                                                                 | <!-- {~v_melos:"{{ v.melos }}"} -->7.8.0<!-- {/v_melos} -->                                                          | linux, macos               | Manage Dart and Flutter monorepos with multiple packages                         |
@@ -76,7 +75,6 @@ nix run github:ifiokjr/nixpkgs#ironclaw
 nix run github:ifiokjr/nixpkgs#op
 nix run github:ifiokjr/nixpkgs#pnpm
 nix run github:ifiokjr/nixpkgs#monosecret
-nix run github:ifiokjr/nixpkgs#keyring -- --help
 ```
 
 ### add to your flake
@@ -105,7 +103,6 @@ nix run github:ifiokjr/nixpkgs#keyring -- --help
           extra.codex-cli
           extra.herdr
           extra.ironclaw
-          extra.keyring
           extra.op
           extra.pnpm
           extra.monosecret
@@ -144,7 +141,6 @@ The overlay adds all packages into your nixpkgs set so you can reference them as
           pkgs.pnpm-standalone
           pkgs.herdr
           pkgs.ironclaw
-          pkgs.keyring
           pkgs.op
           pkgs.pnpm
           pkgs.monosecret
@@ -180,7 +176,6 @@ in
     extra.pnpm-standalone
     extra.herdr
     extra.ironclaw
-    extra.keyring
     extra.op
     extra.pnpm
     extra.monosecret
@@ -217,8 +212,7 @@ in
               extra.codex-cli
               extra.herdr
               extra.ironclaw
-              extra.keyring
-              extra.op
+                  extra.op
               extra.pnpm
               extra.monosecret
             ];
@@ -257,8 +251,7 @@ in
               extra.racket-minimal
               extra.herdr
               extra.ironclaw
-              extra.keyring
-              extra.op
+                  extra.op
               extra.pnpm
               extra.monosecret
             ];
@@ -380,15 +373,6 @@ Bit-precise model checker for Rust. Installs the official upstream release bundl
 - **License:** Apache-2.0, MIT
 - **Source:** <https://github.com/model-checking/kani>
 - **Homepage:** <https://model-checking.github.io/kani/>
-
-### keyring
-
-Sample code and CLI for the Rust Keyring crate. Upstream does not publish release binaries, so this package is set up to consume pre-built artifacts produced by this repo's `build-rust-prebuilt.yml` workflow from the upstream `keyring-rs` source tag. Until a prebuilt release exists for a platform, it falls back to a pinned source build with `cargoHash`.
-
-- **Binary:** `keyring`
-- **License:** Apache-2.0, MIT
-- **Source:** <https://github.com/open-source-cooperative/keyring-rs>
-- **Homepage:** <https://github.com/open-source-cooperative/keyring-rs/wiki/Keyring>
 
 ### knope
 
@@ -596,7 +580,7 @@ Run the repo updater to check every package for new upstream releases and refres
 
 The script updates:
 
-- GitHub release packages (version + platform hashes, including `herdr`, `ironclaw`, `keyring`, `op`, and `pnpm`)
+- GitHub release packages (version + platform hashes, including `herdr`, `ironclaw`, `op`, and `pnpm`)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
 - Rolling URL packages (`steam`)
 - Rust packages built from source (`cargo-clean-all`, `cargo-interactive-update`, `dylint`, `knope`, `pina`, `sbpf-linker`, `monosecret`)
