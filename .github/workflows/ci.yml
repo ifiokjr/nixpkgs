@@ -27,6 +27,10 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          # registration on FlakeHub pending; flip back to true after
+          # registering at flakehub.com to enable FlakeHub cache
+          use-flakehub: false
 
       - name: 🔍 detect changed packages
         id: changes
@@ -96,6 +100,10 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          # registration on FlakeHub pending; flip back to true after
+          # registering at flakehub.com to enable FlakeHub cache
+          use-flakehub: false
 
       - name: 🔍 validate flake
         run: nix flake show
@@ -114,6 +122,10 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          # registration on FlakeHub pending; flip back to true after
+          # registering at flakehub.com to enable FlakeHub cache
+          use-flakehub: false
 
       - name: 🔍 lint
         run: nix shell nixpkgs#dprint nixpkgs#nixfmt-rfc-style nixpkgs#shfmt -c dprint check
@@ -142,6 +154,10 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          # registration on FlakeHub pending; flip back to true after
+          # registering at flakehub.com to enable FlakeHub cache
+          use-flakehub: false
 
       - name: 🧪 run update dry-run
         run: |
@@ -166,6 +182,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      # max-parallel caps concurrency to avoid GitHub API rate-limit
+      # exhaustion through the magic-nix-cache proxy
+      max-parallel: 20
       matrix:
         package: ${{ fromJson(needs.detect-changes.outputs.linux-packages) }}
     steps:
@@ -179,6 +198,10 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          # registration on FlakeHub pending; flip back to true after
+          # registering at flakehub.com to enable FlakeHub cache
+          use-flakehub: false
 
       - name: 🏗️ build ${{ matrix.package }}
         run: nix build .#${{ matrix.package }}
@@ -206,6 +229,10 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          # registration on FlakeHub pending; flip back to true after
+          # registering at flakehub.com to enable FlakeHub cache
+          use-flakehub: false
 
       - name: 📥 checkout downstream ${{ matrix.project }}
         uses: actions/checkout@v4
@@ -275,6 +302,9 @@ jobs:
     runs-on: macos-latest
     strategy:
       fail-fast: false
+      # max-parallel caps concurrency to avoid GitHub API rate-limit
+      # exhaustion through the magic-nix-cache proxy
+      max-parallel: 20
       matrix:
         package: ${{ fromJson(needs.detect-changes.outputs.macos-packages) }}
     steps:
@@ -288,6 +318,10 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          # registration on FlakeHub pending; flip back to true after
+          # registering at flakehub.com to enable FlakeHub cache
+          use-flakehub: false
 
       - name: 🏗️ build ${{ matrix.package }}
         run: nix build .#${{ matrix.package }}
