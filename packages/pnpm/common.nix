@@ -11,14 +11,28 @@
 }:
 
 let
+  isV12Plus = lib.versionAtLeast version "12";
+
+  # v12+ (the Rust rewrite) ships the native binary in per-platform
+  # `@pnpm/exe.<platform>-<arch>` packages (glibc builds for Linux; Intel macOS
+  # returned in v12), while v11 and older publish `@pnpm/<macos|linux>-<arch>`.
   npmPlatform =
-    {
-      "x86_64-linux" = "linux-x64";
-      "aarch64-linux" = "linux-arm64";
-      "x86_64-darwin" = "macos-x64";
-      "aarch64-darwin" = "macos-arm64";
-    }
-    .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
+    (
+      if isV12Plus then
+        {
+          "x86_64-linux" = "exe.linux-x64";
+          "aarch64-linux" = "exe.linux-arm64";
+          "x86_64-darwin" = "exe.darwin-x64";
+          "aarch64-darwin" = "exe.darwin-arm64";
+        }
+      else
+        {
+          "x86_64-linux" = "linux-x64";
+          "aarch64-linux" = "linux-arm64";
+          "x86_64-darwin" = "macos-x64";
+          "aarch64-darwin" = "macos-arm64";
+        }
+    ).${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
   platformSrc = fetchurl {
     url = "https://registry.npmjs.org/@pnpm/${npmPlatform}/-/${npmPlatform}-${version}.tgz";
@@ -26,6 +40,10 @@ let
   };
 
   useRuntimeCommand = lib.versionAtLeast version "11";
+
+  # The store layout version is decoupled from the CLI major version: pnpm 12
+  # still reports store/v11.
+  storeVersion = if isV12Plus then "11" else lib.versions.major version;
 
   exeSrc =
     if exeHash != null then
@@ -73,14 +91,17 @@ in
 stdenv.mkDerivation {
   inherit pname version;
 
-  srcs = lib.optional (exeHash != null) exeSrc ++ [ platformSrc ];
+  # v12+ needs only the native binary package: the @pnpm/exe wrapper tarball is
+  # just placeholder scripts that exec (or re-download) the native binary.
+  srcs =
+    if isV12Plus then [ platformSrc ] else lib.optional (exeHash != null) exeSrc ++ [ platformSrc ];
   sourceRoot = "package";
 
   dontBuild = true;
   dontStrip = true;
   dontPatchELF = true;
 
-  nativeBuildInputs = lib.optionals stdenv.isLinux [ makeWrapper ];
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ makeWrapper ];
 
   installPhase = ''
     runHook preInstall
@@ -94,7 +115,7 @@ stdenv.mkDerivation {
       --replace-fail '@PNPM_USE_RUNTIME_COMMAND@' '${if useRuntimeCommand then "1" else "0"}'
 
     ${
-      if stdenv.isLinux then
+      if stdenv.hostPlatform.isLinux then
         ''
           INTERP=$(cat $NIX_CC/nix-support/dynamic-linker)
           cat > $out/bin/pnpm <<EOF
@@ -120,12 +141,27 @@ stdenv.mkDerivation {
         ''
     }
 
-    # Install auxiliary executables when available (v11+)
-    for aux in pn pnpx pnx; do
-      if [ -f "$out/libexec/pnpm/$aux" ]; then
-        install -m 755 "$out/libexec/pnpm/$aux" "$out/bin/$aux"
-      fi
-    done
+    ${
+      if isV12Plus then
+        ''
+          # v12+ ships aux executables as committed `exec pnpm` shims; recreate
+          # them pointing at the wrapped binary so they are hermetic instead of
+          # resolving `pnpm` through PATH.
+          printf '#!/bin/sh\nexec "%s" "$@"\n' "$out/bin/pnpm" > "$out/bin/pn"
+          printf '#!/bin/sh\nexec "%s" dlx "$@"\n' "$out/bin/pnpm" > "$out/bin/pnpx"
+          printf '#!/bin/sh\nexec "%s" dlx "$@"\n' "$out/bin/pnpm" > "$out/bin/pnx"
+          chmod +x "$out/bin/pn" "$out/bin/pnpx" "$out/bin/pnx"
+        ''
+      else
+        ''
+          # Install auxiliary executables when available (v11+)
+          for aux in pn pnpx pnx; do
+            if [ -f "$out/libexec/pnpm/$aux" ]; then
+              install -m 755 "$out/libexec/pnpm/$aux" "$out/bin/$aux"
+            fi
+          done
+        ''
+    }
 
     install -m 755 ${./pnpm-activate-env.sh} $out/bin/pnpm-activate-env
     substituteInPlace $out/bin/pnpm-activate-env \
@@ -154,6 +190,24 @@ stdenv.mkDerivation {
         $out/bin/pnpm init
         test -f package.json
 
+        ${
+          if isV12Plus then
+            ''
+              echo "Checking pnpm aux executables..."
+              "$out/bin/pn" --version
+              test -x "$out/bin/pnpx"
+              test -x "$out/bin/pnx"
+            ''
+          else
+            ''
+              for aux in pn pnpx pnx; do
+                if [ -f "$out/libexec/pnpm/$aux" ]; then
+                  test -x "$out/bin/$aux"
+                fi
+              done
+            ''
+        }
+
         echo "Checking pnpm wrapper mutable state defaults..."
         WRAPPER_ROOT=$(mktemp -d)
         WRAPPER_GLOBAL_SUFFIX="${if useRuntimeCommand then "/bin" else ""}"
@@ -170,7 +224,7 @@ stdenv.mkDerivation {
           esac
 
           store_path="$($out/bin/pnpm store path)"
-          test "$store_path" = "$expected_pnpm_home/store/v${lib.versions.major version}"
+          test "$store_path" = "$expected_pnpm_home/store/v${storeVersion}"
           test -d "$expected_pnpm_home"
           test -d "$expected_pnpm_home$WRAPPER_GLOBAL_SUFFIX"
         )
@@ -179,7 +233,7 @@ stdenv.mkDerivation {
           export XDG_DATA_HOME="$WRAPPER_ROOT/xdg-data"
           unset PNPM_HOME
           store_path="$($out/bin/pnpm store path)"
-          test "$store_path" = "$XDG_DATA_HOME/pnpm/store/v${lib.versions.major version}"
+          test "$store_path" = "$XDG_DATA_HOME/pnpm/store/v${storeVersion}"
           test -d "$XDG_DATA_HOME/pnpm"
           test -d "$XDG_DATA_HOME/pnpm$WRAPPER_GLOBAL_SUFFIX"
         )
@@ -187,7 +241,7 @@ stdenv.mkDerivation {
           export HOME="$WRAPPER_ROOT/home"
           export PNPM_HOME="$WRAPPER_ROOT/custom-pnpm-home"
           store_path="$($out/bin/pnpm store path)"
-          test "$store_path" = "$PNPM_HOME/store/v${lib.versions.major version}"
+          test "$store_path" = "$PNPM_HOME/store/v${storeVersion}"
           test -d "$PNPM_HOME"
           test -d "$PNPM_HOME$WRAPPER_GLOBAL_SUFFIX"
         )
