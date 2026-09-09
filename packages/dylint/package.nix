@@ -128,11 +128,16 @@ let
 
       mkdir -p $out/bin
 
-      tar xzf ${cargoDylintSrc} -C $out/bin/
-      chmod +x $out/bin/cargo-dylint
+      # Upstream tarballs are flat or wrap the binary in a versioned dir
+      # (v6.x): extract to a staging dir and copy the binary out.
+      tmpd=$(mktemp -d)
+      tar xzf ${cargoDylintSrc} -C "$tmpd"
+      install -m 755 "$(find "$tmpd" -type f -name cargo-dylint)" $out/bin/cargo-dylint
 
-      tar xzf ${dylintLinkSrc} -C $out/bin/
-      chmod +x $out/bin/dylint-link
+      rm -rf "$tmpd"
+      tmpd=$(mktemp -d)
+      tar xzf ${dylintLinkSrc} -C "$tmpd"
+      install -m 755 "$(find "$tmpd" -type f -name dylint-link)" $out/bin/dylint-link
 
       runHook postInstall
     '';

@@ -1,7 +1,6 @@
 {
   lib,
   stdenv,
-  gcc,
   fetchurl,
   fetchFromGitHub,
   rustPlatform,
@@ -75,8 +74,8 @@ let
     dontUnpack = true;
     dontBuild = true;
     dontStrip = true;
-    buildInputs = lib.optionals stdenv.isLinux [ gcc.cc.cc.lib ];
-    nativeBuildInputs = lib.optionals stdenv.isLinux [ autoPatchelfHook ];
+    buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ stdenv.cc.cc.lib ];
+    nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
     installPhase = ''
       runHook preInstall
 
