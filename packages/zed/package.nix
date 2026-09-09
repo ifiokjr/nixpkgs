@@ -23,6 +23,8 @@ let
   asset = if stdenv.hostPlatform.isDarwin then "Zed-${arch}.dmg" else "zed-linux-${arch}.tar.gz";
   platformKey = if stdenv.hostPlatform.isDarwin then "${arch}-darwin" else "${arch}-linux";
   appName = if channel == "preview" then "Zed Preview" else "Zed";
+  appDir = if channel == "preview" then "zed-preview.app" else "zed.app";
+  desktopFile = if channel == "preview" then "dev.zed.Zed-Preview.desktop" else "dev.zed.Zed.desktop";
 in
 stdenv.mkDerivation {
   inherit pname;
@@ -67,7 +69,7 @@ stdenv.mkDerivation {
   ''
   + lib.optionalString stdenv.hostPlatform.isLinux ''
     mkdir -p $out
-    cp -R zed.app/* $out/
+    cp -R ${appDir}/* $out/
 
     if [ -x $out/bin/zed ]; then
       mv $out/bin/zed $out/bin/.zed-unwrapped
@@ -75,8 +77,8 @@ stdenv.mkDerivation {
         --prefix LD_LIBRARY_PATH : $out/lib
     fi
 
-    if [ -f $out/share/applications/dev.zed.Zed.desktop ]; then
-      substituteInPlace $out/share/applications/dev.zed.Zed.desktop \
+    if [ -f $out/share/applications/${desktopFile} ]; then
+      substituteInPlace $out/share/applications/${desktopFile} \
         --replace-fail "Exec=zed" "Exec=${pname}" \
         --replace-fail "Name=Zed" "Name=${appName}"
     fi

@@ -41,7 +41,6 @@
         herdr = final.callPackage ./packages/herdr/package.nix { };
         ironclaw = final.callPackage ./packages/ironclaw/package.nix { };
         kani = final.callPackage ./packages/kani/package.nix { };
-        keyring = final.callPackage ./packages/keyring/package.nix { };
         knope = final.callPackage ./packages/knope/package.nix { };
         mdt = final.callPackage ./packages/mdt/package.nix { };
         melos-cli = melos;
@@ -121,7 +120,6 @@
               herdr = pkgs.callPackage ./packages/herdr/package.nix { };
               ironclaw = pkgs.callPackage ./packages/ironclaw/package.nix { };
               kani = pkgs.callPackage ./packages/kani/package.nix { };
-              keyring = pkgs.callPackage ./packages/keyring/package.nix { };
               knope = pkgs.callPackage ./packages/knope/package.nix { };
               mdt = pkgs.callPackage ./packages/mdt/package.nix { };
               melos-cli = melos;
@@ -161,12 +159,20 @@
               _: pkg: lib.meta.availableOn pkgs.stdenv.hostPlatform pkg
             ) packages;
 
+            # Package names for the CI build matrices. Derived from the flake so
+            # the lists can never drift from the real package set (hand-maintained
+            # lists silently rotted and disabled every build job). Aliases map to
+            # the same derivation and become instant cache hits in CI.
+            ciPackages = builtins.attrNames supportedPackages;
+
             allPkg = pkgs.symlinkJoin {
               name = "all-packages";
               paths = builtins.attrValues supportedPackages;
             };
           in
           {
+            ciPackages = ciPackages;
+
             checks.github-workflows =
               pkgs.runCommand "github-workflows"
                 {

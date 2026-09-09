@@ -322,24 +322,26 @@ def github-latest-stable-tag [owner: string, repo: string] {
 
   loop {
     let page_num = $page
-    let tags = try {
+    let releases = try {
       if ($headers | is-empty) {
-        http get $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=100&page=($page)"
+        http get $"https://api.github.com/repos/($owner)/($repo)/releases?per_page=100&page=($page)"
       } else {
-        http get -H $headers $"https://api.github.com/repos/($owner)/($repo)/tags?per_page=100&page=($page)"
+        http get -H $headers $"https://api.github.com/repos/($owner)/($repo)/releases?per_page=100&page=($page)"
       }
     } catch {
-      fail $"Failed to fetch tags for ($owner)/($repo) (page ($page_num))"
+      fail $"Failed to fetch releases for ($owner)/($repo) (page ($page_num))"
     }
 
-    if ($tags | is-empty) {
+    if ($releases | is-empty) {
       break
     }
 
+    # Scan published releases (not git tags — a version tag can be pushed
+    # before its release and artifacts exist, as zed does).
     let found = (
-      $tags
-      | where {|tag| ($tag.name | str starts-with "v") and not ($tag.name | str contains "-") }
-      | get -o 0.name
+      $releases
+      | where {|release| not $release.draft and not $release.prerelease and ($release.tag_name | str starts-with "v") and not ($release.tag_name | str contains "-") }
+      | get -o 0.tag_name
       | default ""
     )
 
@@ -348,7 +350,7 @@ def github-latest-stable-tag [owner: string, repo: string] {
       break
     }
 
-    if ($tags | length) < 100 {
+    if ($releases | length) < 100 {
       break
     }
 
@@ -356,7 +358,7 @@ def github-latest-stable-tag [owner: string, repo: string] {
   }
 
   if ($matched | is-empty) {
-    fail $"No stable tag found for ($owner)/($repo)"
+    fail $"No stable release found for ($owner)/($repo)"
   }
 
   $matched
@@ -436,8 +438,8 @@ def connect-or-timeout [url: string] {
     } catch {|err|
       # If it's an HTTP error (not a timeout/connection error), the server
       # is reachable — proceed with the download.
-      let msg = ($err.msg | str downcase)
-      if not (($msg | str contains "timeout") or ($msg | str contains "timed out") or ($msg | str contains "connect")) {
+      let msg = $err.msg
+      if not (($msg | str contains --ignore-case "timeout") or ($msg | str contains --ignore-case "timed out") or ($msg | str contains --ignore-case "connect")) {
         print -n $"\r\e[K"
         return
       }
@@ -943,28 +945,50 @@ def update-pnpm [packages_dir: string, dry_run: bool] {
 
   mut updated = (replace-version $content $latest_version)
 
-  # pnpm 11.1+ dropped Intel macOS (x86_64-darwin / macos-x64)
-  let platform_entries = [
-    { key: "x86_64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-x64/-/linux-x64-($latest_version).tgz" }
-    { key: "aarch64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-arm64/-/linux-arm64-($latest_version).tgz" }
-    { key: "aarch64-darwin", url: $"https://registry.npmjs.org/@pnpm/macos-arm64/-/macos-arm64-($latest_version).tgz" }
-  ]
-  for entry in $platform_entries {
-    log-sub $"fetching ($entry.key)..."
-    let new_hash = (prefetch-sri $entry.url)
-    $updated = (replace-key-hash $updated $entry.key $new_hash)
-  }
+  let major = ($latest_version | split row "." | first | into int)
 
-  # Remove x86_64-darwin hash line if present (dropped in 11.1+)
-  $updated = ($updated | str replace --regex '\n.*?"x86_64-darwin".*?\n' '\n')
+  if $major >= 12 {
+    # pnpm 12+ (Rust rewrite) ships the native binary in per-platform
+    # `@pnpm/exe.<platform>-<arch>` packages and restored Intel macOS
+    # (x86_64-darwin).
+    let platform_entries = [
+      { key: "x86_64-linux", url: $"https://registry.npmjs.org/@pnpm/exe.linux-x64/-/exe.linux-x64-($latest_version).tgz" }
+      { key: "aarch64-linux", url: $"https://registry.npmjs.org/@pnpm/exe.linux-arm64/-/exe.linux-arm64-($latest_version).tgz" }
+      { key: "x86_64-darwin", url: $"https://registry.npmjs.org/@pnpm/exe.darwin-x64/-/exe.darwin-x64-($latest_version).tgz" }
+      { key: "aarch64-darwin", url: $"https://registry.npmjs.org/@pnpm/exe.darwin-arm64/-/exe.darwin-arm64-($latest_version).tgz" }
+    ]
+    for entry in $platform_entries {
+      log-sub $"fetching ($entry.key)..."
+      let new_hash = (prefetch-sri $entry.url)
+      $updated = (replace-key-hash $updated $entry.key $new_hash)
+    }
 
-  # Update exeHash if present (v11+)
-  let current_exe_hash = (parse-capture $updated 'exeHash = "([^"]+)"')
-  if not ($current_exe_hash | is-empty) {
-    log-sub "fetching exe..."
-    let exe_url = $"https://registry.npmjs.org/@pnpm/exe/-/exe-($latest_version).tgz"
-    let exe_hash = (prefetch-sri $exe_url)
-    $updated = ($updated | str replace $"exeHash = \"($current_exe_hash)\"" $"exeHash = \"($exe_hash)\"")
+    # v12+ no longer uses the separate @pnpm/exe wrapper tarball.
+    $updated = ($updated | str replace --regex '\n.*?exeHash.*?\n' '\n')
+  } else {
+    # pnpm 11.1+ dropped Intel macOS (x86_64-darwin / macos-x64)
+    let platform_entries = [
+      { key: "x86_64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-x64/-/linux-x64-($latest_version).tgz" }
+      { key: "aarch64-linux", url: $"https://registry.npmjs.org/@pnpm/linux-arm64/-/linux-arm64-($latest_version).tgz" }
+      { key: "aarch64-darwin", url: $"https://registry.npmjs.org/@pnpm/macos-arm64/-/macos-arm64-($latest_version).tgz" }
+    ]
+    for entry in $platform_entries {
+      log-sub $"fetching ($entry.key)..."
+      let new_hash = (prefetch-sri $entry.url)
+      $updated = (replace-key-hash $updated $entry.key $new_hash)
+    }
+
+    # Remove x86_64-darwin hash line if present (dropped in 11.1+)
+    $updated = ($updated | str replace --regex '\n.*?"x86_64-darwin".*?\n' '\n')
+
+    # Update exeHash if present (v11)
+    let current_exe_hash = (parse-capture $updated 'exeHash = "([^"]+)"')
+    if not ($current_exe_hash | is-empty) {
+      log-sub "fetching exe..."
+      let exe_url = $"https://registry.npmjs.org/@pnpm/exe/-/exe-($latest_version).tgz"
+      let exe_hash = (prefetch-sri $exe_url)
+      $updated = ($updated | str replace $"exeHash = \"($current_exe_hash)\"" $"exeHash = \"($exe_hash)\"")
+    }
   }
 
   $updated | save -f $file
@@ -1588,7 +1612,7 @@ def update-rolling-steam [packages_dir: string, dry_run: bool] {
 # These packages use binaries built by our CI and hosted in this repo.
 # Instead of updating hashes directly, we trigger the build-rust-prebuilt workflow.
 
-const PREBUILT_PACKAGES = ["ccase" "pina" "cargo-clean-all" "cargo-interactive-update" "keyring" "sbpf-linker"]
+const PREBUILT_PACKAGES = ["ccase" "pina" "cargo-clean-all" "cargo-interactive-update" "sbpf-linker"]
 
 def is-prebuilt-package [package: string] {
   $PREBUILT_PACKAGES | any {|p| $p == $package }
@@ -1722,11 +1746,6 @@ def update-prebuilt-cargo-interactive [packages_dir: string, dry_run: bool] {
   update-prebuilt-package $packages_dir "cargo-interactive-update" $latest_version "benjeau" "cargo-interactive-update" $dry_run
 }
 
-def update-prebuilt-keyring [packages_dir: string, dry_run: bool] {
-  let latest_version = (crates-io-latest-version "keyring")
-  update-prebuilt-package $packages_dir "keyring" $latest_version "open-source-cooperative" "keyring-rs" $dry_run
-}
-
 def update-prebuilt-sbpf-linker [packages_dir: string, dry_run: bool] {
   # sbpf-linker doesn't have GitHub releases, so we fetch version from Cargo.toml
   let file = $"($packages_dir)/sbpf-linker/package.nix"
@@ -1852,7 +1871,6 @@ def main [
     { name: "ironclaw", run: {|| update-ironclaw $packages_dir $dry_run } }
     { name: "kani", run: {|| update-kani $packages_dir $dry_run } }
     { name: "ccase", run: {|| update-prebuilt-ccase $packages_dir $dry_run } }
-    { name: "keyring", run: {|| update-prebuilt-keyring $packages_dir $dry_run } }
     { name: "knope", run: {|| update-knope $packages_dir $dry_run } }
     { name: "mdt", run: {|| update-mdt $packages_dir $dry_run } }
     { name: "monochange", run: {|| update-monochange $packages_dir $dry_run } }

@@ -20,6 +20,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: 🔧 install nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 set up nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
       - name: 🔍 detect changed packages
         id: changes
         run: |
@@ -49,33 +57,22 @@ jobs:
             fi
           fi
 
+          # Package lists are derived from the flake (ciPackages) so they can
+          # never drift from the real package set — hand-maintained lists
+          # silently rotted and disabled every build job.
+          LINUX_ALL=$(nix eval --json .#ciPackages.x86_64-linux | jq -c .)
+          MACOS_ALL=$(nix eval --json .#ciPackages.aarch64-darwin | jq -c .)
+
           if [ "$build_all" = "true" ]; then
-            LINUX_JSON=$(echo "$LINUX_PACKAGES" | tr ' ' '\n' | jq -R -s -c 'split("\n") | map(select(length > 0))')
-            MACOS_JSON=$(echo "$MACOS_PACKAGES" | tr ' ' '\n' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+            LINUX_JSON=$LINUX_ALL
+            MACOS_JSON=$MACOS_ALL
           else
-            CHANGED_PKGS=$(echo "$CHANGED_FILES" | grep '^packages/' | cut -d'/' -f2 | sort -u)
+            CHANGED_PKGS=$(echo "$CHANGED_FILES" | grep '^packages/' | cut -d'/' -f2 | sort -u || true)
 
-            LINUX_CHANGED=""
-            MACOS_CHANGED=""
-            for pkg in $CHANGED_PKGS; do
-              if echo "$LINUX_PACKAGES" | grep -qw "$pkg"; then
-                LINUX_CHANGED="$LINUX_CHANGED $pkg"
-              fi
-              if echo "$MACOS_PACKAGES" | grep -qw "$pkg"; then
-                MACOS_CHANGED="$MACOS_CHANGED $pkg"
-              fi
-            done
-
-            if [ -n "$LINUX_CHANGED" ]; then
-              LINUX_JSON=$(echo "$LINUX_CHANGED" | xargs -n1 | jq -R -s -c 'split("\n") | map(select(length > 0))')
-            else
-              LINUX_JSON="[]"
-            fi
-            if [ -n "$MACOS_CHANGED" ]; then
-              MACOS_JSON=$(echo "$MACOS_CHANGED" | xargs -n1 | jq -R -s -c 'split("\n") | map(select(length > 0))')
-            else
-              MACOS_JSON="[]"
-            fi
+            # Intersect changed packages with the flake-derived per-platform
+            # lists (aliases resolve to the same derivation as their target).
+            LINUX_JSON=$(comm -12 <(echo "$LINUX_ALL" | jq -r '.[]' | sort) <(echo "$CHANGED_PKGS" | sort) | jq -R -s -c 'split("\n") | map(select(length > 0))')
+            MACOS_JSON=$(comm -12 <(echo "$MACOS_ALL" | jq -r '.[]' | sort) <(echo "$CHANGED_PKGS" | sort) | jq -R -s -c 'split("\n") | map(select(length > 0))')
           fi
 
           echo "linux-packages=$LINUX_JSON" >> "$GITHUB_OUTPUT"
