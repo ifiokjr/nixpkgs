@@ -1,0 +1,6 @@
+#!/bin/sh
+command -v dprint >/dev/null 2>&1 || exit 0
+dprint check || {
+  echo "dprint check failed: run dprint fmt and commit before pushing." >&2
+  exit 1
+}

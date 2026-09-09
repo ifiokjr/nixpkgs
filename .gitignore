@@ -3,3 +3,4 @@ result-*
 .direnv/
 .devenv/
 .mdt/
+.video_agent/
