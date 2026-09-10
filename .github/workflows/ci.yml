@@ -41,20 +41,22 @@ jobs:
             BASE="${{ github.event.before }}"
           fi
 
-          # Build all on first push or if base is missing
+          # Build all only when there is no base to diff against (first push
+          # to main, workflow_dispatch). A flake.lock or ci.yml change must
+          # NOT force a full matrix: the update script runs `nix flake
+          # update` in every daily batch, so every update PR touches
+          # flake.lock and a full run of macOS jobs (10x minutes) exhausts
+          # the Actions plan. Unchanged packages are still exercised against
+          # a bumped nixpkgs incrementally by later package PRs, and a full
+          # validation run is available on demand via workflow_dispatch.
           if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
             build_all=true
-          fi
-
-          if [ "$build_all" = "false" ]; then
-            CHANGED_FILES=$(git diff --name-only "$BASE" HEAD)
-
-            # Build all if flake lock or CI config changed (flake.nix is excluded
-            # since it typically only changes to register new packages, which are
-            # already detected via the packages/ directory)
-            if echo "$CHANGED_FILES" | grep -qE '^(flake\.lock|\.github/workflows/ci\.yml)$'; then
-              build_all=true
-            fi
+            CHANGED_FILES=""
+          else
+            # Three-dot diff resolves the merge base, so a stale base.sha
+            # never drags unrelated commits merged into main meanwhile into
+            # the changed set.
+            CHANGED_FILES=$(git diff --name-only "$BASE...HEAD")
           fi
 
           # Package lists are derived from the flake (ciPackages) so they can
