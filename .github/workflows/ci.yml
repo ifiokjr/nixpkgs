@@ -291,3 +291,17 @@ jobs:
 
       - name: 🏗️ build ${{ matrix.package }}
         run: nix build .#${{ matrix.package }}
+
+  ci-status:
+    name: ci-status
+    needs: [detect-changes, validate, lint, test-update-script, build-linux, build-macos, downstream]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚦 aggregate results
+        run: |
+          failed=$(jq '[.[] | select(.result != "success" and .result != "skipped")] | length' <<< '${{ toJson(needs) }}')
+          if [ "$failed" -gt 0 ]; then
+            jq . <<< '${{ toJson(needs) }}'
+            exit 1
+          fi
