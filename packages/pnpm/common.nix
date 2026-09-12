@@ -195,6 +195,11 @@ stdenv.mkDerivation {
         cd "$WORK"
         $out/bin/pnpm init
         test -f package.json
+        # pnpm 12.4 writes `packageManager`/`devEngines.packageManager` into
+        # the generated package.json and then resolves that self-dependency
+        # from the registry on every later invocation inside the project, so
+        # leave it before running any more pnpm commands.
+        cd "$(mktemp -d)"
 
         ${
           if isV12Plus then
