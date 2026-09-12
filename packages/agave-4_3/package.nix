@@ -20,6 +20,11 @@ let
     "x86_64-apple-darwin" = "sha256-kukVyEz7bGVQrFL3w9rEU/vJe2JtA9llUOl4eeRPv8g=";
     "x86_64-unknown-linux-gnu" = "sha256-tkDhR7niKkKsOsEtBGn2kgbGqbUC7WbR5VXO04LZ4lg=";
   };
+  # Must match the platform-tools version pinned by this release's
+  # cargo-build-sbf (as reported by `cargo-build-sbf --version`). The wrapper
+  # installs the bundled SDK under ~/.cache/solana/<version>/ using the
+  # version the tool itself reports, so any mismatch leaves the expected
+  # cache directory stale and breaks the install check.
   platformToolsVersion = "v1.57";
 
   platformToolsHashes = {

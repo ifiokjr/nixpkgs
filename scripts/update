@@ -315,7 +315,80 @@ def github-latest-tag-with-prefix [owner: string, repo: string, prefix: string] 
   $matched
 }
 
-def github-latest-stable-tag [owner: string, repo: string] {
+# True when every named asset is present in the release's uploaded assets.
+def release-has-all-assets [release: record, required: list<string>] {
+  let names = ($release | get -o assets | default [] | each {|asset| $asset | get -o name | default "" })
+  $required | all {|asset| $asset in $names }
+}
+
+# Latest published release (drafts excluded, prereleases allowed) whose tag
+# starts with `prefix`, iterating release pages. A release only matches once
+# every entry of `required_assets` is uploaded — a tag can be published before
+# its artifacts exist, and downloading too early 404s.
+def github-latest-release-tag-with-prefix [
+  owner: string,
+  repo: string,
+  prefix: string,
+  required_assets: list<string>,
+] {
+  let headers = (github-headers)
+  mut page = 1
+  mut matched = ""
+
+  loop {
+    let page_num = $page
+    let releases = try {
+      if ($headers | is-empty) {
+        http get $"https://api.github.com/repos/($owner)/($repo)/releases?per_page=100&page=($page)"
+      } else {
+        http get -H $headers $"https://api.github.com/repos/($owner)/($repo)/releases?per_page=100&page=($page)"
+      }
+    } catch {
+      fail $"Failed to fetch releases for ($owner)/($repo) (page ($page_num))"
+    }
+
+    if ($releases | is-empty) {
+      break
+    }
+
+    let found = (
+      $releases
+      | where {|release|
+          let eligible = (not $release.draft) and ($release.tag_name | str starts-with $prefix)
+          $eligible and (release-has-all-assets $release $required_assets)
+        }
+      | get -o 0.tag_name
+      | default ""
+    )
+
+    if ($found | is-not-empty) {
+      $matched = $found
+      break
+    }
+
+    if ($releases | length) < 100 {
+      break
+    }
+
+    $page += 1
+  }
+
+  if ($matched | is-empty) {
+    fail $"No release with prefix \"($prefix)\" for ($owner)/($repo)"
+  }
+
+  $matched
+}
+
+# Latest stable release tag (published, not draft/prerelease, `v`-prefixed, no
+# hyphen), iterating release pages. With `required_assets` set, a release only
+# matches once all those files are uploaded — a tag can be published before its
+# artifacts finish uploading, and downloading too early 404s.
+def github-latest-stable-tag [
+  owner: string,
+  repo: string,
+  required_assets: list<string> = [],
+] {
   let headers = (github-headers)
   mut page = 1
   mut matched = ""
@@ -337,10 +410,14 @@ def github-latest-stable-tag [owner: string, repo: string] {
     }
 
     # Scan published releases (not git tags — a version tag can be pushed
-    # before its release and artifacts exist, as zed does).
+    # before its release and artifacts exist, as zed does). Keep paging until
+    # a release passes the stable filters and has every required asset.
     let found = (
       $releases
-      | where {|release| not $release.draft and not $release.prerelease and ($release.tag_name | str starts-with "v") and not ($release.tag_name | str contains "-") }
+      | where {|release|
+          let stable = (not $release.draft and not $release.prerelease and ($release.tag_name | str starts-with "v") and not ($release.tag_name | str contains "-"))
+          $stable and (release-has-all-assets $release $required_assets)
+        }
       | get -o 0.tag_name
       | default ""
     )
@@ -711,6 +788,19 @@ def update-rolling-single-hash [
 
 # Per-package update definitions
 
+# The platform tarballs every agave release must ship before the updater
+# accepts its version. The release goes out as soon as the tag is pushed while
+# the tarballs are still building on Buildkite, so a fresh release can be
+# missing assets for hours (v4.3.0-rc.1 initially shipped without the x86_64
+# macOS tarball).
+def agave-required-assets [] {
+  [
+    "solana-release-aarch64-apple-darwin.tar.bz2"
+    "solana-release-x86_64-apple-darwin.tar.bz2"
+    "solana-release-x86_64-unknown-linux-gnu.tar.bz2"
+  ]
+}
+
 def update-agave-package [packages_dir: string, package_name: string, latest_version: string, dry_run: bool] {
   let file = $"($packages_dir)/($package_name)/package.nix"
   let entries = [
@@ -760,7 +850,7 @@ def update-agave-platform-tools [file: string, dry_run: bool] {
 
 def update-agave-track [packages_dir: string, package_name: string, version_prefix: string, dry_run: bool] {
   let latest_version = (
-    github-latest-tag-with-prefix "anza-xyz" "agave" $"v($version_prefix)."
+    github-latest-release-tag-with-prefix "anza-xyz" "agave" $"v($version_prefix)." (agave-required-assets)
     | str replace --regex '^v' ''
   )
   update-agave-package $packages_dir $package_name $latest_version $dry_run
@@ -768,7 +858,7 @@ def update-agave-track [packages_dir: string, package_name: string, version_pref
 
 def update-agave-beta-track [packages_dir: string, package_name: string, version_prefix: string, dry_run: bool] {
   let latest_version = (
-    github-latest-tag-with-prefix "anza-xyz" "agave" $"v($version_prefix).0-beta."
+    github-latest-release-tag-with-prefix "anza-xyz" "agave" $"v($version_prefix).0-beta." (agave-required-assets)
     | str replace --regex '^v' ''
   )
   update-agave-package $packages_dir $package_name $latest_version $dry_run
@@ -783,7 +873,7 @@ def update-agave [packages_dir: string, dry_run: bool] {
     return false
   }
 
-  let latest_version = (github-latest-stable-tag "anza-xyz" "agave" | str replace --regex '^v' '')
+  let latest_version = (github-latest-stable-tag "anza-xyz" "agave" (agave-required-assets) | str replace --regex '^v' '')
   update-agave-package $packages_dir "agave" $latest_version $dry_run
 }
 
@@ -1692,7 +1782,14 @@ def update-zed-release [packages_dir: string, package_name: string, tag: string,
 }
 
 def update-zed [packages_dir: string, dry_run: bool] {
-  let tag = (github-latest-stable-tag "zed-industries" "zed")
+  # Zed uploads release assets gradually after publishing; only accept a tag
+  # once all four download targets exist or the fetches below would 404.
+  let tag = (github-latest-stable-tag "zed-industries" "zed" [
+    "Zed-aarch64.dmg"
+    "Zed-x86_64.dmg"
+    "zed-linux-aarch64.tar.gz"
+    "zed-linux-x86_64.tar.gz"
+  ])
   update-zed-release $packages_dir "zed" $tag $dry_run
 }
 
@@ -1926,7 +2023,14 @@ def main [
   print ""
   print-footer $updated $failed_count $skipped $failed_names
 
+  # Only exit 1 when failures meant nothing was applied — the workflow's commit
+  # step is gated on this exit code, so a failure must not discard updates that
+  # already landed. Dry-run never applies anything, so any failure there is
+  # still an error.
   if $failed_count > 0 {
-    exit 1
+    if $dry_run or $updated == 0 {
+      exit 1
+    }
+    print $"  ($YELLOW)($updated) update\(s\) landed despite ($failed_count) failure\(s\) — exiting 0 so they are committed.($RESET)"
   }
 }

@@ -8,6 +8,8 @@ on:
 permissions:
   contents: write
   actions: write
+  # lets magic-nix-cache authenticate to FlakeHub Cache via OIDC
+  id-token: write
 
 jobs:
   update:
@@ -24,23 +26,34 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-
       - name: 🔄 run update script
+        id: update
+        continue-on-error: true
         run: nix shell nixpkgs#nushell -c nu scripts/update
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 📝 regenerate readme blocks (mdt)
+        id: mdt
         run: nix run .#mdt -- update
 
       - name: 📦 commit and push changes
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if [ -n "$(git diff --name-only)" ]; then
+          if [ -n "$(git status --porcelain)" ]; then
             git add -A
             git commit -m "chore: update packages $(date -u +%Y-%m-%d)"
             git push
           else
             echo "No changes detected, skipping commit."
           fi
+
+      - name: 🚨 report update failures
+        if: steps.update.outcome == 'failure'
+        run: |
+          echo "The update script failed for one or more packages."
+          echo "Failed packages are listed in the '🔄 run update script' step log above."
+          echo "Successful updates have already been committed and pushed."
+          exit 1

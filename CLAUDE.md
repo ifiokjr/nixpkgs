@@ -27,6 +27,10 @@ Scope is optional. When used, it should be the package name (e.g., `feat(pnpm-st
 
 Always run `dprint fmt` before pushing to ensure all files are properly formatted. If `dprint fmt` makes changes, commit them before pushing.
 
+## Hooks
+
+Enable the pre-push formatting check once per clone with `git config core.hooksPath .githooks`. It is a no-op when dprint is not installed.
+
 ## Nushell
 
 The `scripts/update` script is written in nushell. When writing `$"..."` interpolated strings, remember that `(...)` inside them is always treated as interpolation. Use `\(` and `\)` to produce literal parentheses.

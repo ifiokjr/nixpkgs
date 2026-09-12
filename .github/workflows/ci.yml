@@ -7,10 +7,20 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# contents: read is the workflow-wide default. Each nix job additionally
+# requests id-token: write at job level (workflow-level is rejected by
+# zizmor as overly broad) so magic-nix-cache can mint the OIDC token
+# FlakeHub Cache authentication requires.
+permissions:
+  contents: read
+
 jobs:
   detect-changes:
     name: detect changed packages
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     outputs:
       linux-packages: ${{ steps.changes.outputs.linux-packages }}
       macos-packages: ${{ steps.changes.outputs.macos-packages }}
@@ -27,7 +37,6 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-
       - name: 🔍 detect changed packages
         id: changes
         run: |
@@ -85,6 +94,9 @@ jobs:
   validate:
     name: validate flake
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: 📥 checkout repository
         uses: actions/checkout@v4
@@ -96,13 +108,15 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-
       - name: 🔍 validate flake
         run: nix flake show
 
   lint:
     name: lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: 📥 checkout repository
         uses: actions/checkout@v4
@@ -114,7 +128,6 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-
       - name: 🔍 lint
         run: nix shell nixpkgs#dprint nixpkgs#nixfmt-rfc-style nixpkgs#shfmt -c dprint check
 
@@ -127,6 +140,9 @@ jobs:
   test-update-script:
     name: "test update script (${{ matrix.os }})"
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -142,7 +158,6 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-
       - name: 🧪 run update dry-run
         run: |
           if [ "${{ runner.os }}" = "macOS" ]; then
@@ -164,8 +179,14 @@ jobs:
     needs: [detect-changes, validate, test-update-script]
     if: needs.detect-changes.outputs.linux-packages != '[]'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
+      # max-parallel caps concurrency to avoid GitHub API rate-limit
+      # exhaustion through the magic-nix-cache proxy
+      max-parallel: 20
       matrix:
         package: ${{ fromJson(needs.detect-changes.outputs.linux-packages) }}
     steps:
@@ -179,7 +200,6 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-
       - name: 🏗️ build ${{ matrix.package }}
         run: nix build .#${{ matrix.package }}
 
@@ -188,6 +208,9 @@ jobs:
     needs: [detect-changes, validate, test-update-script]
     if: contains(needs.detect-changes.outputs.linux-packages, 'pnpm') || contains(needs.detect-changes.outputs.macos-packages, 'pnpm') || github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -206,7 +229,6 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-
       - name: 📥 checkout downstream ${{ matrix.project }}
         uses: actions/checkout@v4
         with:
@@ -273,8 +295,14 @@ jobs:
     needs: [detect-changes, validate, test-update-script]
     if: needs.detect-changes.outputs.macos-packages != '[]'
     runs-on: macos-latest
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
+      # max-parallel caps concurrency to avoid GitHub API rate-limit
+      # exhaustion through the magic-nix-cache proxy
+      max-parallel: 20
       matrix:
         package: ${{ fromJson(needs.detect-changes.outputs.macos-packages) }}
     steps:
@@ -288,7 +316,6 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-
       - name: 🏗️ build ${{ matrix.package }}
         run: nix build .#${{ matrix.package }}
 
