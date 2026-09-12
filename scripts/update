@@ -321,6 +321,65 @@ def release-has-all-assets [release: record, required: list<string>] {
   $required | all {|asset| $asset in $names }
 }
 
+# Latest published release (drafts excluded, prereleases allowed) whose tag
+# starts with `prefix`, iterating release pages. A release only matches once
+# every entry of `required_assets` is uploaded — a tag can be published before
+# its artifacts exist, and downloading too early 404s.
+def github-latest-release-tag-with-prefix [
+  owner: string,
+  repo: string,
+  prefix: string,
+  required_assets: list<string>,
+] {
+  let headers = (github-headers)
+  mut page = 1
+  mut matched = ""
+
+  loop {
+    let page_num = $page
+    let releases = try {
+      if ($headers | is-empty) {
+        http get $"https://api.github.com/repos/($owner)/($repo)/releases?per_page=100&page=($page)"
+      } else {
+        http get -H $headers $"https://api.github.com/repos/($owner)/($repo)/releases?per_page=100&page=($page)"
+      }
+    } catch {
+      fail $"Failed to fetch releases for ($owner)/($repo) (page ($page_num))"
+    }
+
+    if ($releases | is-empty) {
+      break
+    }
+
+    let found = (
+      $releases
+      | where {|release|
+          let eligible = (not $release.draft) and ($release.tag_name | str starts-with $prefix)
+          $eligible and (release-has-all-assets $release $required_assets)
+        }
+      | get -o 0.tag_name
+      | default ""
+    )
+
+    if ($found | is-not-empty) {
+      $matched = $found
+      break
+    }
+
+    if ($releases | length) < 100 {
+      break
+    }
+
+    $page += 1
+  }
+
+  if ($matched | is-empty) {
+    fail $"No release with prefix \"($prefix)\" for ($owner)/($repo)"
+  }
+
+  $matched
+}
+
 # Latest stable release tag (published, not draft/prerelease, `v`-prefixed, no
 # hyphen), iterating release pages. With `required_assets` set, a release only
 # matches once all those files are uploaded — a tag can be published before its
@@ -729,6 +788,19 @@ def update-rolling-single-hash [
 
 # Per-package update definitions
 
+# The platform tarballs every agave release must ship before the updater
+# accepts its version. The release goes out as soon as the tag is pushed while
+# the tarballs are still building on Buildkite, so a fresh release can be
+# missing assets for hours (v4.3.0-rc.1 initially shipped without the x86_64
+# macOS tarball).
+def agave-required-assets [] {
+  [
+    "solana-release-aarch64-apple-darwin.tar.bz2"
+    "solana-release-x86_64-apple-darwin.tar.bz2"
+    "solana-release-x86_64-unknown-linux-gnu.tar.bz2"
+  ]
+}
+
 def update-agave-package [packages_dir: string, package_name: string, latest_version: string, dry_run: bool] {
   let file = $"($packages_dir)/($package_name)/package.nix"
   let entries = [
@@ -778,7 +850,7 @@ def update-agave-platform-tools [file: string, dry_run: bool] {
 
 def update-agave-track [packages_dir: string, package_name: string, version_prefix: string, dry_run: bool] {
   let latest_version = (
-    github-latest-tag-with-prefix "anza-xyz" "agave" $"v($version_prefix)."
+    github-latest-release-tag-with-prefix "anza-xyz" "agave" $"v($version_prefix)." (agave-required-assets)
     | str replace --regex '^v' ''
   )
   update-agave-package $packages_dir $package_name $latest_version $dry_run
@@ -786,7 +858,7 @@ def update-agave-track [packages_dir: string, package_name: string, version_pref
 
 def update-agave-beta-track [packages_dir: string, package_name: string, version_prefix: string, dry_run: bool] {
   let latest_version = (
-    github-latest-tag-with-prefix "anza-xyz" "agave" $"v($version_prefix).0-beta."
+    github-latest-release-tag-with-prefix "anza-xyz" "agave" $"v($version_prefix).0-beta." (agave-required-assets)
     | str replace --regex '^v' ''
   )
   update-agave-package $packages_dir $package_name $latest_version $dry_run
@@ -801,7 +873,7 @@ def update-agave [packages_dir: string, dry_run: bool] {
     return false
   }
 
-  let latest_version = (github-latest-stable-tag "anza-xyz" "agave" | str replace --regex '^v' '')
+  let latest_version = (github-latest-stable-tag "anza-xyz" "agave" (agave-required-assets) | str replace --regex '^v' '')
   update-agave-package $packages_dir "agave" $latest_version $dry_run
 }
 
