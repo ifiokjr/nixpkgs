@@ -29,7 +29,7 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 | `pina`                                                                                                       | linux, macOS           | Solana smart contract framework CLI                                  |
 | `pnpm`, `pnpm-11`, `pnpm-10`, `pnpm-standalone`                                                              | linux, macOS           | Standalone pnpm tracks and compatibility alias                       |
 | `racket-minimal`                                                                                             | linux, macOS           | Minimal Racket distribution                                          |
-| `sbpf-linker`                                                                                                | macOS                  | SBPF linker                                                          |
+| `sbpf-linker`                                                                                                | linux, macOS           | SBPF linker (upstream release binaries)                              |
 | `monosecret`                                                                                                 | linux, macOS           | Declarative secrets CLI                                              |
 | `serverpod`, `serverpod-cli`, `serverpod_cli`, `serverpod_cli-3`, `serverpod_cli-4`                          | linux, macOS           | Serverpod command-line tools (3.x default; 4.x beta track)           |
 | `solana-verify`                                                                                              | linux x64, macOS arm64 | Verifiable Solana builds                                             |

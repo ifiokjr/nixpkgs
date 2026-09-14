@@ -18,13 +18,13 @@ Switched packages with existing upstream releases:
 
 ### Packages Without Pre-built Binaries
 
-| Package                      | Repo                             | Current Version | Notes                               |
-| ---------------------------- | -------------------------------- | --------------- | ----------------------------------- |
-| **dylint**                   | trailofbits/dylint               | 5.0.0           | Builds cargo-dylint and dylint-link |
-| **pina**                     | pina-rs/pina                     | 0.8.0           | Solana smart contract CLI           |
-| **cargo-clean-all**          | dnlmlr/cargo-clean-all           | 0.6.4           | Cargo utility                       |
-| **cargo-interactive-update** | benjeau/cargo-interactive-update | 0.6.2           | Cargo utility                       |
-| **sbpf-linker**              | blueshift-gg/sbpf-linker         | 0.1.8           | Needs LLVM 22, custom features      |
+| Package                      | Repo                             | Current Version | Notes                                    |
+| ---------------------------- | -------------------------------- | --------------- | ---------------------------------------- |
+| **dylint**                   | trailofbits/dylint               | 5.0.0           | Builds cargo-dylint and dylint-link      |
+| **pina**                     | pina-rs/pina                     | 0.8.0           | Solana smart contract CLI                |
+| **cargo-clean-all**          | dnlmlr/cargo-clean-all           | 0.6.4           | Cargo utility                            |
+| **cargo-interactive-update** | benjeau/cargo-interactive-update | 0.6.2           | Cargo utility                            |
+| **sbpf-linker**              | blueshift-gg/sbpf-linker         | 0.2.1           | Superseded by upstream prebuilt releases |
 
 ### Implementation
 
@@ -169,9 +169,8 @@ stdenv.mkDerivation {
 
 #### sbpf-linker
 
-- Needs LLVM 22
-- Build with `--features upstream-gallery-22 --no-default-features`
-- May need special handling for LLVM paths
+- Originally built here with LLVM 22 (`--features upstream-gallery-22 --no-default-features`)
+- No longer needed: upstream v0.2.1 ships release binaries that statically link LLVM 23
 
 ### Future Improvements
 
