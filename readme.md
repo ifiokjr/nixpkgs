@@ -23,6 +23,11 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [cargo-interactive-update](#cargo-interactive-update)                                                | <!-- {~v_cargo_interactive_update:"{{ v.cargo_interactive_update }}"} -->0.6.2<!-- {/v_cargo_interactive_update} --> | linux, macos               | A cargo extension to update direct dependencies interactively                    |
 | [codex-cli](#codex-cli)                                                                              | <!-- {~v_codex_cli:"{{ v.codex_cli }}"} -->0.154.0<!-- {/v_codex_cli} -->                                            | linux, macos               | OpenAI Codex CLI - AI coding assistant for the terminal                          |
 | [deno](#deno)                                                                                        | <!-- {~v_deno:"{{ v.deno }}"} -->2.9.6<!-- {/v_deno} -->                                                             | linux, macos               | A modern runtime for JavaScript and TypeScript (with SHA-256SUMS verification)   |
+| [devenv](#devenv)                                                                                    | <!-- {~v_devenv:"{{ v.devenv_2_3 }}"} -->2.3.1<!-- {/v_devenv} -->                                                   | linux, macos               | Declarative developer environments (latest stable)                               |
+| [devenv-2_0](#devenv)                                                                                | <!-- {~v_devenv_2_0:"{{ v.devenv_2_0 }}"} -->2.0.6<!-- {/v_devenv_2_0} -->                                           | linux, macos               | Devenv pinned to the latest 2.0.x release                                        |
+| [devenv-2_1](#devenv)                                                                                | <!-- {~v_devenv_2_1:"{{ v.devenv_2_1 }}"} -->2.1.2<!-- {/v_devenv_2_1} -->                                           | linux, macos               | Devenv pinned to the latest 2.1.x release                                        |
+| [devenv-2_2](#devenv)                                                                                | <!-- {~v_devenv_2_2:"{{ v.devenv_2_2 }}"} -->2.2.2<!-- {/v_devenv_2_2} -->                                           | linux, macos               | Devenv pinned to the latest 2.2.x release                                        |
+| [devenv-2_3](#devenv)                                                                                | <!-- {~v_devenv_2_3:"{{ v.devenv_2_3 }}"} -->2.3.1<!-- {/v_devenv_2_3} -->                                           | linux, macos               | Devenv pinned to the latest 2.3.x release                                        |
 | [flutter-launcher-icons](#flutter_launcher_icons), [flutter_launcher_icons](#flutter_launcher_icons) | <!-- {~v_flutter_launcher_icons:"{{ v.flutter_launcher_icons }}"} -->0.14.4<!-- {/v_flutter_launcher_icons} -->      | linux, macos               | Generate launcher icons for Flutter apps                                         |
 | [flutter-native-splash](#flutter_native_splash), [flutter_native_splash](#flutter_native_splash)     | <!-- {~v_flutter_native_splash:"{{ v.flutter_native_splash }}"} -->2.4.8<!-- {/v_flutter_native_splash} -->          | linux, macos               | Generate native splash screens for Flutter apps                                  |
 | [dylint](#dylint)                                                                                    | <!-- {~v_dylint:"{{ v.dylint }}"} -->6.0.4<!-- {/v_dylint} -->                                                       | linux, macos               | Dylint tools for running Rust lints and building Dylint libraries                |
@@ -328,6 +333,23 @@ A modern runtime for JavaScript and TypeScript. Installs the official pre-built 
 - **Source:** <https://github.com/denoland/deno>
 - **Homepage:** <https://deno.com/>
 
+### devenv
+
+Fast, declarative, reproducible, and composable developer environments. Built from source following the upstream nixpkgs recipe, with the cachix nix fork pinned per release (each track embeds the fork version its release expects). `devenv` tracks the latest stable release; the updater adds a pinned `devenv-2_x` track automatically each time a new minor series lands, so any older release stays installable as-is.
+
+- **Binary:** `devenv`
+- **Packages:** `devenv` (latest stable) plus auto-managed `devenv-2_x` tracks
+- **License:** Apache-2.0
+- **Source:** <https://github.com/cachix/devenv>
+- **Homepage:** <https://devenv.sh/>
+
+Examples:
+
+```bash
+nix run github:ifiokjr/nixpkgs#devenv -- version
+nix run github:ifiokjr/nixpkgs#devenv-2_2 -- version
+```
+
 ### dylint
 
 Dylint tools for running Rust lints and building Dylint libraries. Built from source using `rustPlatform.buildRustPackage`.
@@ -603,7 +625,7 @@ The script updates:
 - GitHub release packages (version + platform hashes, including `herdr`, `ironclaw`, `op`, `pnpm`, and `sbpf-linker`)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
 - Rolling URL packages (`steam`)
-- Rust packages built from source (`cargo-clean-all`, `cargo-interactive-update`, `dylint`, `knope`, `pina`, `monosecret`)
+- Rust packages built from source (`cargo-clean-all`, `cargo-interactive-update`, `devenv` tracks, `dylint`, `knope`, `pina`, `monosecret`)
 
 ### binary packages (pre-built)
 
