@@ -10,7 +10,6 @@ on:
         options:
           - cargo-clean-all
           - cargo-interactive-update
-          - sbpf-linker
           - keyring
           - ccase
       version:
@@ -61,14 +60,6 @@ jobs:
               echo "bin=cargo-interactive-update" >> "$GITHUB_OUTPUT"
               echo "ref=${VERSION}" >> "$GITHUB_OUTPUT"
               ;;
-            sbpf-linker)
-              echo "repo=blueshift-gg/sbpf-linker" >> "$GITHUB_OUTPUT"
-              echo "bin=sbpf-linker" >> "$GITHUB_OUTPUT"
-              echo "ref=06b4e60fba2960f6ec6c433659a88931da934546" >> "$GITHUB_OUTPUT"
-              echo "features=upstream-gallery-22" >> "$GITHUB_OUTPUT"
-              echo "no-default-features=true" >> "$GITHUB_OUTPUT"
-              echo "locked=false" >> "$GITHUB_OUTPUT"
-              ;;
             keyring)
               echo "repo=open-source-cooperative/keyring-rs" >> "$GITHUB_OUTPUT"
               echo "bin=keyring" >> "$GITHUB_OUTPUT"
@@ -116,23 +107,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y pkg-config libdbus-1-dev
-
-      - name: Install LLVM (sbpf-linker)
-        if: inputs.package == 'sbpf-linker'
-        run: |
-          if [ "${{ runner.os }}" = "Linux" ]; then
-            sudo apt-get update
-            sudo apt-get install -y software-properties-common wget
-            # Add LLVM apt repository for LLVM 22
-            wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
-            sudo add-apt-repository -y "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-22 main"
-            sudo apt-get update
-            sudo apt-get install -y llvm-22-dev clang-22
-            echo "LLVM_PREFIX=/usr/lib/llvm-22" >> "$GITHUB_ENV"
-          elif [ "${{ runner.os }}" = "macOS" ]; then
-            brew install llvm@22
-            echo "LLVM_PREFIX=$(brew --prefix llvm@22)" >> "$GITHUB_ENV"
-          fi
 
       - name: Build binary
         uses: taiki-e/upload-rust-binary-action@v1

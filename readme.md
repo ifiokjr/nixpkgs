@@ -45,7 +45,7 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [pnpm-11](#pnpm)                                                                                     | <!-- {~v_pnpm_11:"{{ v.pnpm_11 }}"} -->11.26.0<!-- {/v_pnpm_11} -->                                                  | linux, macos               | Standalone pnpm pinned to the latest v11 release track                           |
 | [pnpm-standalone](#pnpm)                                                                             | <!-- {~v_pnpm_standalone:"{{ v.pnpm_standalone }}"} --><!-- {/v_pnpm_standalone} -->                                 | linux, macos               | Fast, disk-space efficient package manager (no Node.js dependency)               |
 | [racket-minimal](#racket-minimal)                                                                    | <!-- {~v_racket_minimal:"{{ v.racket_minimal }}"} -->9.3<!-- {/v_racket_minimal} -->                                 | linux, macos               | Racket programming language (minimal distribution, pre-built)                    |
-| [sbpf-linker](#sbpf-linker)                                                                          | <!-- {~v_sbpf_linker:"{{ v.sbpf_linker }}"} -->0.1.6<!-- {/v_sbpf_linker} -->                                        | macos                      | Upstream BPF linker for SBPF V0 programs                                         |
+| [sbpf-linker](#sbpf-linker)                                                                          | <!-- {~v_sbpf_linker:"{{ v.sbpf_linker }}"} -->0.2.1<!-- {/v_sbpf_linker} -->                                        | linux, macos               | Upstream BPF linker for SBPF V0/V3 programs                                      |
 | [monosecret](#monosecret)                                                                            | <!-- {~v_monosecret:"{{ v.monosecret }}"} -->0.3.5<!-- {/v_monosecret} -->                                           | linux, macos               | Declarative secrets, every environment, any provider                             |
 | [solana](#agave)                                                                                     | <!-- {~v_solana:"{{ v.agave_4_2 }}"} -->4.2.2<!-- {/v_solana} -->                                                    | linux (x64), macos         | Alias for agave-4_2 (Solana validator client and CLI for mainnet)                |
 | [solana-verify](#solana-verify)                                                                      | <!-- {~v_solana_verify:"{{ v.solana_verify }}"} -->0.5.1<!-- {/v_solana_verify} -->                                  | linux (x64), macos (arm64) | CLI tool for building verifiable Solana programs                                 |
@@ -513,7 +513,7 @@ Minimal Racket distribution using official pre-built binaries. The upstream `rac
 
 ### sbpf-linker
 
-Upstream BPF linker for SBPF V0 programs. Built from source using `rustPlatform.buildRustPackage` with LLVM 22.
+Upstream BPF linker for SBPF V0/V3 programs. Installs the upstream release binary, which statically links LLVM 23 and needs no runtime LLVM installation.
 
 - **Binary:** `sbpf-linker`
 - **License:** MIT
@@ -580,10 +580,10 @@ Run the repo updater to check every package for new upstream releases and refres
 
 The script updates:
 
-- GitHub release packages (version + platform hashes, including `herdr`, `ironclaw`, `op`, and `pnpm`)
+- GitHub release packages (version + platform hashes, including `herdr`, `ironclaw`, `op`, `pnpm`, and `sbpf-linker`)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
 - Rolling URL packages (`steam`)
-- Rust packages built from source (`cargo-clean-all`, `cargo-interactive-update`, `dylint`, `knope`, `pina`, `sbpf-linker`, `monosecret`)
+- Rust packages built from source (`cargo-clean-all`, `cargo-interactive-update`, `dylint`, `knope`, `pina`, `monosecret`)
 
 ### binary packages (pre-built)
 

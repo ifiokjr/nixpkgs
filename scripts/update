@@ -3,10 +3,10 @@
 #
 # The script covers:
 # - Flake inputs (nix flake update → flake.lock)
-# - Versioned GitHub release packages (agave, codex-cli, deno, godot, kani, mdt, monochange, ollama, solana-verify, surfpool, zed, etc.)
+# - Versioned GitHub release packages (agave, codex-cli, deno, godot, kani, mdt, monochange, ollama, sbpf-linker, solana-verify, surfpool, zed, etc.)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (steam)
-# - Rust packages built from source (cargo-clean-all, cargo-interactive-update, dylint, knope, pina, sbpf-linker)
+# - Rust packages built from source (cargo-clean-all, cargo-interactive-update, dylint, knope, pina)
 
 # ANSI helpers
 
@@ -1610,8 +1610,6 @@ def update-rust-pina [repo_root: string, packages_dir: string, dry_run: bool] {
   true
 }
 
-# Note: update-prebuilt-sbpf-linker below handles sbpf-linker (uses curl to fetch Cargo.toml)
-
 def update-monosecret [repo_root: string, dry_run: bool] {
   let owner = "ifiokjr"
   let repo = "monosecret"
@@ -1702,7 +1700,7 @@ def update-rolling-steam [packages_dir: string, dry_run: bool] {
 # These packages use binaries built by our CI and hosted in this repo.
 # Instead of updating hashes directly, we trigger the build-rust-prebuilt workflow.
 
-const PREBUILT_PACKAGES = ["ccase" "pina" "cargo-clean-all" "cargo-interactive-update" "sbpf-linker"]
+const PREBUILT_PACKAGES = ["ccase" "pina" "cargo-clean-all" "cargo-interactive-update"]
 
 def is-prebuilt-package [package: string] {
   $PREBUILT_PACKAGES | any {|p| $p == $package }
@@ -1843,28 +1841,17 @@ def update-prebuilt-cargo-interactive [packages_dir: string, dry_run: bool] {
   update-prebuilt-package $packages_dir "cargo-interactive-update" $latest_version "benjeau" "cargo-interactive-update" $dry_run
 }
 
-def update-prebuilt-sbpf-linker [packages_dir: string, dry_run: bool] {
-  # sbpf-linker doesn't have GitHub releases, so we fetch version from Cargo.toml
+def update-sbpf-linker [packages_dir: string, dry_run: bool] {
+  let latest_version = (github-latest-tag "blueshift-gg" "sbpf-linker" | str replace --regex '^v' '')
   let file = $"($packages_dir)/sbpf-linker/package.nix"
-  let content = (open $file --raw)
-  let current_version = (parse-capture $content 'version = "([^"]+)"')
-  let branch = "master"
-  let manifest = (try {
-    ^curl -fsSL "https://raw.githubusercontent.com/blueshift-gg/sbpf-linker/($branch)/Cargo.toml" | str trim
-  } catch {
-    ""
-  })
-  let latest_version = (if ($manifest | is-not-empty) {
-    parse-capture $manifest 'version = "([^"]+)"'
-  } else {
-    ""
-  })
-  if ($latest_version | is-empty) {
-    # If we can't determine the version, use current version as fallback
-    log-ok "sbpf-linker" $"up to date \(v($current_version)\)"
-    return false
-  }
-  update-prebuilt-package $packages_dir "sbpf-linker" $latest_version "blueshift-gg" "sbpf-linker" $dry_run
+  let base = $"https://github.com/blueshift-gg/sbpf-linker/releases/download/v($latest_version)"
+  let entries = [
+    { key: "aarch64-apple-darwin", url: $"($base)/sbpf-linker-aarch64-apple-darwin.tar.gz" }
+    { key: "x86_64-apple-darwin", url: $"($base)/sbpf-linker-x86_64-apple-darwin.tar.gz" }
+    { key: "aarch64-unknown-linux-musl", url: $"($base)/sbpf-linker-aarch64-unknown-linux-musl.tar.gz" }
+    { key: "x86_64-unknown-linux-musl", url: $"($base)/sbpf-linker-x86_64-unknown-linux-musl.tar.gz" }
+  ]
+  update-versioned-keyed-hashes "sbpf-linker" $file $latest_version $entries $dry_run
 }
 
 def update-prebuilt-ccase [packages_dir: string, dry_run: bool] {
@@ -1980,7 +1967,7 @@ def main [
     { name: "pnpm-11", run: {|| update-pnpm-11 $packages_dir $dry_run } }
     { name: "monosecret", run: {|| update-monosecret $root $dry_run } }
     { name: "racket-minimal", run: {|| update-racket $packages_dir $dry_run } }
-    { name: "sbpf-linker", run: {|| update-prebuilt-sbpf-linker $packages_dir $dry_run } }
+    { name: "sbpf-linker", run: {|| update-sbpf-linker $packages_dir $dry_run } }
     { name: "solana-verify", run: {|| update-solana-verify $packages_dir $dry_run } }
     { name: "serverpod_cli-3", run: {|| update-serverpod-cli-3 $packages_dir $dry_run } }
     { name: "serverpod_cli-4", run: {|| update-serverpod-cli-4 $packages_dir $dry_run } }
