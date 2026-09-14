@@ -6,13 +6,13 @@
 
 buildDartApplication (finalAttrs: {
   pname = "melos";
-  version = "7.8.0";
+  version = "8.7.0";
 
   src = fetchFromGitHub {
     owner = "invertase";
     repo = "melos";
     tag = "melos-v${finalAttrs.version}";
-    hash = "sha256-PMyfENZSczws3MyYzOGd2QXFx+5p/2yyRRFGcbEtIrw=";
+    hash = "sha256-gNWhteR6TdRmnYp2JyQPrWE/wymNnfMMdI9TVBrJ2oU=";
   };
 
   patches = [
@@ -23,7 +23,8 @@ buildDartApplication (finalAttrs: {
 
   preBuild = ''
     substituteInPlace packages/melos/bin/melos.dart \
-      --replace-fail '@out@' "$out"
+      --replace-fail '@out@' "$out" \
+      --replace-fail '@version@' '${finalAttrs.version}'
     substituteInPlace packages/melos/lib/src/common/utils.dart \
       --replace-fail "final melosPackageFileUri = await Isolate.resolvePackageUri(melosPackageUri);" "return \"$out\";"
     substituteInPlace packages/melos/lib/src/common/utils.dart \

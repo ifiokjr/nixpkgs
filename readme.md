@@ -33,7 +33,10 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [kani](#kani)                                                                                        | <!-- {~v_kani:"{{ v.kani }}"} -->0.67.0<!-- {/v_kani} -->                                                            | linux, macos               | Bit-precise model checker for Rust                                               |
 | [knope](#knope)                                                                                      | <!-- {~v_knope:"{{ v.knope }}"} -->0.23.0<!-- {/v_knope} -->                                                         | linux, macos               | Automate common development tasks (changelogs, releases, versioning)             |
 | [mdt](#mdt)                                                                                          | <!-- {~v_mdt:"{{ v.mdt }}"} -->0.9.2<!-- {/v_mdt} -->                                                                | linux, macos               | Update markdown content anywhere using comments as template tags                 |
-| [melos](#melos), [melos-cli](#melos)                                                                 | <!-- {~v_melos:"{{ v.melos }}"} -->7.8.0<!-- {/v_melos} -->                                                          | linux, macos               | Manage Dart and Flutter monorepos with multiple packages                         |
+| [melos](#melos), [melos-cli](#melos)                                                                 | <!-- {~v_melos:"{{ v.melos_8 }}"} -->8.7.0<!-- {/v_melos} -->                                                        | linux, macos               | Manage Dart and Flutter monorepos (default = melos_8)                            |
+| [melos_6](#melos)                                                                                    | <!-- {~v_melos_6:"{{ v.melos_6 }}"} -->6.3.3<!-- {/v_melos_6} -->                                                    | linux, macos               | Melos pinned to the latest 6.x release                                           |
+| [melos_7](#melos)                                                                                    | <!-- {~v_melos_7:"{{ v.melos_7 }}"} -->7.8.2<!-- {/v_melos_7} -->                                                    | linux, macos               | Melos pinned to the latest 7.x release                                           |
+| [melos_8](#melos)                                                                                    | <!-- {~v_melos_8:"{{ v.melos_8 }}"} -->8.7.0<!-- {/v_melos_8} -->                                                    | linux, macos               | Melos pinned to the latest 8.x release                                           |
 | [monochange](#monochange)                                                                            | <!-- {~v_monochange:"{{ v.monochange }}"} -->0.13.0<!-- {/v_monochange} -->                                          | linux, macos               | Manage versions and releases for your multiplatform monorepo                     |
 | [nordvpn](#nordvpn)                                                                                  | <!-- {~v_nordvpn:"{{ v.nordvpn }}"} -->10.10.1<!-- {/v_nordvpn} -->                                                  | macos                      | NordVPN macOS client                                                             |
 | [ollama](#ollama)                                                                                    | <!-- {~v_ollama:"{{ v.ollama }}"} -->0.34.0<!-- {/v_ollama} -->                                                      | linux, macos               | Run local LLMs with Ollama via CLI and desktop app                               |
@@ -390,6 +393,23 @@ CLI tool that updates markdown content anywhere using comments as template tags.
 - **Binary:** `mdt`
 - **License:** Unlicense
 - **Source:** <https://github.com/ifiokjr/mdt>
+
+### melos
+
+Tool for managing Dart and Flutter monorepos with multiple packages. Bootstraps package workspaces, runs scripts across packages, and coordinates versioning and changelogs. Built from source using `buildDartApplication`. `melos` tracks the latest 8.x release, with `melos_8`, `melos_7`, and `melos_6` available as pinned major-version tracks.
+
+- **Binary:** `melos`
+- **Packages:** `melos` (default = `melos_8`, alias: `melos-cli`), `melos_8`, `melos_7`, `melos_6`
+- **License:** Apache-2.0
+- **Source:** <https://github.com/invertase/melos>
+- **Homepage:** <https://melos.invertase.dev/>
+
+Examples:
+
+```bash
+nix run github:ifiokjr/nixpkgs#melos -- --version
+nix run github:ifiokjr/nixpkgs#melos_7 -- --version
+```
 
 ### monochange
 

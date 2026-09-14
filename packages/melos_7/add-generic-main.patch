@@ -19,7 +19,7 @@ index 2476436..2801a4c 100644
 +    directory: Directory.current,
 +    globalInstallation: ExecutableInstallation(
 +      name: ExecutableName('melos'),
-+      version: '7.8.0',
++      version: '@version@',
 +      isSelf: true,
 +      isFromPath: false,
 +      requiresFlutter: false,

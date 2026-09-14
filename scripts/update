@@ -1327,6 +1327,106 @@ def update-serverpod-cli-4 [packages_dir: string, dry_run: bool] {
   update-serverpod-cli-track $packages_dir "serverpod_cli-4" $latest $dry_run
 }
 
+# pub.dev version helpers for `melos`. Builds from the `melos-v<version>` tag
+# on the invertase/melos GitHub monorepo matching the published version, so
+# pub.dev is the source of truth for what shipped.
+
+def pub-melos-versions [] {
+  http get "https://pub.dev/api/packages/melos" | get versions | get version
+}
+
+# Latest stable (non-prerelease) version with the given major prefix, e.g. "8.".
+# pub.dev lists versions in publish order, so the last match is the newest.
+def pub-melos-latest-stable-with-prefix [prefix: string] {
+  pub-melos-versions
+    | where {|v| ($v | str starts-with $prefix) and not ($v | str contains "-") }
+    | last
+}
+
+# Regenerate `pubspec.lock.json` for a Melos release by shallow-cloning the
+# `melos-v<version>` tag, detaching `packages/melos` from the pub workspace
+# (dropping `resolution: workspace` and any `dependency_overrides` so plain
+# `dart pub get` resolves the package standalone against pub.dev), running
+# `dart pub get`, and converting the resulting `pubspec.lock` to the JSON
+# shape `buildDartApplication` expects.
+def regenerate-melos-pubspec-lock [version: string, dest: string] {
+  let tmp = (^mktemp -d | str trim)
+  let repo = $"($tmp)/melos"
+  let cli_dir = $"($repo)/packages/melos"
+
+  log-sub $"cloning tag melos-v($version)..."
+  ^git clone --quiet --depth 1 --branch $"melos-v($version)" https://github.com/invertase/melos $repo
+
+  # `nix shell` provides `dart` and `yq`; run inside bash so nushell's cwd is
+  # untouched. Suppress `dart pub get` stdout (the "Changed N dependencies"
+  # line) so only the `yq` JSON reaches stdout.
+  let script = $"cd '($cli_dir)' && yq -i 'del\(.resolution, .dependency_overrides\)' pubspec.yaml && dart pub get 1>/dev/null && yq -o=json '.' pubspec.lock"
+  let res = (^nix shell nixpkgs#dart nixpkgs#yq-go --command bash -c $script | complete)
+
+  ^rm -rf $tmp
+
+  if $res.exit_code != 0 {
+    fail $"pubspec.lock regeneration failed for melos ($version): ($res.stderr | str trim)"
+  }
+  $res.stdout | save -f $dest
+}
+
+# Shared updater for the pinned Melos major tracks. Bumps the version + src
+# hash and regenerates `pubspec.lock.json` (only when a new version is
+# detected).
+def update-melos-track [
+  packages_dir: string,
+  package: string,
+  major_prefix: string,
+  dry_run: bool,
+] {
+  let file = $"($packages_dir)/($package)/package.nix"
+  if not ($file | path exists) {
+    fail $"missing file: ($file)"
+  }
+
+  let original = (open $file --raw)
+  let current_version = (parse-capture $original 'version = "([^"]+)"')
+  if ($current_version | is-empty) {
+    fail $"could not parse version for ($package)"
+  }
+
+  let latest_version = (pub-melos-latest-stable-with-prefix $major_prefix)
+
+  if $current_version == $latest_version {
+    log-ok $package $"up to date \(v($current_version)\)"
+    return false
+  }
+
+  log-update $package $"v($current_version) → v($latest_version)"
+  if $dry_run {
+    return true
+  }
+
+  log-sub "fetching source archive..."
+  let source_url = $"https://github.com/invertase/melos/archive/refs/tags/melos-v($latest_version).tar.gz"
+  let source_hash = (prefetch-sri-unpack $source_url)
+
+  regenerate-melos-pubspec-lock $latest_version $"($packages_dir)/($package)/pubspec.lock.json"
+
+  let updated = (set-src-hash (replace-version $original $latest_version) $source_hash)
+  $updated | save -f $file
+  log-ok $package "updated"
+  true
+}
+
+def update-melos-6 [packages_dir: string, dry_run: bool] {
+  update-melos-track $packages_dir "melos_6" "6." $dry_run
+}
+
+def update-melos-7 [packages_dir: string, dry_run: bool] {
+  update-melos-track $packages_dir "melos_7" "7." $dry_run
+}
+
+def update-melos-8 [packages_dir: string, dry_run: bool] {
+  update-melos-track $packages_dir "melos_8" "8." $dry_run
+}
+
 def update-op [packages_dir: string, dry_run: bool] {
   let rss = (try {
     http get --raw "https://releases.1password.com/developers/cli-beta/index.xml"
@@ -1957,6 +2057,9 @@ def main [
     { name: "ccase", run: {|| update-prebuilt-ccase $packages_dir $dry_run } }
     { name: "knope", run: {|| update-knope $packages_dir $dry_run } }
     { name: "mdt", run: {|| update-mdt $packages_dir $dry_run } }
+    { name: "melos_6", run: {|| update-melos-6 $packages_dir $dry_run } }
+    { name: "melos_7", run: {|| update-melos-7 $packages_dir $dry_run } }
+    { name: "melos_8", run: {|| update-melos-8 $packages_dir $dry_run } }
     { name: "monochange", run: {|| update-monochange $packages_dir $dry_run } }
     { name: "nordvpn", run: {|| update-nordvpn $packages_dir $dry_run } }
     { name: "ollama", run: {|| update-ollama $packages_dir $dry_run } }
