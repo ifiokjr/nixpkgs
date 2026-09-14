@@ -44,7 +44,10 @@
         knope = final.callPackage ./packages/knope/package.nix { };
         mdt = final.callPackage ./packages/mdt/package.nix { };
         melos-cli = melos;
-        melos = final.callPackage ./packages/melos/package.nix { };
+        melos = melos_8;
+        melos_6 = final.callPackage ./packages/melos_6/package.nix { };
+        melos_7 = final.callPackage ./packages/melos_7/package.nix { };
+        melos_8 = final.callPackage ./packages/melos_8/package.nix { };
         monochange = final.callPackage ./packages/monochange/package.nix { };
         nordvpn = final.callPackage ./packages/nordvpn/package.nix { };
         ollama = final.callPackage ./packages/ollama/package.nix { };
@@ -121,7 +124,10 @@
               knope = pkgs.callPackage ./packages/knope/package.nix { };
               mdt = pkgs.callPackage ./packages/mdt/package.nix { };
               melos-cli = melos;
-              melos = pkgs.callPackage ./packages/melos/package.nix { };
+              melos = melos_8;
+              melos_6 = pkgs.callPackage ./packages/melos_6/package.nix { };
+              melos_7 = pkgs.callPackage ./packages/melos_7/package.nix { };
+              melos_8 = pkgs.callPackage ./packages/melos_8/package.nix { };
               monochange = pkgs.callPackage ./packages/monochange/package.nix { };
               nordvpn = pkgs.callPackage ./packages/nordvpn/package.nix { };
               ollama = pkgs.callPackage ./packages/ollama/package.nix { };

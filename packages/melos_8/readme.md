@@ -8,15 +8,15 @@ Use it to bootstrap package workspaces, run scripts across packages, manage depe
 
 ```bash
 nix run github:ifiokjr/nixpkgs#melos -- --help
-# alias:
-nix run github:ifiokjr/nixpkgs#melos-cli -- --help
+# equivalent:
+nix run github:ifiokjr/nixpkgs#melos_8 -- --help
 ```
 
 The installed executable is `melos`.
 
 ## updates
 
-This package tracks the latest `melos` version published to Pub and builds from the matching `melos-v<version>` GitHub tag.
+This package tracks the latest 8.x `melos` version published to Pub and builds from the matching `melos-v<version>` GitHub tag. The `melos` flake output is an alias for this package.
 
 Run the repository updater from the repo root:
 
