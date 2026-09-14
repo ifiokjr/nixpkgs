@@ -32,6 +32,11 @@
         cargo-interactive-update = final.callPackage ./packages/cargo-interactive-update/package.nix { };
         codex-cli = final.callPackage ./packages/codex-cli/package.nix { };
         deno = final.callPackage ./packages/deno/package.nix { };
+        devenv = devenv-2_3;
+        devenv-2_0 = final.callPackage ./packages/devenv-2_0/package.nix { };
+        devenv-2_1 = final.callPackage ./packages/devenv-2_1/package.nix { };
+        devenv-2_2 = final.callPackage ./packages/devenv-2_2/package.nix { };
+        devenv-2_3 = final.callPackage ./packages/devenv-2_3/package.nix { };
         flutter-launcher-icons = flutter_launcher_icons;
         flutter-native-splash = flutter_native_splash;
         flutter_launcher_icons = final.callPackage ./packages/flutter_launcher_icons/package.nix { };
@@ -112,6 +117,11 @@
               cargo-interactive-update = pkgs.callPackage ./packages/cargo-interactive-update/package.nix { };
               codex-cli = pkgs.callPackage ./packages/codex-cli/package.nix { };
               deno = pkgs.callPackage ./packages/deno/package.nix { };
+              devenv = devenv-2_3;
+              devenv-2_0 = pkgs.callPackage ./packages/devenv-2_0/package.nix { };
+              devenv-2_1 = pkgs.callPackage ./packages/devenv-2_1/package.nix { };
+              devenv-2_2 = pkgs.callPackage ./packages/devenv-2_2/package.nix { };
+              devenv-2_3 = pkgs.callPackage ./packages/devenv-2_3/package.nix { };
               flutter-launcher-icons = flutter_launcher_icons;
               flutter-native-splash = flutter_native_splash;
               flutter_launcher_icons = pkgs.callPackage ./packages/flutter_launcher_icons/package.nix { };
