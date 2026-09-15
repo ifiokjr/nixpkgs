@@ -34,11 +34,11 @@
       "dependency": "direct main",
       "description": {
         "name": "archive",
-        "sha256": "ace891da0862b0e4cabbb064ee3fd87b2728b898949fdb366d83fe98342c9f19",
+        "sha256": "6c5bcd986e06b94e3c40244af471750840a3d2341d1f9763a1100a14add517b4",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.2.0"
+      "version": "4.3.0"
     },
     "args": {
       "dependency": "direct main",
@@ -164,11 +164,11 @@
       "dependency": "transitive",
       "description": {
         "name": "cli_util",
-        "sha256": "71e43f1976c3eae2d9468a5b4d6600bf8cae61508b87f27fa1799228935d48ab",
+        "sha256": "89b8801ba49f8b593fbf2d3e59efd0f566c46cd4ba6837ae2610c72b52a0f899",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "0.5.2"
+      "version": "0.6.0"
     },
     "clock": {
       "dependency": "transitive",
@@ -254,21 +254,21 @@
       "dependency": "direct main",
       "description": {
         "name": "dart_data_home",
-        "sha256": "2b310fd3eb8ca9e2e56a22ce2095d343ead75e9e65da69b847fc85d88746f18b",
+        "sha256": "61b80017c4131cd3d52e8e89ecba4208c2f625cb80307c8d468d23680bc572be",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "0.1.0"
+      "version": "0.1.1"
     },
     "dart_mappable": {
       "dependency": "transitive",
       "description": {
         "name": "dart_mappable",
-        "sha256": "960746478faaa68ed6b9d3c6fd03c87c7b8614e6c33e75fe1b0c6d7a60adcf29",
+        "sha256": "9515fee2997a47c22a7e55d7c38c63ff395688c0f8152a7b9bd2831b082a6d55",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.8.0"
+      "version": "4.10.0"
     },
     "dart_mcp": {
       "dependency": "direct main",
@@ -454,11 +454,11 @@
       "dependency": "transitive",
       "description": {
         "name": "image",
-        "sha256": "1976370a4df3091bb0f72409c187ad1f9132a818bc6b95ca59c0bae1c75c688e",
+        "sha256": "a1e7f4951e538a568e14b856702afc9ae1d2f4b202daced8d22c1b9cd211ce89",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.9.2"
+      "version": "4.10.1"
     },
     "intl": {
       "dependency": "direct main",
@@ -744,41 +744,41 @@
       "dependency": "transitive",
       "description": {
         "name": "serverpod_client",
-        "sha256": "420fdc4ce9172ea1bd8d0ecf7d3a638d2666cc885538abf11ccf5e8c6ba26220",
+        "sha256": "17030caa97e3956031b7708170b47c0c2a537ba0c3382eaee573b21d2444a172",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.0-rc.2"
+      "version": "4.0.0"
     },
     "serverpod_database": {
       "dependency": "direct main",
       "description": {
         "name": "serverpod_database",
-        "sha256": "f510994040addebc2c8b87817c824767579b533f5c3a9dddfb3dfe79b7e75a7e",
+        "sha256": "dc92b6a75ae7ede403bc64421aadc8865b20720fd3330e3f2da28fcfda4230f7",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.0-rc.2"
+      "version": "4.0.0"
     },
     "serverpod_embedded_postgres": {
       "dependency": "direct main",
       "description": {
         "name": "serverpod_embedded_postgres",
-        "sha256": "c5500d1c1294c89af3bb4a8a7b7c6aa8876dcffe67cbd7c4e79c883deeaeecdc",
+        "sha256": "1799c6c73b9610ae0a65529cd83f136d036736ab7bbf6d21cc50872710947a64",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.0-rc.2"
+      "version": "4.0.0"
     },
     "serverpod_lints": {
       "dependency": "direct dev",
       "description": {
         "name": "serverpod_lints",
-        "sha256": "d1b78bbbd3a5aa7ce999dd6f768d6fd63bc59fb9e5d20785a5006e7f275f9e2f",
+        "sha256": "942e142ba8d9cf45c2964b3f40a5da8d0f2eb4dc59eb1e222240bc82d7f4b6f6",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.0-rc.2"
+      "version": "4.0.0"
     },
     "serverpod_logging": {
       "dependency": "transitive",
@@ -804,31 +804,31 @@
       "dependency": "direct main",
       "description": {
         "name": "serverpod_serialization",
-        "sha256": "b170a4cb0f5c3b5a6de0b68302a5cc3feee260f18da1794821a95d0afa190ef3",
+        "sha256": "90c1d2899aae96ffa35a05a5764a86b5ab8002bca516b841fab5b2a37270060f",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.0-rc.2"
+      "version": "4.0.0"
     },
     "serverpod_service_client": {
       "dependency": "direct main",
       "description": {
         "name": "serverpod_service_client",
-        "sha256": "ba9b61d35b9806853d2f944d542dffb20921fc4faa1f5f2a3ee542f8960f3180",
+        "sha256": "f044e2ef301e97561707057b52a4304ca0c9a70fe3c1d67ae9ebd3e5839d210a",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.0-rc.2"
+      "version": "4.0.0"
     },
     "serverpod_shared": {
       "dependency": "direct main",
       "description": {
         "name": "serverpod_shared",
-        "sha256": "8f381f2093d1ea57093ebce996374c7f23d3d4dae00f41fe249bc1e6509ef7b9",
+        "sha256": "c44f29020cda8c2a51367354520b8d98afe266f6a83f18d5f38da07c082a78d0",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.0-rc.2"
+      "version": "4.0.0"
     },
     "serverpod_tui": {
       "dependency": "direct main",
@@ -934,11 +934,11 @@
       "dependency": "transitive",
       "description": {
         "name": "sqlite3_connection_pool",
-        "sha256": "dd1ec28bbe3b10401c34ee9482d808dd68c95a47c73d36ee908bce2168cf2eac",
+        "sha256": "b01024fd67922680e5512abf3201974dab2d98d0664d145ec741740b448fdc5f",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "0.2.10"
+      "version": "0.2.11"
     },
     "sqlite3_web": {
       "dependency": "transitive",
