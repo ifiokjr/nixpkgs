@@ -4,6 +4,7 @@
 # The script covers:
 # - Flake inputs (nix flake update → flake.lock)
 # - Versioned GitHub release packages (agave, codex-cli, deno, godot, kani, mdt, monochange, ollama, sbpf-linker, solana-verify, surfpool, zed, etc.)
+# - Versioned vendor-manifest packages (rive-cli)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (steam)
 # - Rust packages built from source (cargo-clean-all, cargo-interactive-update, devenv tracks — new minor tracks are added automatically, dylint, knope, pina)
@@ -2227,6 +2228,30 @@ def update-prebuilt-cargo-interactive [packages_dir: string, dry_run: bool] {
   update-prebuilt-package $packages_dir "cargo-interactive-update" $latest_version "benjeau" "cargo-interactive-update" $dry_run
 }
 
+def rive-latest-version [] {
+  let data = (try {
+    http get "https://releases.rive.app/cli/latest/manifest.json"
+  } catch {
+    fail "Failed to fetch the Rive CLI release manifest"
+  })
+  let version = ($data | get -o version | default "")
+  if ($version | is-empty) {
+    fail "Rive CLI manifest has no version field"
+  }
+  $version
+}
+
+def update-rive-cli [packages_dir: string, dry_run: bool] {
+  let latest_version = (rive-latest-version)
+  let file = $"($packages_dir)/rive-cli/package.nix"
+  let base = $"https://releases.rive.app/cli/v($latest_version)"
+  let entries = [
+    { key: "macos-arm64", url: $"($base)/rive-macos-arm64.tar.gz" }
+    { key: "linux-x64", url: $"($base)/rive-linux-x64.tar.gz" }
+  ]
+  update-versioned-keyed-hashes "rive-cli" $file $latest_version $entries $dry_run
+}
+
 def update-sbpf-linker [packages_dir: string, dry_run: bool] {
   let latest_version = (github-latest-tag "blueshift-gg" "sbpf-linker" | str replace --regex '^v' '')
   let file = $"($packages_dir)/sbpf-linker/package.nix"
@@ -2357,6 +2382,7 @@ def main [
     { name: "pnpm-11", run: {|| update-pnpm-11 $packages_dir $dry_run } }
     { name: "monosecret", run: {|| update-monosecret $root $dry_run } }
     { name: "racket-minimal", run: {|| update-racket $packages_dir $dry_run } }
+    { name: "rive-cli", run: {|| update-rive-cli $packages_dir $dry_run } }
     { name: "sbpf-linker", run: {|| update-sbpf-linker $packages_dir $dry_run } }
     { name: "solana-verify", run: {|| update-solana-verify $packages_dir $dry_run } }
     { name: "serverpod_cli-3", run: {|| update-serverpod-cli-3 $packages_dir $dry_run } }

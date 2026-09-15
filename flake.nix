@@ -67,6 +67,7 @@
         monosecret = final.callPackage ./packages/monosecret/package.nix { };
         pnpm-standalone = final.callPackage ./packages/pnpm-standalone/package.nix { inherit pnpm; };
         racket-minimal = final.callPackage ./packages/racket-minimal/package.nix { };
+        rive-cli = final.callPackage ./packages/rive-cli/package.nix { };
         sbpf-linker = final.callPackage ./packages/sbpf-linker/package.nix { };
         solana-verify = final.callPackage ./packages/solana-verify/package.nix { };
         serverpod = serverpod_cli-3;
@@ -152,6 +153,7 @@
               monosecret = pkgs.callPackage ./packages/monosecret/package.nix { };
               pnpm-standalone = pkgs.callPackage ./packages/pnpm-standalone/package.nix { inherit pnpm; };
               racket-minimal = pkgs.callPackage ./packages/racket-minimal/package.nix { };
+              rive-cli = pkgs.callPackage ./packages/rive-cli/package.nix { };
               sbpf-linker = pkgs.callPackage ./packages/sbpf-linker/package.nix { };
               solana-verify = pkgs.callPackage ./packages/solana-verify/package.nix { };
               serverpod = serverpod_cli-3;
