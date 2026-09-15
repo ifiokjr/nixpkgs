@@ -53,6 +53,7 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [pnpm-11](#pnpm)                                                                                     | <!-- {~v_pnpm_11:"{{ v.pnpm_11 }}"} -->11.26.0<!-- {/v_pnpm_11} -->                                                  | linux, macos               | Standalone pnpm pinned to the latest v11 release track                           |
 | [pnpm-standalone](#pnpm)                                                                             | <!-- {~v_pnpm_standalone:"{{ v.pnpm_standalone }}"} --><!-- {/v_pnpm_standalone} -->                                 | linux, macos               | Fast, disk-space efficient package manager (no Node.js dependency)               |
 | [racket-minimal](#racket-minimal)                                                                    | <!-- {~v_racket_minimal:"{{ v.racket_minimal }}"} -->9.3<!-- {/v_racket_minimal} -->                                 | linux, macos               | Racket programming language (minimal distribution, pre-built)                    |
+| [rive-cli](#rive-cli)                                                                                | <!-- {~v_rive_cli:"{{ v.rive_cli }}"} -->1.0.3<!-- {/v_rive_cli} -->                                                 | linux (x64), macos (arm64) | Build Rive animation projects from source (with offline docs and samples)        |
 | [sbpf-linker](#sbpf-linker)                                                                          | <!-- {~v_sbpf_linker:"{{ v.sbpf_linker }}"} -->0.2.1<!-- {/v_sbpf_linker} -->                                        | linux, macos               | Upstream BPF linker for SBPF V0/V3 programs                                      |
 | [monosecret](#monosecret)                                                                            | <!-- {~v_monosecret:"{{ v.monosecret }}"} -->0.3.5<!-- {/v_monosecret} -->                                           | linux, macos               | Declarative secrets, every environment, any provider                             |
 | [solana](#agave)                                                                                     | <!-- {~v_solana:"{{ v.agave_4_2 }}"} -->4.2.2<!-- {/v_solana} -->                                                    | linux (x64), macos         | Alias for agave-4_2 (Solana validator client and CLI for mainnet)                |
@@ -553,6 +554,22 @@ Minimal Racket distribution using official pre-built binaries. The upstream `rac
 - **License:** Apache-2.0, MIT
 - **Source:** <https://racket-lang.org/>
 
+### rive-cli
+
+The Rive CLI turns a directory of Luau scripts, WGSL shaders, RML markup, images, and fonts into a `.riv` runtime file and an editable `.rev`. Installs the vendor release tarball with its bundled documentation and sample projects, reachable offline through `rive docs` and `rive samples`.
+
+Upstream ships only a macOS Apple Silicon and a Linux x86_64 build. Signing in is required only for `--publish` and `--rev`; builds, tests, and documentation work signed out and offline. The macOS binary is signed with a JIT entitlement, so it is installed unstripped.
+
+```bash
+nix run github:ifiokjr/nixpkgs#rive-cli -- create myproject
+nix run github:ifiokjr/nixpkgs#rive-cli -- myproject --once
+nix run github:ifiokjr/nixpkgs#rive-cli -- docs
+```
+
+- **Binary:** `rive`
+- **License:** Proprietary (vendor binary, no published terms)
+- **Source:** <https://rive.app/docs/cli/getting-started>
+
 ### sbpf-linker
 
 Upstream BPF linker for SBPF V0/V3 programs. Installs the upstream release binary, which statically links LLVM 23 and needs no runtime LLVM installation.
@@ -623,6 +640,7 @@ Run the repo updater to check every package for new upstream releases and refres
 The script updates:
 
 - GitHub release packages (version + platform hashes, including `herdr`, `ironclaw`, `op`, `pnpm`, and `sbpf-linker`)
+- Vendor-manifest packages (`rive-cli`, read from `releases.rive.app/cli/latest/manifest.json`)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
 - Rolling URL packages (`steam`)
 - Rust packages built from source (`cargo-clean-all`, `cargo-interactive-update`, `devenv` tracks, `dylint`, `knope`, `pina`, `monosecret`)
