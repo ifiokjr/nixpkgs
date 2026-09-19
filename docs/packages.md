@@ -4,40 +4,43 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 
 ## catalog
 
-| Package                                                                                                      | Platforms              | Notes                                                                |
-| ------------------------------------------------------------------------------------------------------------ | ---------------------- | -------------------------------------------------------------------- |
-| `agave`, `solana`, `agave-4_0`, `agave-3_1`, `agave-3_0`, `agave-2_3`, `agave-2_2`, `agave-2_1`, `agave-2_0` | linux x64, macOS       | Agave/Solana validator client and CLI tracks                         |
-| `cargo-clean-all`                                                                                            | linux, macOS           | Recursively clean Cargo project targets                              |
-| `cargo-interactive-update`                                                                                   | linux, macOS           | Interactively update Cargo dependencies                              |
-| `codex-cli`                                                                                                  | linux, macOS           | OpenAI Codex CLI                                                     |
-| `flutter-launcher-icons`, `flutter_launcher_icons`, `flutter-native-splash`, `flutter_native_splash`         | linux, macOS           | Flutter asset generation CLIs                                        |
-| `deno`                                                                                                       | linux, macOS           | Deno runtime from pre-built releases (with SHA-256SUMS verification) |
-| `dylint`                                                                                                     | linux, macOS           | Rust lint tooling                                                    |
-| `godot`                                                                                                      | linux, macOS           | Godot editor/launcher from upstream binaries                         |
-| `gpg-suite`                                                                                                  | macOS                  | GPG Suite app bundle                                                 |
-| `herdr`                                                                                                      | linux, macOS           | Terminal agent multiplexer                                           |
-| `ironclaw`                                                                                                   | linux, macOS           | NEAR AI Agent OS                                                     |
-| `kani`                                                                                                       | linux, macOS           | Rust model checker                                                   |
-| `keyring`                                                                                                    | linux, macOS           | Rust Keyring CLI; repo-hosted prebuilts with source fallback         |
-| `knope`                                                                                                      | linux, macOS           | Release/changelog/version automation                                 |
-| `melos`, `melos-cli`                                                                                         | linux, macOS           | Dart and Flutter monorepo manager                                    |
-| `mdt`                                                                                                        | linux, macOS           | Markdown templating updater                                          |
-| `monochange`                                                                                                 | linux, macOS           | Monorepo version and release manager                                 |
-| `nordvpn`                                                                                                    | macOS                  | NordVPN client                                                       |
-| `ollama`                                                                                                     | linux, macOS           | Local LLM CLI/app                                                    |
-| `op`                                                                                                         | linux, macOS           | 1Password CLI beta channel                                           |
-| `pina`                                                                                                       | linux, macOS           | Solana smart contract framework CLI                                  |
-| `pnpm`, `pnpm-11`, `pnpm-10`, `pnpm-standalone`                                                              | linux, macOS           | Standalone pnpm tracks and compatibility alias                       |
-| `racket-minimal`                                                                                             | linux, macOS           | Minimal Racket distribution                                          |
-| `rive-cli`                                                                                                   | linux x64, macOS arm64 | Rive animation build tool with offline docs and samples              |
-| `sbpf-linker`                                                                                                | linux, macOS           | SBPF linker (upstream release binaries)                              |
-| `monosecret`                                                                                                 | linux, macOS           | Declarative secrets CLI                                              |
-| `serverpod`, `serverpod-cli`, `serverpod_cli`, `serverpod_cli-3`, `serverpod_cli-4`                          | linux, macOS           | Serverpod command-line tools (3.x default; 4.x beta track)           |
-| `solana-verify`                                                                                              | linux x64, macOS arm64 | Verifiable Solana builds                                             |
-| `steam`                                                                                                      | macOS                  | Steam app bundle                                                     |
-| `surfpool`                                                                                                   | linux x64, macOS       | Solana test-validator replacement                                    |
-| `wait-for-them`                                                                                              | linux x64, macOS x64   | TCP/HTTP readiness helper                                            |
-| `zoom`                                                                                                       | macOS                  | Zoom client                                                          |
+| Package                                                                                                                                             | Platforms              | Notes                                                                |
+| --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | -------------------------------------------------------------------- |
+| `agave`, `solana`, `agave-4_3`, `agave-4_2`, `agave-4_1`, `agave-4_0`, `agave-3_1`, `agave-3_0`, `agave-2_3`, `agave-2_2`, `agave-2_1`, `agave-2_0` | linux x64, macOS       | Agave/Solana validator client and CLI tracks                         |
+| `cargo-clean-all`                                                                                                                                   | linux, macOS           | Recursively clean Cargo project targets                              |
+| `cargo-interactive-update`                                                                                                                          | linux, macOS           | Interactively update Cargo dependencies                              |
+| `ccase`                                                                                                                                             | linux, macOS           | String case conversion CLI                                           |
+| `codex-cli`                                                                                                                                         | linux, macOS           | OpenAI Codex CLI                                                     |
+| `devenv`, `devenv-2_0`, `devenv-2_1`, `devenv-2_2`, `devenv-2_3`                                                                                    | linux, macOS           | Declarative developer environments; one package per minor track      |
+| `flutter-launcher-icons`, `flutter_launcher_icons`, `flutter-native-splash`, `flutter_native_splash`                                                | linux, macOS           | Flutter asset generation CLIs                                        |
+| `deno`                                                                                                                                              | linux, macOS           | Deno runtime from pre-built releases (with SHA-256SUMS verification) |
+| `dylint`                                                                                                                                            | linux, macOS           | Rust lint tooling                                                    |
+| `godot`                                                                                                                                             | linux, macOS           | Godot editor/launcher from upstream binaries                         |
+| `gpg-suite`                                                                                                                                         | macOS                  | GPG Suite app bundle                                                 |
+| `herdr`                                                                                                                                             | linux, macOS           | Terminal agent multiplexer                                           |
+| `ironclaw`                                                                                                                                          | linux, macOS           | NEAR AI Agent OS                                                     |
+| `kani`                                                                                                                                              | linux, macOS           | Rust model checker                                                   |
+| `knope`                                                                                                                                             | linux, macOS           | Release/changelog/version automation                                 |
+| `melos`, `melos-cli`, `melos_6`, `melos_7`, `melos_8`                                                                                               | linux, macOS           | Dart and Flutter monorepo manager                                    |
+| `mdt`                                                                                                                                               | linux, macOS           | Markdown templating updater                                          |
+| `monochange`                                                                                                                                        | linux, macOS           | Monorepo version and release manager                                 |
+| `nordvpn`                                                                                                                                           | macOS                  | NordVPN client                                                       |
+| `ollama`                                                                                                                                            | linux, macOS           | Local LLM CLI/app                                                    |
+| `op`                                                                                                                                                | linux, macOS           | 1Password CLI beta channel                                           |
+| `patrol`, `patrol-cli`, `patrol_cli`                                                                                                                | linux, macOS           | Flutter-native UI testing CLI                                        |
+| `pina`                                                                                                                                              | linux, macOS           | Solana smart contract framework CLI                                  |
+| `pnpm`, `pnpm-11`, `pnpm-10`, `pnpm-standalone`                                                                                                     | linux, macOS           | Standalone pnpm tracks and compatibility alias                       |
+| `racket-minimal`                                                                                                                                    | linux, macOS           | Minimal Racket distribution                                          |
+| `rive-cli`                                                                                                                                          | linux x64, macOS arm64 | Rive animation build tool with offline docs and samples              |
+| `sbpf-linker`                                                                                                                                       | linux, macOS           | SBPF linker (upstream release binaries)                              |
+| `monosecret`                                                                                                                                        | linux, macOS           | Declarative secrets CLI                                              |
+| `serverpod`, `serverpod-cli`, `serverpod_cli`, `serverpod_cli-3`, `serverpod_cli-4`                                                                 | linux, macOS           | Serverpod command-line tools (3.x default; 4.x beta track)           |
+| `solana-verify`                                                                                                                                     | linux x64, macOS arm64 | Verifiable Solana builds                                             |
+| `steam`                                                                                                                                             | macOS                  | Steam app bundle                                                     |
+| `surfpool`                                                                                                                                          | linux x64, macOS       | Solana test-validator replacement                                    |
+| `wait-for-them`                                                                                                                                     | linux x64, macOS x64   | TCP/HTTP readiness helper                                            |
+| `zed`, `zed-preview`                                                                                                                                | macOS                  | Zed code editor (stable and preview channels)                        |
+| `zoom`                                                                                                                                              | macOS                  | Zoom client                                                          |
 
 ## usage
 
@@ -58,7 +61,6 @@ in {
   environment.systemPackages = [
     extra.herdr
     extra.ironclaw
-    extra.keyring
     extra.op
     extra.pnpm
     extra.monosecret
