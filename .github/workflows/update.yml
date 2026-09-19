@@ -37,6 +37,14 @@ jobs:
         id: mdt
         run: nix run .#mdt -- update
 
+      # mdt rewrites the version cells in readme.md but does not re-pad the
+      # table columns, so a version whose length changes leaves the row
+      # misaligned (this is how the agave-4_3 row broke dprint). Pushes made
+      # with GITHUB_TOKEN do not trigger ci.yml, so nothing downstream would
+      # catch it; format here before committing.
+      - name: 🎨 format changed files (dprint)
+        run: nix shell nixpkgs#dprint nixpkgs#nixfmt-rfc-style nixpkgs#shfmt -c dprint fmt
+
       - name: 📦 commit and push changes
         if: always()
         run: |
