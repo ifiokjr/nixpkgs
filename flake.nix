@@ -49,6 +49,7 @@
         melos_7 = final.callPackage ./packages/melos_7/package.nix { };
         melos_8 = final.callPackage ./packages/melos_8/package.nix { };
         monochange = final.callPackage ./packages/monochange/package.nix { };
+        monostyle = final.callPackage ./packages/monostyle/package.nix { };
         nordvpn = final.callPackage ./packages/nordvpn/package.nix { };
         ollama = final.callPackage ./packages/ollama/package.nix { };
         op = final.callPackage ./packages/op/package.nix { };
@@ -130,6 +131,7 @@
               melos_7 = pkgs.callPackage ./packages/melos_7/package.nix { };
               melos_8 = pkgs.callPackage ./packages/melos_8/package.nix { };
               monochange = pkgs.callPackage ./packages/monochange/package.nix { };
+              monostyle = pkgs.callPackage ./packages/monostyle/package.nix { };
               nordvpn = pkgs.callPackage ./packages/nordvpn/package.nix { };
               ollama = pkgs.callPackage ./packages/ollama/package.nix { };
               op = pkgs.callPackage ./packages/op/package.nix { };
