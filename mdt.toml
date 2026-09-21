@@ -30,6 +30,7 @@ v = { command = "./scripts/versions", format = "json", watch = [
 	"packages/melos_8/package.nix",
 	"packages/monochange/package.nix",
 	"packages/monosecret/package.nix",
+	"packages/monostyle/package.nix",
 	"packages/nordvpn/package.nix",
 	"packages/ollama/package.nix",
 	"packages/op/package.nix",

@@ -1696,6 +1696,18 @@ def update-monochange [packages_dir: string, dry_run: bool] {
   update-versioned-keyed-hashes "monochange" $file $latest_version $entries $dry_run
 }
 
+def update-monostyle [packages_dir: string, dry_run: bool] {
+  let latest_version = (github-latest-tag "ifiokjr" "monostyle" | str replace --regex '^v' '')
+  let file = $"($packages_dir)/monostyle/package.nix"
+  let entries = [
+    { key: "aarch64-apple-darwin", url: $"https://github.com/ifiokjr/monostyle/releases/download/v($latest_version)/monostyle-aarch64-apple-darwin" }
+    { key: "x86_64-apple-darwin", url: $"https://github.com/ifiokjr/monostyle/releases/download/v($latest_version)/monostyle-x86_64-apple-darwin" }
+    { key: "aarch64-unknown-linux-musl", url: $"https://github.com/ifiokjr/monostyle/releases/download/v($latest_version)/monostyle-aarch64-unknown-linux-musl" }
+    { key: "x86_64-unknown-linux-musl", url: $"https://github.com/ifiokjr/monostyle/releases/download/v($latest_version)/monostyle-x86_64-unknown-linux-musl" }
+  ]
+  update-versioned-keyed-hashes "monostyle" $file $latest_version $entries $dry_run
+}
+
 def update-rust-pina [repo_root: string, packages_dir: string, dry_run: bool] {
   let tag = (try { github-latest-tag "pina-rs" "pina" } catch { "" })
   let latest_version = ($tag | str replace --regex '^v' '')
@@ -2086,6 +2098,7 @@ def main [
     { name: "melos_7", run: {|| update-melos-7 $packages_dir $dry_run } }
     { name: "melos_8", run: {|| update-melos-8 $packages_dir $dry_run } }
     { name: "monochange", run: {|| update-monochange $packages_dir $dry_run } }
+    { name: "monostyle", run: {|| update-monostyle $packages_dir $dry_run } }
     { name: "nordvpn", run: {|| update-nordvpn $packages_dir $dry_run } }
     { name: "ollama", run: {|| update-ollama $packages_dir $dry_run } }
     { name: "op", run: {|| update-op $packages_dir $dry_run } }

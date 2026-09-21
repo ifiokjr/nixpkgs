@@ -38,6 +38,7 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [melos_7](#melos)                                                                                    | <!-- {~v_melos_7:"{{ v.melos_7 }}"} -->7.8.2<!-- {/v_melos_7} -->                                                    | linux, macos               | Melos pinned to the latest 7.x release                                           |
 | [melos_8](#melos)                                                                                    | <!-- {~v_melos_8:"{{ v.melos_8 }}"} -->8.8.0<!-- {/v_melos_8} -->                                                    | linux, macos               | Melos pinned to the latest 8.x release                                           |
 | [monochange](#monochange)                                                                            | <!-- {~v_monochange:"{{ v.monochange }}"} -->0.14.0<!-- {/v_monochange} -->                                          | linux, macos               | Manage versions and releases for your multiplatform monorepo                     |
+| [monostyle](#monostyle)                                                                              | <!-- {~v_monostyle:"{{ v.monostyle }}"} -->0.1.0<!-- {/v_monostyle} -->                                              | linux, macos               | Score the complexity and readability of a codebase, a file, or a function        |
 | [nordvpn](#nordvpn)                                                                                  | <!-- {~v_nordvpn:"{{ v.nordvpn }}"} -->10.11.0<!-- {/v_nordvpn} -->                                                  | macos                      | NordVPN macOS client                                                             |
 | [ollama](#ollama)                                                                                    | <!-- {~v_ollama:"{{ v.ollama }}"} -->0.34.2<!-- {/v_ollama} -->                                                      | linux, macos               | Run local LLMs with Ollama via CLI and desktop app                               |
 | [op](#op)                                                                                            | <!-- {~v_op:"{{ v.op }}"} -->2.31.0-beta.01<!-- {/v_op} -->                                                          | linux, macos               | 1Password CLI beta channel with environment support                              |
@@ -69,6 +70,7 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 nix run github:ifiokjr/nixpkgs#knope
 nix run github:ifiokjr/nixpkgs#mdt
 nix run github:ifiokjr/nixpkgs#monochange
+nix run github:ifiokjr/nixpkgs#monostyle
 nix run github:ifiokjr/nixpkgs#pnpm-standalone
 nix run github:ifiokjr/nixpkgs#codex-cli
 nix run github:ifiokjr/nixpkgs#deno
@@ -103,6 +105,7 @@ nix run github:ifiokjr/nixpkgs#monosecret
           extra.knope
           extra.mdt
           extra.monochange
+          extra.monostyle
           extra.pnpm-standalone
           extra.codex-cli
           extra.herdr
@@ -142,6 +145,7 @@ The overlay adds all packages into your nixpkgs set so you can reference them as
           pkgs.knope
           pkgs.mdt
           pkgs.monochange
+          pkgs.monostyle
           pkgs.pnpm-standalone
           pkgs.herdr
           pkgs.ironclaw
@@ -177,6 +181,7 @@ in
     extra.knope
     extra.mdt
     extra.monochange
+    extra.monostyle
     extra.pnpm-standalone
     extra.herdr
     extra.ironclaw
@@ -421,6 +426,19 @@ Manage versions and releases for your multiplatform, multilanguage monorepo. Pre
 - **Source:** <https://github.com/ifiokjr/monochange>
 - **Homepage:** <https://ifiokjr.github.io/monochange/>
 
+### monostyle
+
+Scores the complexity and readability of a codebase, a file, or a function out of 100, tracing every point lost to a named rule with an explanation and a suggested fix. Installs the pre-built release binary from GitHub releases, statically linked on Linux.
+
+```bash
+nix run github:ifiokjr/nixpkgs#monostyle -- check
+nix run github:ifiokjr/nixpkgs#monostyle -- rules
+```
+
+- **Binary:** `monostyle`
+- **License:** Unlicense
+- **Source:** <https://github.com/ifiokjr/monostyle>
+
 ### nordvpn
 
 NordVPN macOS client. Installs the `.app` bundle from the official PKG.
@@ -617,7 +635,7 @@ Run the repo updater to check every package for new upstream releases and refres
 
 The script updates:
 
-- GitHub release packages (version + platform hashes, including `herdr`, `ironclaw`, `op`, `pnpm`, and `sbpf-linker`)
+- GitHub release packages (version + platform hashes, including `herdr`, `ironclaw`, `monostyle`, `op`, `pnpm`, and `sbpf-linker`)
 - Vendor-manifest packages (`rive-cli`, read from `releases.rive.app/cli/latest/manifest.json`)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
 - Rolling URL packages (`steam`)
