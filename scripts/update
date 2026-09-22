@@ -1241,13 +1241,6 @@ def pub-serverpod-cli-latest-stable-with-prefix [prefix: string] {
     | last
 }
 
-# Latest version with the given prefix (including prereleases), e.g. "4.".
-def pub-serverpod-cli-latest-with-prefix [prefix: string] {
-  pub-serverpod-cli-versions
-    | where {|v| $v | str starts-with $prefix }
-    | last
-}
-
 # Regenerate `pubspec.lock.json` for a Serverpod release by shallow-cloning the
 # tag, stripping `.dependency_overrides` (monorepo path overrides, so sibling
 # `serverpod_*` packages resolve from pub.dev) and `.resolution` (workspace
@@ -1318,13 +1311,15 @@ def update-serverpod-cli-track [
   true
 }
 
+# Both tracks are stable-only: 4.x is the default, so a prerelease must never
+# land there.
 def update-serverpod-cli-3 [packages_dir: string, dry_run: bool] {
   let latest = (pub-serverpod-cli-latest-stable-with-prefix "3.")
   update-serverpod-cli-track $packages_dir "serverpod_cli-3" $latest $dry_run
 }
 
 def update-serverpod-cli-4 [packages_dir: string, dry_run: bool] {
-  let latest = (pub-serverpod-cli-latest-with-prefix "4.")
+  let latest = (pub-serverpod-cli-latest-stable-with-prefix "4.")
   update-serverpod-cli-track $packages_dir "serverpod_cli-4" $latest $dry_run
 }
 

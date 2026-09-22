@@ -46,11 +46,14 @@ buildDartApplication rec {
   meta = {
     mainProgram = "serverpod";
     homepage = "https://serverpod.dev";
-    description = "Command line tools for Serverpod";
+    description = "Command line tools for Serverpod (3.x track)";
     longDescription = ''
       Serverpod is a next-generation app and web server built for the Flutter
       community. The CLI creates projects, generates protocol code, and manages
       Serverpod development workflows.
+
+      This is the 3.x track. The default `serverpod` / `serverpod-cli` /
+      `serverpod_cli` aliases resolve to `serverpod_cli-4`.
     '';
     changelog = "https://raw.githubusercontent.com/serverpod/serverpod/${version}/CHANGELOG.md";
     license = lib.licenses.bsd3;
