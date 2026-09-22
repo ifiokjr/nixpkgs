@@ -12,13 +12,13 @@
 
 buildDartApplication rec {
   pname = "serverpod_cli-4";
-  version = "4.1.0-beta.1";
+  version = "4.0.2";
 
   src = fetchFromGitHub {
     owner = "serverpod";
     repo = "serverpod";
     tag = version;
-    hash = "sha256-uTmGEnMHxyNsFS0yR+/1/fTn0zlY7M2vA8HgxyBZcJ4=";
+    hash = "sha256-thmfwFt4/3MIAam8dNdNWXXNPo1VVTa280ny+VUxbUs=";
   };
 
   sourceRoot = "${src.name}/tools/serverpod_cli";
@@ -101,14 +101,15 @@ buildDartApplication rec {
   meta = {
     mainProgram = "serverpod";
     homepage = "https://serverpod.dev";
-    description = "Command line tools for Serverpod (4.x beta track)";
+    description = "Command line tools for Serverpod";
     longDescription = ''
       Serverpod is a next-generation app and web server built for the Flutter
       community. The CLI creates projects, generates protocol code, and manages
       Serverpod development workflows.
 
-      This is the 4.x beta track tracking pre-release `4.0.0-beta.*` versions.
-      Use `serverpod_cli-3` for the stable 3.x track.
+      This is the 4.x track and the default — the `serverpod`,
+      `serverpod-cli`, and `serverpod_cli` aliases all resolve here. Use
+      `serverpod_cli-3` for the 3.x track.
     '';
     changelog = "https://raw.githubusercontent.com/serverpod/serverpod/${version}/CHANGELOG.md";
     license = lib.licenses.bsd3;

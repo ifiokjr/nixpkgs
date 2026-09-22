@@ -66,9 +66,9 @@
         rive-cli = final.callPackage ./packages/rive-cli/package.nix { };
         sbpf-linker = final.callPackage ./packages/sbpf-linker/package.nix { };
         solana-verify = final.callPackage ./packages/solana-verify/package.nix { };
-        serverpod = serverpod_cli-3;
-        serverpod-cli = serverpod_cli-3;
-        serverpod_cli = serverpod_cli-3;
+        serverpod = serverpod_cli-4;
+        serverpod-cli = serverpod_cli-4;
+        serverpod_cli = serverpod_cli-4;
         serverpod_cli-3 = final.callPackage ./packages/serverpod_cli-3/package.nix { };
         serverpod_cli-4 = final.callPackage ./packages/serverpod_cli-4/package.nix { };
         steam = final.callPackage ./packages/steam/package.nix { };
@@ -148,9 +148,9 @@
               rive-cli = pkgs.callPackage ./packages/rive-cli/package.nix { };
               sbpf-linker = pkgs.callPackage ./packages/sbpf-linker/package.nix { };
               solana-verify = pkgs.callPackage ./packages/solana-verify/package.nix { };
-              serverpod = serverpod_cli-3;
-              serverpod-cli = serverpod_cli-3;
-              serverpod_cli = serverpod_cli-3;
+              serverpod = serverpod_cli-4;
+              serverpod-cli = serverpod_cli-4;
+              serverpod_cli = serverpod_cli-4;
               serverpod_cli-3 = pkgs.callPackage ./packages/serverpod_cli-3/package.nix { };
               serverpod_cli-4 = pkgs.callPackage ./packages/serverpod_cli-4/package.nix { };
               steam = pkgs.callPackage ./packages/steam/package.nix { };
