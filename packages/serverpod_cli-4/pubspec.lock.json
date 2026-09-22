@@ -664,11 +664,11 @@
       "dependency": "direct dev",
       "description": {
         "name": "postgres",
-        "sha256": "8cff73f10dd29ea644b19eaf834c5ec333924dab50021312cd418d373867901b",
+        "sha256": "a2a79fb36abeb11fc92b4a24867802e3c77bd67619515c138a03ead09ca2b23d",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "3.5.15"
+      "version": "3.5.16"
     },
     "pub_api_client": {
       "dependency": "direct main",
@@ -744,41 +744,41 @@
       "dependency": "transitive",
       "description": {
         "name": "serverpod_client",
-        "sha256": "3b2dc9ee714945a7f583b660f01145ae0c8f6a36acd8a932132d77142d339585",
+        "sha256": "8237bd7f89379b94c628e8e5f856e2a964688e894ef99ac24d7b093f3cf2314b",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.1"
+      "version": "4.1.0-beta.1"
     },
     "serverpod_database": {
       "dependency": "direct main",
       "description": {
         "name": "serverpod_database",
-        "sha256": "48040b15afeb8978aca22c5aab48b3dca4f73424e35aff55ed15ae14207f699e",
+        "sha256": "4a22b3addc737a85d6a9d9e79588bfddd3013bc0c97fc401d1c490c1e0c88443",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.1"
+      "version": "4.1.0-beta.1"
     },
     "serverpod_embedded_postgres": {
       "dependency": "direct main",
       "description": {
         "name": "serverpod_embedded_postgres",
-        "sha256": "2acf1871cdb881ba59960f3855799a2e957e31ba6e09d5d9104792fe605b238e",
+        "sha256": "8a93921717eec0fcbea7f638de6c8bbec16be528c1cefc8ad78a97575f643212",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.1"
+      "version": "4.1.0-beta.1"
     },
     "serverpod_lints": {
       "dependency": "direct dev",
       "description": {
         "name": "serverpod_lints",
-        "sha256": "3a893a123e99e1532b89062f986494715f734b45020ff77d5188ea288dcf1aaa",
+        "sha256": "55f11fb590b388f3af1475fb14052fac239efa34df41fb982a034a07ad7dc979",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.1"
+      "version": "4.1.0-beta.1"
     },
     "serverpod_logging": {
       "dependency": "transitive",
@@ -804,31 +804,31 @@
       "dependency": "direct main",
       "description": {
         "name": "serverpod_serialization",
-        "sha256": "9732f3e5af100da04cf51399d1d30a14daa20e546ce09b87b5ff698aafb75aa3",
+        "sha256": "fd6f2acbcbf35226370fd69badba49cf4beb37011300a09cf3b5c79b83d9ca3f",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.1"
+      "version": "4.1.0-beta.1"
     },
     "serverpod_service_client": {
       "dependency": "direct main",
       "description": {
         "name": "serverpod_service_client",
-        "sha256": "4acd10c07ae784c4bdb0cc2eb8c2b18f7cbc7db763e5e59eaac9741aa6ac6c21",
+        "sha256": "0719888d8b9174e88900427d1e60c1f59f0f2b93ec0a3d21f36dc10af8b0b0e5",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.1"
+      "version": "4.1.0-beta.1"
     },
     "serverpod_shared": {
       "dependency": "direct main",
       "description": {
         "name": "serverpod_shared",
-        "sha256": "66c87c0c81fbe97f56dc38109e401590a7b7ffae53d6b2352257b7f63cc61e8d",
+        "sha256": "22f83d59bc5ee37fad353edb8ed252ec840804b100ef40a9732ac9716e1c40f1",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "4.0.1"
+      "version": "4.1.0-beta.1"
     },
     "serverpod_tui": {
       "dependency": "direct main",

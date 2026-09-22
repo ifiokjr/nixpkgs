@@ -124,11 +124,11 @@
       "dependency": "direct main",
       "description": {
         "name": "cli_launcher",
-        "sha256": "96883f87648524292e24e2cc6a369fbdf64883473fe3e3ddadd3d857bf16a484",
+        "sha256": "d2dd1baf7ae4ff1550e731dcb8fe669a5c652903e833f75359c178222c44214e",
         "url": "https://pub.dev"
       },
       "source": "hosted",
-      "version": "0.3.3+2"
+      "version": "0.3.4"
     },
     "cli_util": {
       "dependency": "direct main",
@@ -191,7 +191,7 @@
       "version": "1.15.1"
     },
     "crypto": {
-      "dependency": "transitive",
+      "dependency": "direct main",
       "description": {
         "name": "crypto",
         "sha256": "c8ea0233063ba03258fbcf2ca4d6dadfefe14f02fab57702265467a19f27fadf",
