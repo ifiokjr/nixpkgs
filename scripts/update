@@ -1904,6 +1904,73 @@ def update-zed-preview [packages_dir: string, dry_run: bool] {
   update-zed-release $packages_dir "zed-preview" $tag $dry_run
 }
 
+# T3 Code publishes two trains from one tag namespace: stable tags are plain
+# `v<semver>`, nightly ones carry a `-nightly.<date>.<build>` suffix. Asset
+# names embed the version, so every hash key is derived from it.
+def t3code-required-assets [version: string] {
+  [
+    $"t3-($version)-darwin-arm64.tar.gz"
+    $"t3-($version)-linux-arm64.tar.gz"
+    $"t3-($version)-linux-x64.tar.gz"
+  ]
+}
+
+# Latest published release on `channel` ("stable" or "nightly") whose assets are
+# all uploaded. Releases are listed newest first, so the first match is the
+# newest; a release only counts once its archives exist, since a tag is pushed
+# before its assets finish uploading and downloading too early 404s.
+def t3code-latest-tag [channel: string] {
+  let releases = (github-api-get "https://api.github.com/repos/pingdotgg/t3code/releases?per_page=100")
+
+  let found = (
+    $releases
+    | where {|release|
+        let tag = $release.tag_name
+        let version = ($tag | str replace --regex '^v' '')
+        let eligible = if $channel == "nightly" {
+          $tag | str contains "-nightly."
+        } else {
+          # `preview` is a maintainers' train cut from unreleased branches and
+          # must never land in the default package.
+          (not $release.prerelease) and (not ($tag | str contains "-preview."))
+        }
+        (
+          (not $release.draft)
+          and $eligible
+          and (release-has-all-assets $release (t3code-required-assets $version))
+        )
+      }
+    | get -o 0.tag_name
+    | default ""
+  )
+
+  if ($found | is-empty) {
+    fail $"No ($channel) release with a complete asset set for pingdotgg/t3code"
+  }
+
+  $found
+}
+
+def update-t3code-track [packages_dir: string, package: string, channel: string, dry_run: bool] {
+  let tag = (t3code-latest-tag $channel)
+  let latest_version = ($tag | str replace --regex '^v' '')
+  let file = $"($packages_dir)/($package)/package.nix"
+  let entries = [
+    { key: "darwin-arm64", url: $"https://github.com/pingdotgg/t3code/releases/download/($tag)/t3-($latest_version)-darwin-arm64.tar.gz" }
+    { key: "linux-arm64", url: $"https://github.com/pingdotgg/t3code/releases/download/($tag)/t3-($latest_version)-linux-arm64.tar.gz" }
+    { key: "linux-x64", url: $"https://github.com/pingdotgg/t3code/releases/download/($tag)/t3-($latest_version)-linux-x64.tar.gz" }
+  ]
+  update-versioned-keyed-hashes $package $file $latest_version $entries $dry_run
+}
+
+def update-t3code [packages_dir: string, dry_run: bool] {
+  update-t3code-track $packages_dir "t3code" "stable" $dry_run
+}
+
+def update-t3code-nightly [packages_dir: string, dry_run: bool] {
+  update-t3code-track $packages_dir "t3code-nightly" "nightly" $dry_run
+}
+
 def update-dylint [packages_dir: string, dry_run: bool] {
   let tag = (github-latest-tag "trailofbits" "dylint")
   let latest_version = ($tag | str replace --regex '^v' '')
@@ -2110,6 +2177,8 @@ def main [
     { name: "serverpod_cli-4", run: {|| update-serverpod-cli-4 $packages_dir $dry_run } }
     { name: "steam", run: {|| update-rolling-steam $packages_dir $dry_run } }
     { name: "surfpool", run: {|| update-surfpool $packages_dir $dry_run } }
+    { name: "t3code", run: {|| update-t3code $packages_dir $dry_run } }
+    { name: "t3code-nightly", run: {|| update-t3code-nightly $packages_dir $dry_run } }
     { name: "wait-for-them", run: {|| update-rust-wait-for-them $root $packages_dir $dry_run } }
     { name: "zed", run: {|| update-zed $packages_dir $dry_run } }
     { name: "zed-preview", run: {|| update-zed-preview $packages_dir $dry_run } }

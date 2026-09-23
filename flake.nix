@@ -73,6 +73,8 @@
         serverpod_cli-4 = final.callPackage ./packages/serverpod_cli-4/package.nix { };
         steam = final.callPackage ./packages/steam/package.nix { };
         surfpool = final.callPackage ./packages/surfpool/package.nix { };
+        t3code = final.callPackage ./packages/t3code/package.nix { };
+        t3code-nightly = final.callPackage ./packages/t3code-nightly/package.nix { };
         wait-for-them = final.callPackage ./packages/wait-for-them/package.nix { };
         zed = final.callPackage ./packages/zed/package.nix { };
         zed-preview = final.callPackage ./packages/zed-preview/package.nix { };
@@ -155,6 +157,8 @@
               serverpod_cli-4 = pkgs.callPackage ./packages/serverpod_cli-4/package.nix { };
               steam = pkgs.callPackage ./packages/steam/package.nix { };
               surfpool = pkgs.callPackage ./packages/surfpool/package.nix { };
+              t3code = pkgs.callPackage ./packages/t3code/package.nix { };
+              t3code-nightly = pkgs.callPackage ./packages/t3code-nightly/package.nix { };
               wait-for-them = pkgs.callPackage ./packages/wait-for-them/package.nix { };
               zed = pkgs.callPackage ./packages/zed/package.nix { };
               zed-preview = pkgs.callPackage ./packages/zed-preview/package.nix { };
