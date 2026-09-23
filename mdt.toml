@@ -48,6 +48,8 @@ v = { command = "./scripts/versions", format = "json", watch = [
 	"packages/solana-verify/package.nix",
 	"packages/steam/package.nix",
 	"packages/surfpool/package.nix",
+	"packages/t3code/package.nix",
+	"packages/t3code-nightly/package.nix",
 	"packages/wait-for-them/package.nix",
 	"packages/zoom/package.nix",
 ] }

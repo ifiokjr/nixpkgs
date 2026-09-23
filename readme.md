@@ -59,6 +59,8 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [serverpod_cli-4](#serverpod_cli)                                                                    | <!-- {~v_serverpod_cli_4:"{{ v.serverpod_cli_4 }}"} -->4.0.2<!-- {/v_serverpod_cli_4} -->                            | linux, macos               | Serverpod CLI 4.x track (default aliases resolve here)                           |
 | [steam](#steam)                                                                                      | <!-- {~v_steam:"{{ v.steam }}"} -->4.0<!-- {/v_steam} -->                                                            | macos                      | Steam video game digital distribution service                                    |
 | [surfpool](#surfpool)                                                                                | <!-- {~v_surfpool:"{{ v.surfpool }}"} -->1.6.0<!-- {/v_surfpool} -->                                                 | linux (x64), macos         | A drop-in replacement for solana-test-validator with mainnet state simulation    |
+| [t3code](#t3code)                                                                                    | <!-- {~v_t3code:"{{ v.t3code }}"} -->0.0.42<!-- {/v_t3code} -->                                                      | linux, macos (arm64)       | Control surface for the coding agents running on your machine                    |
+| [t3code-nightly](#t3code)                                                                            | <!-- {~v_t3code_nightly:"{{ v.t3code_nightly }}"} -->0.0.43-nightly.20260923.2135<!-- {/v_t3code_nightly} -->        | linux, macos (arm64)       | T3 Code nightly channel (pre-release builds)                                     |
 | [wait-for-them](#wait-for-them)                                                                      | <!-- {~v_wait_for_them:"{{ v.wait_for_them }}"} -->0.5.1<!-- {/v_wait_for_them} -->                                  | linux (x64), macos (x64)   | Wait for TCP/HTTP endpoints to be ready before proceeding                        |
 | [zoom](#zoom)                                                                                        | <!-- {~v_zoom:"{{ v.zoom }}"} -->7.1.5.84650<!-- {/v_zoom} -->                                                       | macos                      | Zoom video conferencing client                                                   |
 
@@ -80,6 +82,8 @@ nix run github:ifiokjr/nixpkgs#herdr
 nix run github:ifiokjr/nixpkgs#ironclaw
 nix run github:ifiokjr/nixpkgs#op
 nix run github:ifiokjr/nixpkgs#pnpm
+nix run github:ifiokjr/nixpkgs#surfpool
+nix run github:ifiokjr/nixpkgs#t3code
 nix run github:ifiokjr/nixpkgs#monosecret
 ```
 
@@ -112,6 +116,7 @@ nix run github:ifiokjr/nixpkgs#monosecret
           extra.ironclaw
           extra.op
           extra.pnpm
+          extra.t3code
           extra.monosecret
         ];
       };
@@ -151,6 +156,7 @@ The overlay adds all packages into your nixpkgs set so you can reference them as
           pkgs.ironclaw
           pkgs.op
           pkgs.pnpm
+          pkgs.t3code
           pkgs.monosecret
         ];
       };
@@ -187,6 +193,7 @@ in
     extra.ironclaw
     extra.op
     extra.pnpm
+    extra.t3code
     extra.monosecret
   ];
 }
@@ -223,6 +230,7 @@ in
               extra.ironclaw
                   extra.op
               extra.pnpm
+              extra.t3code
               extra.monosecret
             ];
           }
@@ -262,6 +270,7 @@ in
               extra.ironclaw
                   extra.op
               extra.pnpm
+              extra.t3code
               extra.monosecret
             ];
           }
@@ -606,6 +615,24 @@ A drop-in replacement for solana-test-validator with mainnet state simulation. P
 - **License:** Apache-2.0
 - **Source:** <https://github.com/txtx/surfpool>
 
+### t3code
+
+Runs a local server that drives the coding agents already installed on your machine (Claude Code, Codex, Cursor, Grok Build, OpenCode and Antigravity), then serves a local web app plus a pairing endpoint for its mobile and desktop clients. Installs the self-contained upstream CLI archive, which bundles the server, web client and native addons.
+
+At least one supported provider has to be installed and authenticated before use. The bundled binary locates its runtime files relative to itself, so `bin/t3` is a symlink into `libexec/t3` — do not copy it out of the store path.
+
+```bash
+nix run github:ifiokjr/nixpkgs#t3code
+```
+
+- **Binary:** `t3`
+- **License:** MIT
+- **Source:** <https://github.com/pingdotgg/t3code>
+- **Homepage:** <https://t3.codes>
+- **Channels:**
+  - `t3code` (latest stable release)
+  - `t3code-nightly` (nightly pre-releases)
+
 ### wait-for-them
 
 Wait until all provided host:port TCP pairs are opened or HTTP/HTTPS URLs return status 200. Useful in docker-compose setups and scripts to wait for dependent services. Pre-built binary from GitHub releases.
@@ -635,7 +662,7 @@ Run the repo updater to check every package for new upstream releases and refres
 
 The script updates:
 
-- GitHub release packages (version + platform hashes, including `herdr`, `ironclaw`, `monostyle`, `op`, `pnpm`, and `sbpf-linker`)
+- GitHub release packages (version + platform hashes, including `herdr`, `ironclaw`, `monostyle`, `op`, `pnpm`, `sbpf-linker`, and `t3code`/`t3code-nightly`)
 - Vendor-manifest packages (`rive-cli`, read from `releases.rive.app/cli/latest/manifest.json`)
 - Homebrew-cask packages (`gpg-suite`, `nordvpn`, `zoom`)
 - Rolling URL packages (`steam`)
