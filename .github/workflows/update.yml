@@ -35,7 +35,11 @@ jobs:
 
       - name: 📝 regenerate readme blocks (mdt)
         id: mdt
-        run: nix run .#mdt -- update
+        # mdt.toml registers dprint as a formatter stage, so mdt needs dprint on
+        # PATH to write already-aligned rows. This now emits formatted output on
+        # its own; the dprint fmt step below stays as a safety net for files mdt
+        # does not touch.
+        run: nix shell nixpkgs#dprint -c nix run .#mdt -- update
 
       # mdt rewrites the version cells in readme.md but does not re-pad the
       # table columns, so a version whose length changes leaves the row
