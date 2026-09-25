@@ -56,3 +56,17 @@ v = { command = "./scripts/versions", format = "json", watch = [
 
 [exclude]
 markdown_codeblocks = true
+
+# Version cells and the surrounding table padding are rewritten independently:
+# mdt replaces the text between the tags but does not repad the column, so a
+# version whose length changes leaves the row short or long and `dprint check`
+# then fails. Registering dprint as a formatter stage makes mdt compare against
+# dprint's canonical full-file output, so `mdt update` writes an already-aligned
+# row and `mdt check` also flags a misaligned row that no block change caused.
+#
+# Requires dprint on PATH wherever mdt runs; mdt exits 2 if the command is
+# missing rather than silently falling back to unformatted output.
+[[formatters]]
+command = "dprint fmt --stdin \"{{ filePath }}\" --config \"{{ rootDirectory }}/dprint.json\""
+patterns = ["**/*.md"]
+ignore = ["**/*.t.md"]

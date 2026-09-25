@@ -132,7 +132,9 @@ jobs:
         run: nix shell nixpkgs#dprint nixpkgs#nixfmt-rfc-style nixpkgs#shfmt -c dprint check
 
       - name: 🔍 check mdt blocks
-        run: nix run .#mdt -- check
+        # mdt.toml registers dprint as a formatter stage, so mdt needs it on
+        # PATH to compare managed blocks against formatted output.
+        run: nix shell nixpkgs#dprint -c nix run .#mdt -- check
 
       - name: 🔍 check github workflows
         run: nix build .#checks.x86_64-linux.github-workflows

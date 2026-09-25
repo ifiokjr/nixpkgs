@@ -2200,10 +2200,14 @@ def main [
   let failed_count = ($failed_names | length)
   let skipped = $total - $updated - $failed_count
 
-  # Sync README versions via mdt after package updates
+  # Sync README versions via mdt after package updates.
+  #
+  # mdt.toml registers dprint as a formatter stage, so dprint must be on PATH
+  # here: mdt exits 2 rather than falling back to unformatted output, which
+  # would leave a length-changing version cell mispadded.
   if not $dry_run {
     log-sub "syncing readme versions via mdt..."
-    let mdt_result = (^nix run $"($root)#mdt" -- update --path $root | complete)
+    let mdt_result = (^nix shell nixpkgs#dprint -c nix run $"($root)#mdt" -- update --path $root | complete)
     if $mdt_result.exit_code != 0 {
       log-fail "mdt update" $"failed to sync readme versions: ($mdt_result.stderr | str trim)"
     } else {
