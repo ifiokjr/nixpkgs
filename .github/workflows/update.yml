@@ -5,16 +5,23 @@ on:
     - cron: "0 6 * * *"
   workflow_dispatch:
 
+# contents: read is the workflow-wide default; the update job requests the
+# writes it needs at job level (workflow-level is rejected by zizmor as overly
+# broad once a second job exists).
 permissions:
-  contents: write
-  actions: write
-  # lets magic-nix-cache authenticate to FlakeHub Cache via OIDC
-  id-token: write
+  contents: read
 
 jobs:
   update:
     name: update packages
     runs-on: ubuntu-latest
+    # Bounded so a hung build or fetch cannot burn runner hours unnoticed.
+    timeout-minutes: 180
+    permissions:
+      contents: write
+      actions: write
+      # lets magic-nix-cache authenticate to FlakeHub Cache via OIDC
+      id-token: write
     steps:
       - name: 📥 checkout repository
         uses: actions/checkout@v4
@@ -32,6 +39,74 @@ jobs:
         run: nix shell nixpkgs#nushell -c nu scripts/update
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # The update script bumps versions and hashes but never builds what it
+      # changed, and a push made with GITHUB_TOKEN does not trigger ci.yml, so
+      # nothing else did either: melos 8.9.0 landed on 2026-09-22 with a patch
+      # upstream had invalidated, and every melos alias stayed unbuildable for
+      # six days. Build each package the batch touched and revert the ones that
+      # fail, so a broken bump cannot reach main while the rest still lands.
+      - name: 🧪 build changed packages
+        id: verify
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+
+          changed=$(git diff --name-only | grep '^packages/' | cut -d/ -f2 | sort -u || true)
+          if [ -z "$changed" ]; then
+            echo "No package changes to build."
+            exit 0
+          fi
+
+          buildable=$(nix eval --json .#ciPackages.x86_64-linux 2>/dev/null | jq -r '.[]' || true)
+          if [ -z "$buildable" ]; then
+            # Nothing can be verified against a flake that does not evaluate, so
+            # undo the whole batch rather than commit it unbuilt.
+            echo "::error::could not evaluate .#ciPackages.x86_64-linux — reverting the entire batch"
+            git checkout HEAD -- packages flake.lock
+            git clean -fdq packages
+            echo "Reverted the whole batch: $changed" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          reverted=""
+          skipped=""
+
+          for pkg in $changed; do
+            if ! grep -qx "$pkg" <<< "$buildable"; then
+              # Darwin-only packages (casks, macOS apps) cannot be built on this
+              # runner. Their download URLs and hashes were already checked by
+              # the update script's prefetch, but record them so an unbuildable
+              # bump is visible rather than assumed good.
+              echo "Skipping $pkg (not in the x86_64-linux package set)"
+              skipped="$skipped $pkg"
+              continue
+            fi
+
+            echo "::group::build $pkg"
+            if nix build ".#$pkg" --no-link; then
+              echo "✅ $pkg"
+            else
+              echo "❌ $pkg failed to build — reverting this package"
+              reverted="$reverted $pkg"
+              # Restore tracked files and drop anything the updater added
+              # (e.g. a regenerated pubspec.lock.json) so the bump is fully undone.
+              git checkout HEAD -- "packages/$pkg"
+              git clean -fdq "packages/$pkg"
+            fi
+            echo "::endgroup::"
+          done
+
+          if [ -n "$reverted" ]; then
+            echo "Reverted unbuildable updates:$reverted" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ -n "$skipped" ]; then
+            echo "Not build-verified on this runner (darwin-only):$skipped" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          if [ -n "$reverted" ]; then
+            exit 1
+          fi
 
       - name: 📝 regenerate readme blocks (mdt)
         id: mdt
@@ -63,9 +138,92 @@ jobs:
           fi
 
       - name: 🚨 report update failures
-        if: steps.update.outcome == 'failure'
+        if: steps.update.outcome == 'failure' || steps.verify.outcome == 'failure'
         run: |
-          echo "The update script failed for one or more packages."
-          echo "Failed packages are listed in the '🔄 run update script' step log above."
+          if [ "${{ steps.update.outcome }}" = "failure" ]; then
+            echo "The update script failed for one or more packages."
+            echo "Failed packages are listed in the '🔄 run update script' step log above."
+          fi
+          if [ "${{ steps.verify.outcome }}" = "failure" ]; then
+            echo "One or more updated packages failed to build and were reverted."
+            echo "See the '🧪 build changed packages' step log above."
+          fi
           echo "Successful updates have already been committed and pushed."
           exit 1
+
+  # The update job builds on Linux, so a bump that only breaks on macOS (a
+  # patched source archive, a cask layout change) would still reach main
+  # unseen. Build the packages that batch changed on aarch64-darwin, and fail
+  # the workflow when one does not build — a push made with GITHUB_TOKEN does
+  # not trigger ci.yml, so this is the only thing standing behind the darwin
+  # side of an update batch.
+  verify-macos:
+    name: verify changed packages (macos)
+    needs: update
+    if: always() && needs.update.result != 'cancelled'
+    runs-on: macos-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: 📥 checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: 🔧 install nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 set up nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: 🧪 build packages changed by this update
+        run: |
+          set -uo pipefail
+
+          # Only meaningful when the updater actually pushed a batch. Otherwise
+          # HEAD is an unrelated commit and diffing it would rebuild packages
+          # this run never touched.
+          if ! git log -1 --format=%s | grep -q '^chore: update packages '; then
+            echo "HEAD is not an update commit; nothing to verify."
+            exit 0
+          fi
+
+          if git rev-parse --verify --quiet HEAD^ >/dev/null; then
+            changed=$(git diff --name-only HEAD^ HEAD | grep '^packages/' | cut -d/ -f2 | sort -u || true)
+          else
+            changed=$(git show --name-only --format= HEAD | grep '^packages/' | cut -d/ -f2 | sort -u || true)
+          fi
+          if [ -z "$changed" ]; then
+            echo "The update batch touched no packages."
+            exit 0
+          fi
+
+          buildable=$(nix eval --json .#ciPackages.aarch64-darwin 2>/dev/null | jq -r '.[]' || true)
+          if [ -z "$buildable" ]; then
+            echo "::error::could not evaluate .#ciPackages.aarch64-darwin"
+            exit 1
+          fi
+
+          failed=""
+          for pkg in $changed; do
+            if ! grep -qx "$pkg" <<< "$buildable"; then
+              echo "Skipping $pkg (not in the aarch64-darwin package set)"
+              continue
+            fi
+            echo "::group::build $pkg"
+            if nix build ".#$pkg" --no-link; then
+              echo "✅ $pkg"
+            else
+              echo "❌ $pkg"
+              failed="$failed $pkg"
+            fi
+            echo "::endgroup::"
+          done
+
+          if [ -n "$failed" ]; then
+            echo "Packages changed by this batch that fail to build on darwin:$failed" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
