@@ -6,7 +6,7 @@
 }:
 
 let
-  version = "1.6.0";
+  version = "1.6.1";
 
   platformSuffix =
     {
@@ -17,9 +17,9 @@ let
     .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 
   hashes = {
-    "darwin-arm64" = "sha256-qJDbKxoMdzQKTPkMnPt7LTD761OBIK0gxwdCaFKxjC0=";
-    "darwin-x64" = "sha256-CGHdHFviFtTq0rs6Mo616k0YA4Wp0Qumw88okEXRK2I=";
-    "linux-x64" = "sha256-y0cbAKo7fWAzOOt06/7B0jlZ7LoAW18b5Cuo0XQQf8I=";
+    "darwin-arm64" = "sha256-/KChx17KfMhIuP9w8UHG/G05wRp4F2TUhA4AHqkBcsw=";
+    "darwin-x64" = "sha256-ls9hyKxDDx3Nju/x/HTPep2FdSNY1DFqv3Y22FJ/3cw=";
+    "linux-x64" = "sha256-ZM/z/WuwC7DVx+3vKRWkkTONFOsZtxMKv5yB7lNX0WU=";
   };
 in
 stdenv.mkDerivation {
