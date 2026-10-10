@@ -9,7 +9,7 @@
 }:
 
 let
-  version = "0.4.1";
+  version = "0.4.3";
 in
 rustPlatform.buildRustPackage {
   pname = "monosecret";
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage {
   src = fetchFromGitHub {
     owner = "ifiokjr";
     repo = "monosecret";
-    rev = "v0.4.1";
-    hash = "sha256-wLjRBi95LIr0j6nHrK7/6PcFWXI5ICwWt9OsDsvC4gM=";
+    rev = "v0.4.3";
+    hash = "sha256-2nlFwQ596cYahNViliB4ZtiChweEhiSUoNLzC8uJE6A=";
   };
 
-  cargoHash = "sha256-lF7SDGCl57fsw1SW0jUqyeaqNQNc78N9sNg1mSxXO/4=";
+  cargoHash = "sha256-G0Y0xoHUk611cQZI8zyORkO2wzHGfIzD9brEVpTI5A4=";
 
   nativeBuildInputs = [ pkg-config ];
 
