@@ -11,7 +11,7 @@
 }:
 
 let
-  version = "6.1.0";
+  version = "6.1.1";
   tag = "v${version}";
 
   platformSuffix =
@@ -25,10 +25,10 @@ let
 
   # Linux prebuilt hashes from upstream releases
   upstreamLinuxHashes = {
-    "cargo-dylint-aarch64-unknown-linux-gnu" = "sha256-si1Dzfz49RJmgVTQLJxFl2J/AuplLwSrlpMh4VJu/no=";
-    "dylint-link-aarch64-unknown-linux-gnu" = "sha256-ECDz4EfXhlKyFq1tFDfdNIrv+lr2P2smetBEGsAaZQc=";
-    "cargo-dylint-x86_64-unknown-linux-gnu" = "sha256-tjUn3Ul+O3YOcNLryHHOII0QNb/WMRTCdP3Xv2+QdRI=";
-    "dylint-link-x86_64-unknown-linux-gnu" = "sha256-Z7+EPjkdPL4jXm/3m85O++sDJaBYK5SVxE7TJ4wEwew=";
+    "cargo-dylint-aarch64-unknown-linux-gnu" = "sha256-BLsOAOrBh6nRc6pu4ty47upqrL64vL+V/XB8Qx2tck8=";
+    "dylint-link-aarch64-unknown-linux-gnu" = "sha256-Xf+1SCUCknw0GExAlBOjPRpWP4AzCoD2hWzFT1mgSoU=";
+    "cargo-dylint-x86_64-unknown-linux-gnu" = "sha256-akqcFj3RIJM0e2TYPkIC00IcYOz8SlqaELNlSudCzsQ=";
+    "dylint-link-x86_64-unknown-linux-gnu" = "sha256-5XDh1v/mUolgUh+B5xmyKjlk4ZcWiKASrY9QGJWUNW0=";
   };
 
   hasUpstreamBinary = stdenv.isLinux;
@@ -60,7 +60,7 @@ let
     owner = "trailofbits";
     repo = "dylint";
     rev = tag;
-    hash = "sha256-KgEn3AZnITS6Uhc6CElCMqOucu+/Cc4w9Jm5oU+v5Iw=";
+    hash = "sha256-wOuQvE/u0Mp04QhQ25Wp8YZK7p24eA9ooRJ0f6XS6xU=";
   };
 
   sourceBuild = rustPlatform.buildRustPackage {
