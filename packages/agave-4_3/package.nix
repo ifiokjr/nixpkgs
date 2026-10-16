@@ -13,12 +13,12 @@
 }:
 
 let
-  version = "4.3.0";
+  version = "4.3.2";
 
   hashes = {
-    "aarch64-apple-darwin" = "sha256-C/vXaaVeMvCh/huS9282DwHuGUdfrPjDHLkPmdzKf+A=";
-    "x86_64-apple-darwin" = "sha256-RCTTmUBOxF1VUzxg0LUkt92a3cpxg8ZQt7EzgovPVYw=";
-    "x86_64-unknown-linux-gnu" = "sha256-yXKJqKux0O+0l9i1yyhbqr2bf46mZH9dFFxdyP82Eeg=";
+    "aarch64-apple-darwin" = "sha256-QAWkMUEtrVaHWsIpWXo+ZOYh0tE//uMfX4++XUKfpbs=";
+    "x86_64-apple-darwin" = "sha256-C4FNENd06jwCEe3VFCBETpqt+LnQjTXZQX0Ly3TnpeQ=";
+    "x86_64-unknown-linux-gnu" = "sha256-XJWZ1/o5c3XfadWOjU9VDuRUY91tHsrZ5aHwU86OCTM=";
   };
   # Must match the platform-tools version pinned by this release's
   # cargo-build-sbf (as reported by `cargo-build-sbf --version`). The wrapper
