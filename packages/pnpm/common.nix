@@ -58,6 +58,11 @@ let
   # vercel/pkg binary sees its own path instead of the dynamic linker's path.
   # This is needed because we invoke the unmodified binary through ld-linux
   # (to avoid patching), which makes /proc/self/exe resolve to ld-linux.
+  #
+  # The wrapper's LD_PRELOAD and LD_LIBRARY_PATH must not reach the processes
+  # pnpm spawns: on a non-NixOS host a `/bin/sh` script bin or the system node
+  # aborts when the nix glibc preload is injected into it. The shim captures
+  # what it needs and restores the caller's variables before pnpm runs.
   fixExePath = stdenv.mkDerivation {
     name = "fix-proc-self-exe";
     dontUnpack = true;
@@ -69,17 +74,38 @@ let
       #include <string.h>
       #include <stdlib.h>
       #include <unistd.h>
+
       typedef ssize_t (*readlink_fn)(const char *, char *, size_t);
+
+      static char real_exe[4096];
+
+      static void restore_env(const char *name, const char *saved_name) {
+        const char *saved = getenv(saved_name);
+        if (saved != NULL && saved[0] != '\0') {
+          setenv(name, saved, 1);
+        } else {
+          unsetenv(name);
+        }
+        unsetenv(saved_name);
+      }
+
+      __attribute__((constructor)) static void capture_and_restore(void) {
+        const char *real = getenv("_REAL_EXE");
+        if (real != NULL) {
+          strncpy(real_exe, real, sizeof(real_exe) - 1);
+        }
+        unsetenv("_REAL_EXE");
+        restore_env("LD_PRELOAD", "_PNPM_ORIG_LD_PRELOAD");
+        restore_env("LD_LIBRARY_PATH", "_PNPM_ORIG_LD_LIBRARY_PATH");
+      }
+
       ssize_t readlink(const char *p, char *buf, size_t bufsiz) {
         readlink_fn orig = (readlink_fn)dlsym(RTLD_NEXT, "readlink");
-        if (strcmp(p, "/proc/self/exe") == 0) {
-          const char *real = getenv("_REAL_EXE");
-          if (real) {
-            size_t len = strlen(real);
-            if (len > bufsiz) len = bufsiz;
-            memcpy(buf, real, len);
-            return (ssize_t)len;
-          }
+        if (strcmp(p, "/proc/self/exe") == 0 && real_exe[0] != '\0') {
+          size_t len = strlen(real_exe);
+          if (len > bufsiz) len = bufsiz;
+          memcpy(buf, real_exe, len);
+          return (ssize_t)len;
         }
         return orig(p, buf, bufsiz);
       }
@@ -122,6 +148,8 @@ stdenv.mkDerivation {
           #!${stdenv.shell}
           . "$out/libexec/pnpm-default-env"
           pnpm_prepend_global_bin
+          export _PNPM_ORIG_LD_PRELOAD="\''${LD_PRELOAD:-}"
+          export _PNPM_ORIG_LD_LIBRARY_PATH="\''${LD_LIBRARY_PATH:-}"
           export _REAL_EXE="$out/libexec/pnpm/pnpm"
           export LD_PRELOAD="${fixExePath}/lib/fixexe.so"
           export LD_LIBRARY_PATH="${lib.makeLibraryPath [ stdenv.cc.cc.lib ]}:\''${LD_LIBRARY_PATH:-}"
@@ -218,6 +246,24 @@ stdenv.mkDerivation {
               done
             ''
         }
+
+        echo "Checking the loader environment stays out of child processes..."
+        CHILD_ENV_ROOT=$(mktemp -d)
+        printf '%s\n' \
+          '{' \
+          '  "name": "child-env-check",' \
+          '  "version": "1.0.0",' \
+          '  "scripts": {' \
+          '    "env": "printf \"%s|%s|%s\\n\" \"''${LD_PRELOAD-unset}\" \"''${LD_LIBRARY_PATH-unset}\" \"''${_REAL_EXE-unset}\""' \
+          '  }' \
+          '}' > "$CHILD_ENV_ROOT/package.json"
+        (
+          cd "$CHILD_ENV_ROOT"
+          unset LD_PRELOAD _REAL_EXE
+          export LD_LIBRARY_PATH="/caller/libs"
+          child_env="$($out/bin/pnpm run env 2>/dev/null | tail -n1)"
+          test "$child_env" = "unset|/caller/libs|unset"
+        )
 
         echo "Checking pnpm wrapper mutable state defaults..."
         WRAPPER_ROOT=$(mktemp -d)
