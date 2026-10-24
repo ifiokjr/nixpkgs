@@ -133,7 +133,7 @@ extract_use_node_version() {
 			fi
 
 			case "$value" in
-			\"\"*\")
+			\"*\")
 				value="${value#\"}"
 				value="${value%\"}"
 				;;
