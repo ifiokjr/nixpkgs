@@ -280,6 +280,36 @@ in
 }
 ```
 
+## pinning
+
+`main` moves every day: a scheduled job bumps `flake.lock` and package versions each morning, so an unpinned `github:ifiokjr/nixpkgs` ref re-evaluates against a moving nixpkgs on every use. Two stable ways to pin:
+
+- **Release tag** (recommended): a lightweight `release/<date>` tag is cut from `main` every Monday, so the pin still moves forward weekly:
+
+  ```nix
+  inputs.ifiokjr-nixpkgs.url = "github:ifiokjr/nixpkgs/release/2026-11-02";
+  ```
+
+  Browse [the tags](https://github.com/ifiokjr/nixpkgs/tags) for the latest.
+
+- **Exact commit**: pin any commit rev for a fully frozen input.
+
+Note that nixpkgs unstable dropped `x86_64-darwin` in the 26.11 cycle, so this flake exposes `aarch64-darwin`, `aarch64-linux`, and `x86_64-linux` only; Intel macOS is not buildable against the pinned nixpkgs.
+
+## binary cache
+
+First use of a source-built package (dylint, racket-minimal, the Dart CLIs) otherwise means a full compile. Two ways to get cache hits instead:
+
+- **FlakeHub** (zero setup): this flake is published to [FlakeHub](https://flakehub.com/flake/ifiokjr/nixpkgs) on every push to `main`, and builds from CI land in FlakeHub Cache. Consume the flake as `flake:ifiokjr/nixpkgs/<version>` with Determinate Nix and the cache is used automatically.
+- **Cachix** (works for `github:` refs): CI pushes every built package to the public `ifiokjr-nixpkgs` Cachix cache whenever the `CACHIX_SIGNING_KEY` secret is configured. One-time setup: create the cache at <https://app.cachix.org>, then add the signing key as the `CACHIX_SIGNING_KEY` repository secret. Once it exists, add the cache to your substituters, e.g. in the flake:
+
+  ```nix
+  nixConfig = {
+    extra-substituters = [ "https://ifiokjr-nixpkgs.cachix.org" ];
+    extra-trusted-public-keys = [ "ifiokjr-nixpkgs.cachix.org-1:<public key from the cachix page>" ];
+  };
+  ```
+
 ## package details
 
 ### agave

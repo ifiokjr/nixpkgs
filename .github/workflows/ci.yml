@@ -221,6 +221,14 @@ jobs:
       - name: 🔍 lint
         run: nix shell nixpkgs#dprint nixpkgs#nixfmt-rfc-style nixpkgs#shfmt -c dprint check
 
+      - name: 🔍 check package catalog is current
+        # Regenerates the docs/packages.md catalog from the flake and fails
+        # when a package change lands without running scripts/catalog.
+        # dprint fmt normalizes the generated table's padding.
+        run: |
+          nix shell nixpkgs#nushell nixpkgs#dprint -c sh -c 'nu scripts/catalog && dprint fmt docs/packages.md'
+          git diff --exit-code docs/packages.md
+
       - name: 🔍 check mdt blocks
         # mdt.toml registers dprint as a formatter stage, so mdt needs it on
         # PATH to compare managed blocks against formatted output.
