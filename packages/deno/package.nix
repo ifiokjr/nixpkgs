@@ -82,6 +82,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/deno --version
+    runHook postInstallCheck
+  '';
+
   meta = with lib; {
     description = "A modern runtime for JavaScript and TypeScript";
     homepage = "https://deno.com/";

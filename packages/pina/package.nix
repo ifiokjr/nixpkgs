@@ -40,6 +40,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/pina --version
+    runHook postInstallCheck
+  '';
+
   meta = {
     description = "CLI for Pina, a performant Solana smart contract framework";
     homepage = "https://pina.rs";

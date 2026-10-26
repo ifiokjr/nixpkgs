@@ -44,6 +44,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/wait-for-them --version
+    runHook postInstallCheck
+  '';
+
   meta = {
     description = "Wait until all provided host:port pairs are opened or HTTP URLs return 200";
     homepage = "https://github.com/shenek/wait-for-them";

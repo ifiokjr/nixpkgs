@@ -49,6 +49,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/surfpool --version
+    runHook postInstallCheck
+  '';
+
   meta = with lib; {
     description = "A drop-in replacement for solana-test-validator with mainnet state simulation";
     homepage = "https://github.com/txtx/surfpool";

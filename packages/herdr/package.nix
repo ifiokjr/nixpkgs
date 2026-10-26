@@ -46,6 +46,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/herdr --version
+    runHook postInstallCheck
+  '';
+
   meta = {
     description = "Terminal agent multiplexer – tmux for coding agents";
     homepage = "https://github.com/ogulcancelik/herdr";

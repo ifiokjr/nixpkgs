@@ -51,6 +51,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/codex --version
+    runHook postInstallCheck
+  '';
+
   meta = with lib; {
     description = "OpenAI Codex CLI - AI coding assistant for the terminal";
     homepage = "https://github.com/openai/codex";

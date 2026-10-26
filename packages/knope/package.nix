@@ -44,6 +44,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/knope --version
+    runHook postInstallCheck
+  '';
+
   meta = {
     description = "A command line tool for automating common development tasks";
     homepage = "https://knope.tech";

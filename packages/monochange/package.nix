@@ -48,6 +48,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/monochange --version
+    runHook postInstallCheck
+  '';
+
   meta = {
     description = "Manage versions and releases for your multiplatform, multilanguage monorepo";
     homepage = "https://ifiokjr.github.io/monochange/";

@@ -59,6 +59,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/kani --version
+    runHook postInstallCheck
+  '';
+
   meta = with lib; {
     description = "Bit-precise model checker for Rust";
     homepage = "https://model-checking.github.io/kani/";

@@ -87,6 +87,16 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  # The darwin CLI is a symlink into the .app bundle and mutates bundle
+  # state (LaunchServices) when run, which breaks sandbox finalization —
+  # so only the plain-binary Linux build is smoke-tested.
+  doInstallCheck = stdenv.hostPlatform.isLinux;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/${pname} --version
+    runHook postInstallCheck
+  '';
+
   meta = with lib; {
     description = "High-performance, multiplayer code editor from the creators of Atom and Tree-sitter";
     homepage = "https://zed.dev";

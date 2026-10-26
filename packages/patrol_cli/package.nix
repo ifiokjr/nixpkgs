@@ -31,6 +31,18 @@ buildDartApplication rec {
       --replace-fail "const version = '4.5.0';" "const version = '${version}';"
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    # Dart CLIs prompt for analytics consent on first run and expect a
+    # writable home; provide both so the check stays non-interactive in the
+    # build sandbox.
+    export CI=true
+    export HOME=$(mktemp -d)
+    $out/bin/patrol --version
+    runHook postInstallCheck
+  '';
+
   meta = {
     mainProgram = "patrol";
     homepage = "https://patrol.leancode.co";

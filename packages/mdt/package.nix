@@ -47,6 +47,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/mdt --version
+    runHook postInstallCheck
+  '';
+
   meta = {
     description = "CLI that updates markdown content anywhere using comments as template tags";
     homepage = "https://github.com/ifiokjr/mdt";

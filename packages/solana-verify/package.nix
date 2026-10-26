@@ -46,6 +46,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/solana-verify --version
+    runHook postInstallCheck
+  '';
+
   meta = with lib; {
     description = "CLI tool for building verifiable Solana programs";
     homepage = "https://github.com/solana-foundation/solana-verifiable-build";

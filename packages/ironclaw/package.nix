@@ -60,6 +60,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/ironclaw --version
+    runHook postInstallCheck
+  '';
+
   meta = {
     description = "Agent OS focused on privacy, security, and extensibility (NEAR AI)";
     homepage = "https://github.com/nearai/ironclaw";

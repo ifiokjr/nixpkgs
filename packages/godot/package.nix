@@ -69,6 +69,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/godot --version
+    runHook postInstallCheck
+  '';
+
   meta = with lib; {
     description = "Free and open-source 2D and 3D game engine";
     homepage = "https://godotengine.org/";

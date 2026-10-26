@@ -40,6 +40,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/cargo-clean-all --version
+    runHook postInstallCheck
+  '';
+
   meta = {
     description = "Recursively clean all Cargo projects in a directory that match the selected criteria";
     homepage = "https://github.com/dnlmlr/cargo-clean-all";

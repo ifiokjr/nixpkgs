@@ -75,6 +75,13 @@ stdenv.mkDerivation {
 
   dontStrip = stdenv.hostPlatform.isDarwin;
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/op --version
+    runHook postInstallCheck
+  '';
+
   meta = {
     description = "1Password CLI (beta channel) with environment support";
     homepage = "https://developer.1password.com/docs/cli/";
