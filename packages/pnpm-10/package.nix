@@ -2,11 +2,11 @@
 
 callPackage ../pnpm/common.nix {
   pname = "pnpm-10";
-  version = "10.34.8";
+  version = "10.34.9";
   hashes = {
-    "x86_64-linux" = "sha256-AfdK04z6Yc1KikUU61MaQhRuy8FWY5OXy3rQP0Y6g90=";
-    "aarch64-linux" = "sha256-MGe+K9UJQf69kry1xpWF2WENRUwjwaKjauO+5ZltveU=";
-    "x86_64-darwin" = "sha256-FGmAy++RlynsE9xMpwtLQPMGzCwD1tPMgbO30m4ywmg=";
-    "aarch64-darwin" = "sha256-5UhQ/kmcN2+q8UaR+Y/ZLxweoppdut8T2QVAm2O0Wxk=";
+    "x86_64-linux" = "sha256-vUc+pQpIR1UI3t3bkqa45wTahnBToRInHpvZ5e0SVrM=";
+    "aarch64-linux" = "sha256-VVdT0tLf8bGzQXmSbeZDFQFYBhx2wmYR7QynklD19HI=";
+    "x86_64-darwin" = "sha256-0Qvc6hWD7+/nvWR8Pn7jZ7/s7rUKwlSJT5RnF/vMaM4=";
+    "aarch64-darwin" = "sha256-6L8CAaQWjeN593ZHX0Qidi/CvGnWy1nBHVrSUtwBQQs=";
   };
 }
