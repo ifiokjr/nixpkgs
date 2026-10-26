@@ -163,6 +163,11 @@ jobs:
         run: |
           set -euo pipefail
           CHANGED=$(jq -r '.[]' <<< '${{ needs.detect-changes.outputs.linux-packages }}')
+          # Closures expected to grow: the linux prebuilts gained
+          # autoPatchelfHook, which finally pulls the glibc runtime into the
+          # closure — the old closures were small only because the binaries
+          # could not run at all.
+          GROWTH_ALLOWLIST="cargo-clean-all pina wait-for-them"
           FAILED=0
           # nix path-info -S prints "size path", but the column order is not
           # guaranteed across nix versions: take whichever field is numeric.
@@ -179,7 +184,9 @@ jobs:
             grew=$(awk -v a="$pr_size" -v b="$base_size" 'BEGIN{print (a > b * 1.25) ? 1 : 0}')
             human_pr=$(numfmt --to=iec "$pr_size")
             human_base=$(numfmt --to=iec "$base_size")
-            if [ "$grew" = 1 ]; then
+            if [ "$grew" = 1 ] && grep -qw "$pkg" <<< "$GROWTH_ALLOWLIST"; then
+              echo "$pkg closure grew: ${human_base} -> ${human_pr} (allowlisted: prebuilts gained a working glibc runtime)"
+            elif [ "$grew" = 1 ]; then
               echo "::error::$pkg closure grew more than 25%: ${human_base} -> ${human_pr}"
               FAILED=1
             else
