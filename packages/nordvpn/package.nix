@@ -40,7 +40,6 @@ stdenv.mkDerivation {
     homepage = "https://nordvpn.com/";
     license = licenses.unfree;
     platforms = [
-      "x86_64-darwin"
       "aarch64-darwin"
     ];
     maintainers = [ ];

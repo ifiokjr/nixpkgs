@@ -35,7 +35,6 @@ stdenv.mkDerivation {
     homepage = "https://store.steampowered.com/";
     license = licenses.unfree;
     platforms = [
-      "x86_64-darwin"
       "aarch64-darwin"
     ];
     maintainers = [ ];

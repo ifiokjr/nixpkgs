@@ -48,7 +48,6 @@ stdenv.mkDerivation {
     homepage = "https://zoom.us/";
     license = licenses.unfree;
     platforms = [
-      "x86_64-darwin"
       "aarch64-darwin"
     ];
     maintainers = [ ];

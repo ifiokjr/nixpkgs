@@ -55,7 +55,6 @@ stdenv.mkDerivation {
     license = licenses.asl20;
     platforms = [
       "x86_64-linux"
-      "x86_64-darwin"
       "aarch64-darwin"
     ];
     mainProgram = "surfpool";

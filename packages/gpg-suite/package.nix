@@ -42,7 +42,6 @@ stdenv.mkDerivation {
     homepage = "https://gpgtools.org/";
     license = licenses.gpl3;
     platforms = [
-      "x86_64-darwin"
       "aarch64-darwin"
     ];
     maintainers = [ ];
