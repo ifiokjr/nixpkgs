@@ -144,8 +144,10 @@
             }
             ''
               cd ${./.}
-              actionlint .github.workflows/*.yml
-              zizmor --offline --min-severity=high .github/workflows
+              actionlint .github/workflows/*.yml
+              # Explicit file inputs: zizmor's project discovery needs a
+              # .git that store copies do not have.
+              zizmor --offline --min-severity=high .github/workflows/*.yml
               touch $out
             '';
 

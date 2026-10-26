@@ -24,6 +24,7 @@ jobs:
     outputs:
       linux-packages: ${{ steps.changes.outputs.linux-packages }}
       macos-packages: ${{ steps.changes.outputs.macos-packages }}
+      base-sha: ${{ steps.changes.outputs.base-sha }}
     steps:
       - name: 📥 checkout repository
         uses: actions/checkout@v4
@@ -86,10 +87,99 @@ jobs:
             MACOS_JSON=$(comm -12 <(echo "$MACOS_ALL" | jq -r '.[]' | sort) <(echo "$CHANGED_PKGS" | sort) | jq -R -s -c 'split("\n") | map(select(length > 0))')
           fi
 
-          echo "linux-packages=$LINUX_JSON" >> "$GITHUB_OUTPUT"
-          echo "macos-packages=$MACOS_JSON" >> "$GITHUB_OUTPUT"
+          {
+            echo "linux-packages=$LINUX_JSON"
+            echo "macos-packages=$MACOS_JSON"
+            echo "base-sha=$BASE"
+          } >> "$GITHUB_OUTPUT"
           echo "Linux packages to build: $LINUX_JSON"
           echo "macOS packages to build: $MACOS_JSON"
+
+  perf:
+    name: performance regression check
+    needs: [detect-changes]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: 📥 checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📥 checkout base tree
+        run: |
+          set -euo pipefail
+          BASE="${{ needs.detect-changes.outputs.base-sha }}"
+          if [ -n "$BASE" ] && [ "$BASE" != "0000000000000000000000000000000000000000" ]; then
+            MB=$(git merge-base "$BASE" HEAD)
+          else
+            MB=$(git rev-parse HEAD)
+          fi
+          git worktree add "$PWD/base" "$MB"
+          echo "comparing against merge-base $MB"
+
+      - name: 🔧 install nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔧 set up nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: 🏗️ benchmark flake evaluation
+        run: |
+          set -euo pipefail
+          bench() {
+            local best=999999
+            for _ in 1 2 3; do
+              local start end secs
+              start=$(date +%s%N)
+              nix eval --json .#ciPackages.x86_64-linux > /dev/null
+              end=$(date +%s%N)
+              secs=$(( (end - start) / 100000000 ))
+              if [ "$secs" -lt "$best" ]; then best=$secs; fi
+            done
+            # tenths of a second
+            echo "$((best / 10)).$((best % 10))"
+          }
+          PR_EVAL=$(bench)
+          cd "$PWD/base"
+          BASE_EVAL=$(bench)
+          cd "$GITHUB_WORKSPACE"
+          echo "flake eval (best of 3): base=${BASE_EVAL}s pr=${PR_EVAL}s"
+          # Fail only when meaningfully slower than the base tree and past an
+          # absolute floor, so runner noise alone can never fail a PR.
+          worse=$(awk -v a="$PR_EVAL" -v b="$BASE_EVAL" 'BEGIN{print (a > b * 1.25 && a > 30) ? 1 : 0}')
+          if [ "$worse" = 1 ]; then
+            echo "::error::flake evaluation regressed: ${BASE_EVAL}s -> ${PR_EVAL}s (>25% and >30s)"
+            exit 1
+          fi
+
+      - name: 🏗️ check closure sizes of changed packages
+        if: needs.detect-changes.outputs.linux-packages != '[]'
+        run: |
+          set -euo pipefail
+          CHANGED=$(jq -r '.[]' <<< '${{ needs.detect-changes.outputs.linux-packages }}')
+          FAILED=0
+          for pkg in $CHANGED; do
+            pr_size=$(nix build --no-link ".#$pkg" 2>/dev/null && nix path-info -Sh ".#$pkg" | awk '{print $1}') || pr_size=""
+            base_size=$(cd "$PWD/base" && nix build --no-link ".#$pkg" 2>/dev/null && nix path-info -Sh ".#$pkg" | awk '{print $1}') || base_size=""
+            if [ -z "$pr_size" ] || [ -z "$base_size" ]; then
+              echo "$pkg: skipped (does not build on one of the trees — new, renamed, or failing; build jobs own that verdict)"
+              continue
+            fi
+            grew=$(awk -v a="$pr_size" -v b="$base_size" 'BEGIN{print (a > b * 1.25) ? 1 : 0}')
+            human_pr=$(numfmt --to=iec "$pr_size")
+            human_base=$(numfmt --to=iec "$base_size")
+            if [ "$grew" = 1 ]; then
+              echo "::error::$pkg closure grew more than 25%: ${human_base} -> ${human_pr}"
+              FAILED=1
+            else
+              echo "$pkg closure: ${human_base} -> ${human_pr}"
+            fi
+          done
+          exit "$FAILED"
 
   validate:
     name: validate flake
@@ -184,6 +274,10 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    env:
+      # Empty until the one-time Cachix setup in the readme is done; the
+      # cachix step is skipped entirely when unset.
+      CACHIX_SIGNING_KEY: ${{ secrets.CACHIX_SIGNING_KEY }}
     strategy:
       fail-fast: false
       # max-parallel caps concurrency to avoid GitHub API rate-limit
@@ -202,6 +296,12 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: 🔧 set up cachix
+        if: ${{ env.CACHIX_SIGNING_KEY != '' }}
+        uses: cachix/cachix-action@v16
+        with:
+          name: ifiokjr-nixpkgs
+          signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
       - name: 🏗️ build ${{ matrix.package }}
         run: nix build .#${{ matrix.package }}
 
@@ -300,6 +400,10 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    env:
+      # Empty until the one-time Cachix setup in the readme is done; the
+      # cachix step is skipped entirely when unset.
+      CACHIX_SIGNING_KEY: ${{ secrets.CACHIX_SIGNING_KEY }}
     strategy:
       fail-fast: false
       # max-parallel caps concurrency to avoid GitHub API rate-limit
@@ -318,12 +422,18 @@ jobs:
 
       - name: 🔧 set up nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: 🔧 set up cachix
+        if: ${{ env.CACHIX_SIGNING_KEY != '' }}
+        uses: cachix/cachix-action@v16
+        with:
+          name: ifiokjr-nixpkgs
+          signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
       - name: 🏗️ build ${{ matrix.package }}
         run: nix build .#${{ matrix.package }}
 
   ci-status:
     name: ci-status
-    needs: [detect-changes, validate, lint, test-update-script, build-linux, build-macos, downstream]
+    needs: [detect-changes, validate, lint, test-update-script, perf, build-linux, build-macos, downstream]
     if: always()
     runs-on: ubuntu-latest
     steps:
