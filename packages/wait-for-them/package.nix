@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchurl,
+  autoPatchelfHook,
 }:
 
 let
@@ -33,6 +34,9 @@ stdenv.mkDerivation {
   dontUnpack = true;
   dontBuild = true;
   dontStrip = true;
+
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ stdenv.cc.cc.lib ];
 
   installPhase = ''
     runHook preInstall
