@@ -14,14 +14,8 @@ let
   version = "6.2.0";
   tag = "v${version}";
 
-  platformSuffix =
-    {
-      "aarch64-darwin" = "aarch64-apple-darwin";
-      "x86_64-darwin" = "x86_64-apple-darwin";
-      "aarch64-linux" = "aarch64-unknown-linux-gnu";
-      "x86_64-linux" = "x86_64-unknown-linux-gnu";
-    }
-    .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
+  # Rust target triple for the host platform, e.g. aarch64-apple-darwin.
+  platformSuffix = stdenv.hostPlatform.rust.rustcTarget;
 
   # Linux prebuilt hashes from upstream releases
   upstreamLinuxHashes = {
