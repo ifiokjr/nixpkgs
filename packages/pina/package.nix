@@ -32,6 +32,11 @@ stdenv.mkDerivation {
   dontStrip = true;
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
+
+  # pina_lint_driver is a rustc driver plugin: rustc dlopens it at lint time
+  # and provides librustc_driver from its own toolchain, so the library is
+  # legitimately absent from this package's runtime closure.
+  autoPatchelfIgnoreMissingDeps = [ "librustc_driver*" ];
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ stdenv.cc.cc.lib ];
 
   installPhase = ''
