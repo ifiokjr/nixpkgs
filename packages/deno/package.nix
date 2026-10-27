@@ -10,14 +10,8 @@ let
   version = "2.9.8";
   tag = "v${version}";
 
-  platformSuffix =
-    {
-      "aarch64-darwin" = "aarch64-apple-darwin";
-      "x86_64-darwin" = "x86_64-apple-darwin";
-      "aarch64-linux" = "aarch64-unknown-linux-gnu";
-      "x86_64-linux" = "x86_64-unknown-linux-gnu";
-    }
-    .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
+  # Rust target triple for the host platform, e.g. aarch64-apple-darwin.
+  platformSuffix = stdenv.hostPlatform.rust.rustcTarget;
 
   hashes = {
     "aarch64-apple-darwin" = "sha256-nwv2YDk9our/BEzcdETLCMc/I1hJth0iTYJaGUznyY4=";
@@ -88,6 +82,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/deno --version
+    runHook postInstallCheck
+  '';
+
   meta = with lib; {
     description = "A modern runtime for JavaScript and TypeScript";
     homepage = "https://deno.com/";
@@ -95,7 +96,6 @@ stdenv.mkDerivation {
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
-      "x86_64-darwin"
       "aarch64-darwin"
     ];
     maintainers = [ ];

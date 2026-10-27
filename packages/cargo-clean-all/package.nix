@@ -2,19 +2,14 @@
   lib,
   stdenv,
   fetchurl,
+  autoPatchelfHook,
 }:
 
 let
   version = "0.6.6";
 
-  platformSuffix =
-    {
-      "aarch64-darwin" = "aarch64-apple-darwin";
-      "x86_64-darwin" = "x86_64-apple-darwin";
-      "aarch64-linux" = "aarch64-unknown-linux-gnu";
-      "x86_64-linux" = "x86_64-unknown-linux-gnu";
-    }
-    .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
+  # Rust target triple for the host platform, e.g. aarch64-apple-darwin.
+  platformSuffix = stdenv.hostPlatform.rust.rustcTarget;
 
   hashes = {
     "aarch64-apple-darwin" = "sha256-VcE8YmPV9ESbVpDInWiFdqTIgOGFMXl6t2FE4/PjeRI=";
@@ -36,6 +31,9 @@ stdenv.mkDerivation {
   dontBuild = true;
   dontStrip = true;
 
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ stdenv.cc.cc.lib ];
+
   installPhase = ''
     runHook preInstall
 
@@ -44,6 +42,13 @@ stdenv.mkDerivation {
     chmod +x $out/bin/cargo-clean-all
 
     runHook postInstall
+  '';
+
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/cargo-clean-all --version
+    runHook postInstallCheck
   '';
 
   meta = {
@@ -55,7 +60,6 @@ stdenv.mkDerivation {
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
-      "x86_64-darwin"
       "aarch64-darwin"
     ];
     tags = [

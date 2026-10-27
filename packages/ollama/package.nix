@@ -94,6 +94,16 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  # The darwin build's CLI launches/touches the Ollama.app bundle, which
+  # breaks sandbox finalization; only the plain-binary Linux build is
+  # smoke-tested.
+  doInstallCheck = stdenv.hostPlatform.isLinux;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/ollama --version
+    runHook postInstallCheck
+  '';
+
   meta = with lib; {
     description = "Run local LLMs with Ollama via CLI and desktop app";
     homepage = "https://ollama.com/";
@@ -101,7 +111,6 @@ stdenv.mkDerivation {
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
-      "x86_64-darwin"
       "aarch64-darwin"
     ];
     maintainers = [ ];

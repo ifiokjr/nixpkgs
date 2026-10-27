@@ -655,7 +655,7 @@ stdenv.mkDerivation {
     inherit description;
     homepage = "https://pnpm.io/";
     license = licenses.mit;
-    platforms = builtins.attrNames hashes;
+    platforms = lib.remove "x86_64-darwin" (builtins.attrNames hashes);
     maintainers = [ ];
     mainProgram = "pnpm";
     tags = [

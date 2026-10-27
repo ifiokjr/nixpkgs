@@ -4,6 +4,7 @@
   lib,
   undmg,
   makeWrapper,
+  patchelf,
   channel ? "stable",
   overrideVersion ? null,
   zedHashes ? {
@@ -37,7 +38,10 @@ stdenv.mkDerivation {
 
   nativeBuildInputs =
     lib.optionals stdenv.hostPlatform.isDarwin [ undmg ]
-    ++ lib.optionals stdenv.hostPlatform.isLinux [ makeWrapper ];
+    ++ lib.optionals stdenv.hostPlatform.isLinux [
+      makeWrapper
+      patchelf
+    ];
 
   sourceRoot = ".";
   dontUnpack = stdenv.hostPlatform.isDarwin;
@@ -73,6 +77,10 @@ stdenv.mkDerivation {
 
     if [ -x $out/bin/zed ]; then
       mv $out/bin/zed $out/bin/.zed-unwrapped
+      # Upstream builds against the host glibc; rewrite the ELF interpreter
+      # so the binary runs under the nix-provided loader. Runtime libraries
+      # come from the tarball itself via the wrapper's LD_LIBRARY_PATH.
+      patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" $out/bin/.zed-unwrapped
       makeWrapper $out/bin/.zed-unwrapped $out/bin/${pname} \
         --prefix LD_LIBRARY_PATH : $out/lib
     fi
@@ -87,6 +95,16 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  # The darwin CLI is a symlink into the .app bundle and mutates bundle
+  # state (LaunchServices) when run, which breaks sandbox finalization —
+  # so only the plain-binary Linux build is smoke-tested.
+  doInstallCheck = stdenv.hostPlatform.isLinux;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/${pname} --version
+    runHook postInstallCheck
+  '';
+
   meta = with lib; {
     description = "High-performance, multiplayer code editor from the creators of Atom and Tree-sitter";
     homepage = "https://zed.dev";
@@ -96,7 +114,6 @@ stdenv.mkDerivation {
     maintainers = [ ];
     platforms = [
       "aarch64-darwin"
-      "x86_64-darwin"
       "aarch64-linux"
       "x86_64-linux"
     ];

@@ -62,6 +62,13 @@ stdenv.mkDerivation {
     done
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/racket --version
+    runHook postInstallCheck
+  '';
+
   meta = with lib; {
     description = "Programmable programming language (minimal distribution, pre-built)";
     homepage = "https://racket-lang.org/";
@@ -70,7 +77,6 @@ stdenv.mkDerivation {
       mit
     ];
     platforms = [
-      "x86_64-darwin"
       "aarch64-darwin"
       "x86_64-linux"
       "aarch64-linux"

@@ -878,45 +878,15 @@ def update-agave [packages_dir: string, dry_run: bool] {
   update-agave-package $packages_dir "agave" $latest_version $dry_run
 }
 
-def update-agave-2-0 [packages_dir: string, dry_run: bool] {
-  update-agave-track $packages_dir "agave-2_0" "2.0" $dry_run
-}
 
-def update-agave-4-0 [packages_dir: string, dry_run: bool] {
-  update-agave-track $packages_dir "agave-4_0" "4.0" $dry_run
-}
 
-def update-agave-4-1 [packages_dir: string, dry_run: bool] {
-  update-agave-track $packages_dir "agave-4_1" "4.1" $dry_run
-}
 
-def update-agave-4-2 [packages_dir: string, dry_run: bool] {
-  update-agave-track $packages_dir "agave-4_2" "4.2" $dry_run
-}
 
-def update-agave-4-3 [packages_dir: string, dry_run: bool] {
-  update-agave-track $packages_dir "agave-4_3" "4.3" $dry_run
-}
 
-def update-agave-3-1 [packages_dir: string, dry_run: bool] {
-  update-agave-track $packages_dir "agave-3_1" "3.1" $dry_run
-}
 
-def update-agave-3-0 [packages_dir: string, dry_run: bool] {
-  update-agave-track $packages_dir "agave-3_0" "3.0" $dry_run
-}
 
-def update-agave-2-3 [packages_dir: string, dry_run: bool] {
-  update-agave-track $packages_dir "agave-2_3" "2.3" $dry_run
-}
 
-def update-agave-2-2 [packages_dir: string, dry_run: bool] {
-  update-agave-track $packages_dir "agave-2_2" "2.2" $dry_run
-}
 
-def update-agave-2-1 [packages_dir: string, dry_run: bool] {
-  update-agave-track $packages_dir "agave-2_1" "2.1" $dry_run
-}
 
 def update-codex [packages_dir: string, dry_run: bool] {
   let tag = (github-latest-tag "openai" "codex")
@@ -2133,16 +2103,16 @@ def main [
 
   mut steps = [
     { name: "agave", run: {|| update-agave $packages_dir $dry_run } }
-    { name: "agave-2_0", run: {|| update-agave-2-0 $packages_dir $dry_run } }
-    { name: "agave-2_1", run: {|| update-agave-2-1 $packages_dir $dry_run } }
-    { name: "agave-2_2", run: {|| update-agave-2-2 $packages_dir $dry_run } }
-    { name: "agave-2_3", run: {|| update-agave-2-3 $packages_dir $dry_run } }
-    { name: "agave-3_0", run: {|| update-agave-3-0 $packages_dir $dry_run } }
-    { name: "agave-3_1", run: {|| update-agave-3-1 $packages_dir $dry_run } }
-    { name: "agave-4_0", run: {|| update-agave-4-0 $packages_dir $dry_run } }
-    { name: "agave-4_1", run: {|| update-agave-4-1 $packages_dir $dry_run } }
-    { name: "agave-4_2", run: {|| update-agave-4-2 $packages_dir $dry_run } }
-    { name: "agave-4_3", run: {|| update-agave-4-3 $packages_dir $dry_run } }
+    { name: "agave-2_0", run: {|| update-agave-track $packages_dir "agave-2_0" "2.0" $dry_run } }
+    { name: "agave-2_1", run: {|| update-agave-track $packages_dir "agave-2_1" "2.1" $dry_run } }
+    { name: "agave-2_2", run: {|| update-agave-track $packages_dir "agave-2_2" "2.2" $dry_run } }
+    { name: "agave-2_3", run: {|| update-agave-track $packages_dir "agave-2_3" "2.3" $dry_run } }
+    { name: "agave-3_0", run: {|| update-agave-track $packages_dir "agave-3_0" "3.0" $dry_run } }
+    { name: "agave-3_1", run: {|| update-agave-track $packages_dir "agave-3_1" "3.1" $dry_run } }
+    { name: "agave-4_0", run: {|| update-agave-track $packages_dir "agave-4_0" "4.0" $dry_run } }
+    { name: "agave-4_1", run: {|| update-agave-track $packages_dir "agave-4_1" "4.1" $dry_run } }
+    { name: "agave-4_2", run: {|| update-agave-track $packages_dir "agave-4_2" "4.2" $dry_run } }
+    { name: "agave-4_3", run: {|| update-agave-track $packages_dir "agave-4_3" "4.3" $dry_run } }
     { name: "cargo-clean-all", run: {|| update-prebuilt-cargo-clean-all $packages_dir $dry_run } }
     { name: "cargo-interactive-update", run: {|| update-prebuilt-cargo-interactive $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
@@ -2187,14 +2157,40 @@ def main [
 
   let total = ($steps | length)
 
-  for step in $steps {
-    let result = (run-step $step.name $step.run)
-    if $result.changed {
-      $updated = ($updated + 1)
+  # Every updater writes only its own package file, so steps can run in
+  # parallel; each log line carries the step name, so interleaved output
+  # stays attributable. Override the width with NIXPKGS_UPDATE_THREADS.
+  let threads = ($env | get -o NIXPKGS_UPDATE_THREADS | default "6" | into int)
+
+  let results = (
+    $steps
+    | enumerate
+    | par-each --threads $threads {|it|
+      {
+        index: $it.index,
+        name: $it.item.name,
+        result: (run-step $it.item.name $it.item.run),
+      }
     }
-    if $result.failed {
-      $failed_names = ($failed_names | append $step.name)
-    }
+    | sort-by index
+  )
+
+  for step in ($results | where result.changed) {
+    $updated = ($updated + 1)
+  }
+  $failed_names = ($results | where result.failed | get name)
+
+  # Guard against drift: a package directory without an updater step is a
+  # package that silently stops receiving updates.
+  let covered = ($steps | get name)
+  let uncovered = (
+    ls $packages_dir
+    | get name
+    | path basename
+    | where {|dir| not ($dir in $covered)}
+  )
+  if ($uncovered | is-not-empty) {
+    log-warn $"packages without an update step: ($uncovered | str join ', ')"
   }
 
   let failed_count = ($failed_names | length)

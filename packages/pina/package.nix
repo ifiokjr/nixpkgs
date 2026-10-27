@@ -2,19 +2,14 @@
   lib,
   stdenv,
   fetchurl,
+  autoPatchelfHook,
 }:
 
 let
   version = "0.23.0";
 
-  platformSuffix =
-    {
-      "aarch64-darwin" = "aarch64-apple-darwin";
-      "x86_64-darwin" = "x86_64-apple-darwin";
-      "aarch64-linux" = "aarch64-unknown-linux-gnu";
-      "x86_64-linux" = "x86_64-unknown-linux-gnu";
-    }
-    .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
+  # Rust target triple for the host platform, e.g. aarch64-apple-darwin.
+  platformSuffix = stdenv.hostPlatform.rust.rustcTarget;
 
   hashes = {
     "aarch64-apple-darwin" = "sha256-6t/gWa0qjKOSoq4oMy0fjmJhHgj+yegutusNmzxP9R4=";
@@ -36,6 +31,14 @@ stdenv.mkDerivation {
   dontBuild = true;
   dontStrip = true;
 
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
+
+  # pina_lint_driver is a rustc driver plugin: rustc dlopens it at lint time
+  # and provides librustc_driver from its own toolchain, so the library is
+  # legitimately absent from this package's runtime closure.
+  autoPatchelfIgnoreMissingDeps = [ "librustc_driver*" ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ stdenv.cc.cc.lib ];
+
   installPhase = ''
     runHook preInstall
 
@@ -44,6 +47,13 @@ stdenv.mkDerivation {
     chmod +x $out/bin/pina
 
     runHook postInstall
+  '';
+
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/pina --version
+    runHook postInstallCheck
   '';
 
   meta = {
@@ -55,7 +65,6 @@ stdenv.mkDerivation {
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
-      "x86_64-darwin"
       "aarch64-darwin"
     ];
     tags = [

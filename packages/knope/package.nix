@@ -7,14 +7,13 @@
 let
   version = "0.23.2";
 
+  # Upstream Linux binaries are statically linked against musl; the Rust
+  # target triple is standard everywhere else.
   platformSuffix =
-    {
-      "aarch64-darwin" = "aarch64-apple-darwin";
-      "x86_64-darwin" = "x86_64-apple-darwin";
-      "aarch64-linux" = "aarch64-unknown-linux-musl";
-      "x86_64-linux" = "x86_64-unknown-linux-musl";
-    }
-    .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
+    if stdenv.hostPlatform.isLinux then
+      builtins.replaceStrings [ "gnu" ] [ "musl" ] stdenv.hostPlatform.rust.rustcTarget
+    else
+      stdenv.hostPlatform.rust.rustcTarget;
 
   hashes = {
     "aarch64-apple-darwin" = "sha256-nKBAPY5SivSLZFHrFO9NMRC1cKMj52G6uJlPwUwE3Ek=";
@@ -45,6 +44,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/knope --version
+    runHook postInstallCheck
+  '';
+
   meta = {
     description = "A command line tool for automating common development tasks";
     homepage = "https://knope.tech";
@@ -54,7 +60,6 @@ stdenv.mkDerivation {
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
-      "x86_64-darwin"
       "aarch64-darwin"
     ];
     tags = [

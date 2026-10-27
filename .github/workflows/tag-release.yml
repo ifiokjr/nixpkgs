@@ -1,0 +1,40 @@
+name: tag release
+
+# Weekly consumer-pinnable tag over the current main. The daily update job
+# moves flake.lock every morning, so following github:ifiokjr/nixpkgs
+# unpinned re-evaluates against a moving nixpkgs; a release/<date> tag gives
+# downstream flakes a stable pin that still moves forward weekly.
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    name: tag main
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🏷️ tag current main
+        run: |
+          set -euo pipefail
+          LAST=$(git describe --tags --abbrev=0 --match 'release/*' || true)
+          if [ -n "$LAST" ] && [ "$(git rev-parse "$LAST")" = "$(git rev-parse HEAD)" ]; then
+            echo "main has not moved since $LAST — nothing to tag"
+            exit 0
+          fi
+          TAG="release/$(date -u +%F)"
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "$TAG already exists (manual run later the same day) — skipping"
+            exit 0
+          fi
+          # Lightweight tag: no tagger identity to configure or verify.
+          git tag "$TAG"
+          git push origin "refs/tags/$TAG"

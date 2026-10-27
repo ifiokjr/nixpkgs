@@ -40,6 +40,18 @@ buildDartApplication (finalAttrs: {
     cp --recursive packages/melos/templates $out/
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    # Dart CLIs prompt for analytics consent on first run and expect a
+    # writable home; provide both so the check stays non-interactive in the
+    # build sandbox.
+    export CI=true
+    export HOME=$(mktemp -d)
+    $out/bin/melos --version
+    runHook postInstallCheck
+  '';
+
   meta = {
     homepage = "https://github.com/invertase/melos";
     description = "Tool for managing Dart and Flutter projects with multiple packages";

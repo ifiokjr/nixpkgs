@@ -8,14 +8,13 @@
 let
   version = "1.4.1";
 
+  # Upstream Linux binaries are statically linked against musl; the Rust
+  # target triple is standard everywhere else.
   platformSuffix =
-    {
-      "aarch64-darwin" = "aarch64-apple-darwin";
-      "x86_64-darwin" = "x86_64-apple-darwin";
-      "aarch64-linux" = "aarch64-unknown-linux-musl";
-      "x86_64-linux" = "x86_64-unknown-linux-musl";
-    }
-    .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
+    if stdenv.hostPlatform.isLinux then
+      builtins.replaceStrings [ "gnu" ] [ "musl" ] stdenv.hostPlatform.rust.rustcTarget
+    else
+      stdenv.hostPlatform.rust.rustcTarget;
 
   hashes = {
     "aarch64-apple-darwin" = "sha256-TFHvfU6fMMQ1UYWNuEOWySsZWp48dqAuL7nJn+hI9mg=";
@@ -61,6 +60,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/ironclaw --version
+    runHook postInstallCheck
+  '';
+
   meta = {
     description = "Agent OS focused on privacy, security, and extensibility (NEAR AI)";
     homepage = "https://github.com/nearai/ironclaw";
@@ -73,7 +79,6 @@ stdenv.mkDerivation {
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
-      "x86_64-darwin"
       "aarch64-darwin"
     ];
     tags = [

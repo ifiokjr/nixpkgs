@@ -9,14 +9,13 @@ let
   version = "0.164.0";
   tag = "rust-v${version}";
 
+  # Upstream Linux binaries are statically linked against musl; the Rust
+  # target triple is standard everywhere else.
   platformSuffix =
-    {
-      "aarch64-darwin" = "aarch64-apple-darwin";
-      "x86_64-darwin" = "x86_64-apple-darwin";
-      "aarch64-linux" = "aarch64-unknown-linux-musl";
-      "x86_64-linux" = "x86_64-unknown-linux-musl";
-    }
-    .${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
+    if stdenv.hostPlatform.isLinux then
+      builtins.replaceStrings [ "gnu" ] [ "musl" ] stdenv.hostPlatform.rust.rustcTarget
+    else
+      stdenv.hostPlatform.rust.rustcTarget;
 
   hashes = {
     "aarch64-apple-darwin" = "sha256-qoKZwWnYARGqwFVDrSYhyb2+25vCUskF/j9aW6+aQUI=";
@@ -52,6 +51,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/codex --version
+    runHook postInstallCheck
+  '';
+
   meta = with lib; {
     description = "OpenAI Codex CLI - AI coding assistant for the terminal";
     homepage = "https://github.com/openai/codex";
@@ -59,7 +65,6 @@ stdenv.mkDerivation {
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
-      "x86_64-darwin"
       "aarch64-darwin"
     ];
     maintainers = [ ];

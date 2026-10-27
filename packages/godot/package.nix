@@ -69,6 +69,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/godot --version
+    runHook postInstallCheck
+  '';
+
   meta = with lib; {
     description = "Free and open-source 2D and 3D game engine";
     homepage = "https://godotengine.org/";
@@ -76,7 +83,6 @@ stdenv.mkDerivation {
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
-      "x86_64-darwin"
       "aarch64-darwin"
     ];
     maintainers = [ ];

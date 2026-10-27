@@ -2,6 +2,8 @@
   lib,
   stdenv,
   fetchurl,
+  autoPatchelfHook,
+  openssl,
 }:
 
 let
@@ -34,6 +36,12 @@ stdenv.mkDerivation {
   dontBuild = true;
   dontStrip = true;
 
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+    stdenv.cc.cc.lib
+    openssl
+  ];
+
   installPhase = ''
     runHook preInstall
 
@@ -42,6 +50,13 @@ stdenv.mkDerivation {
     chmod +x $out/bin/wait-for-them
 
     runHook postInstall
+  '';
+
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/wait-for-them --version
+    runHook postInstallCheck
   '';
 
   meta = {
@@ -55,7 +70,6 @@ stdenv.mkDerivation {
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
-      "x86_64-darwin"
       "aarch64-darwin"
     ];
     tags = [
