@@ -4,6 +4,7 @@
   lib,
   undmg,
   makeWrapper,
+  patchelf,
 }:
 
 let
@@ -16,6 +17,7 @@ import ../zed/package.nix {
     lib
     undmg
     makeWrapper
+    patchelf
     ;
   channel = "preview";
   overrideVersion = version;
