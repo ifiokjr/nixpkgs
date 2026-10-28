@@ -332,6 +332,9 @@ jobs:
     needs: [detect-changes, validate, test-update-script]
     if: contains(needs.detect-changes.outputs.linux-packages, 'pnpm') || contains(needs.detect-changes.outputs.macos-packages, 'pnpm') || github.event_name == 'push'
     runs-on: ubuntu-latest
+    # A shell evaluation plus one install: minutes of work. Without a bound a
+    # hung step burns GitHub's six-hour job cap and holds ci-status with it.
+    timeout-minutes: 30
     permissions:
       contents: read
       id-token: write
@@ -396,13 +399,20 @@ jobs:
           export XDG_CACHE_HOME="$PWD/.xdg-cache"
           mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$PWD/.home"
 
+          # This project's shell runs its own tasks on entry, including its
+          # pre-commit hooks over every file. Those are unrelated to what we
+          # check here — that the freshly built pnpm installs this lockfile —
+          # and they are where the job hung: dprint's exec plugin shells out to
+          # rustfmt, rustup then fetches the pinned nightly toolchain into the
+          # throwaway HOME, and nothing bounds that download. Force the hooks
+          # off so entering the shell only builds the environment.
           for i in 1 2 3; do
             if nix shell nixpkgs#devenv -c env \
               HOME="$PWD/.home" \
               PNPM_HOME="$XDG_DATA_HOME/pnpm" \
               XDG_CACHE_HOME="$PWD/.xdg-cache" \
               XDG_DATA_HOME="$XDG_DATA_HOME" \
-              devenv shell ${{ matrix.command }}; then
+              devenv --option git-hooks.enable:bool false shell ${{ matrix.command }}; then
               break
             fi
             echo "devenv shell attempt $i failed, repairing nix store and retrying in 30s..."
