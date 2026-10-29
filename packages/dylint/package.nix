@@ -11,7 +11,7 @@
 }:
 
 let
-  version = "6.2.0";
+  version = "6.3.0";
   tag = "v${version}";
 
   # Rust target triple for the host platform, e.g. aarch64-apple-darwin.
@@ -19,10 +19,10 @@ let
 
   # Linux prebuilt hashes from upstream releases
   upstreamLinuxHashes = {
-    "cargo-dylint-aarch64-unknown-linux-gnu" = "sha256-8f/wJ8hoy8vJJKSXl+60dTUK5FBIXAbuGktkxy3tj0Y=";
-    "dylint-link-aarch64-unknown-linux-gnu" = "sha256-1xxbuBmZ7P8zeXumBxjea7mS4Pd0Qq4/vBsoOIVbls8=";
-    "cargo-dylint-x86_64-unknown-linux-gnu" = "sha256-oJs0ZX8pdIMkbYCMS1/430g2YCN61P81QtjNTCnN8v0=";
-    "dylint-link-x86_64-unknown-linux-gnu" = "sha256-wlZx8DOeGTqA3sCh5hwyEHK8DINlv0AVzU79FBE+K7I=";
+    "cargo-dylint-aarch64-unknown-linux-gnu" = "sha256-ssTv+oyISxon3u2FD8cQzaUPKZpTGpitQeVh/15lskc=";
+    "dylint-link-aarch64-unknown-linux-gnu" = "sha256-29dM6IJACLRrxtOBNhkha7ujudcSpc7TGhXg+yZT8fM=";
+    "cargo-dylint-x86_64-unknown-linux-gnu" = "sha256-KTLqfliaRyNuySaBubXkGvQiZsb6K4oW8D9TtgGgkSc=";
+    "dylint-link-x86_64-unknown-linux-gnu" = "sha256-pdMmj/JCac232kISZyDxPCSGkJi9SxUvapXtnp+OgvQ=";
   };
 
   hasUpstreamBinary = stdenv.isLinux;
@@ -53,7 +53,7 @@ let
     owner = "trailofbits";
     repo = "dylint";
     rev = tag;
-    hash = "sha256-UAYzmjRNzc19ztXIGDzresbWoVH7CYgq9b1/fp4bjZs=";
+    hash = "sha256-VfpPevWgbzJZG9sT4X/v39ZTUutDoTjPdjEowC/C3yo=";
   };
 
   sourceBuild = rustPlatform.buildRustPackage {
