@@ -11,6 +11,7 @@ v = { command = "./scripts/versions", format = "json", watch = [
 	"packages/agave-4_1/package.nix",
 	"packages/agave-4_2/package.nix",
 	"packages/agave-4_3/package.nix",
+	"packages/agave-4_4/package.nix",
 	"packages/dylint/package.nix",
 	"packages/cargo-clean-all/package.nix",
 	"packages/cargo-interactive-update/package.nix",
