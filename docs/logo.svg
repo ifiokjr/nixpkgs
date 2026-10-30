@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="512" height="512" role="img" aria-labelledby="title desc">
+  <title id="title">ifiokjr/nixpkgs</title>
+  <desc id="desc">A cream isometric parcel stamped with a snowflake, on a dark rounded tile.</desc>
+  <rect width="120" height="120" rx="26" fill="#0B0F17"/>
+  <rect x="0.75" y="0.75" width="118.5" height="118.5" rx="25.25" fill="none" stroke="#FFFFFF" stroke-opacity=".08" stroke-width="1.5"/>
+  <ellipse cx="60" cy="104" rx="33" ry="4.5" fill="#000000" opacity=".35"/>
+  <path d="M60 17 L101 38 L60 59 L19 38 Z" fill="#F4E7CA"/>
+  <path d="M19 38 L60 59 L60 101 L19 80 Z" fill="#D9C49B"/>
+  <path d="M101 38 L60 59 L60 101 L101 80 Z" fill="#E7D6B0"/>
+  <path d="M19 38 L60 59 L101 38" fill="none" stroke="#C1A97B" stroke-width="1.4" opacity=".8"/>
+  <g transform="translate(60 37)" fill="none" stroke="#5A4A2B" stroke-width="2.4" stroke-linecap="round">
+    <path d="M0 -11 V11 M-9.5 -5.5 L9.5 5.5 M9.5 -5.5 L-9.5 5.5"/>
+    <circle cx="0" cy="-11" r="1.4" fill="#5A4A2B" stroke="none"/>
+    <circle cx="0" cy="11" r="1.4" fill="#5A4A2B" stroke="none"/>
+    <circle cx="-9.5" cy="5.5" r="1.4" fill="#5A4A2B" stroke="none"/>
+  </g>
+  <rect x="72" y="66" width="18" height="12" rx="2" fill="#F7EED8" opacity=".85"/>
+</svg>
