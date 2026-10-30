@@ -178,9 +178,14 @@ stdenv.mkDerivation {
     # package bundles platform-tools, force that exact store path into the
     # location so a stale mutable SDK can never override the pinned package.
     # The version is read from the tool itself so this keeps working across
-    # cargo-build-sbf releases.
+    # cargo-build-sbf releases: < 4.5 prints "platform-tools v1.57" while 4.5+
+    # prints "Default platform-tools: v1.57". Fall back to the version pinned
+    # in this package if neither line is present.
     if [ -d "__OUT__/lib/platform-tools" ]; then
-      pt_version="$(__WRAPPED__ --version 2>/dev/null | sed -n 's/^platform-tools //p')"
+      pt_version="$(__WRAPPED__ --version 2>/dev/null | sed -n -e 's/^platform-tools //p' -e 's/^Default platform-tools: //p' | head -n 1)"
+      if [ -z "$pt_version" ]; then
+        pt_version="__PT_VERSION__"
+      fi
       if [[ "$pt_version" =~ ^v[0-9]+(\.[0-9]+)*$ ]]; then
         pt_root="''${HOME}/.cache/solana"
         pt_dir="$pt_root/$pt_version/platform-tools"
@@ -231,6 +236,9 @@ stdenv.mkDerivation {
           --replace-fail __PNAME__ "$pname" \
           --replace-fail __SUBCOMMAND__ "''${bin#cargo-}" \
           --replace-fail __VERSION__ "$version" \
+          --replace-fail __PT_VERSION__ "${
+            if platformToolsVersion != null then platformToolsVersion else ""
+          }" \
           --replace-fail __WRAPPED__ "$wrapped"
         chmod +x "$out/bin/$bin"
       fi

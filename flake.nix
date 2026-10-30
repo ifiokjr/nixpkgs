@@ -41,7 +41,8 @@
         agave-4_1 = pkgs.callPackage ./packages/agave-4_1/package.nix { };
         agave-4_2 = pkgs.callPackage ./packages/agave-4_2/package.nix { };
         agave-4_3 = pkgs.callPackage ./packages/agave-4_3/package.nix { };
-        agave = self.agave-4_2;
+        agave-4_4 = pkgs.callPackage ./packages/agave-4_4/package.nix { };
+        agave = self.agave-4_3;
         solana = self.agave;
         cargo-clean-all = pkgs.callPackage ./packages/cargo-clean-all/package.nix { };
         cargo-interactive-update = pkgs.callPackage ./packages/cargo-interactive-update/package.nix { };

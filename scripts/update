@@ -2113,6 +2113,7 @@ def main [
     { name: "agave-4_1", run: {|| update-agave-track $packages_dir "agave-4_1" "4.1" $dry_run } }
     { name: "agave-4_2", run: {|| update-agave-track $packages_dir "agave-4_2" "4.2" $dry_run } }
     { name: "agave-4_3", run: {|| update-agave-track $packages_dir "agave-4_3" "4.3" $dry_run } }
+    { name: "agave-4_4", run: {|| update-agave-track $packages_dir "agave-4_4" "4.4" $dry_run } }
     { name: "cargo-clean-all", run: {|| update-prebuilt-cargo-clean-all $packages_dir $dry_run } }
     { name: "cargo-interactive-update", run: {|| update-prebuilt-cargo-interactive $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
