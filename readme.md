@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/logo.svg" width="104" alt="ifiokjr/nixpkgs logo: a cream parcel stamped with a snowflake" />
+</p>
+
 # nixpkgs
 
 [![CI](https://github.com/ifiokjr/nixpkgs/actions/workflows/ci.yml/badge.svg)](https://github.com/ifiokjr/nixpkgs/actions/workflows/ci.yml) [![Nix Flake](https://img.shields.io/badge/nix-flake-blue?logo=nixos)](https://nixos.wiki/wiki/Flakes) [![License](https://img.shields.io/github/license/ifiokjr/nixpkgs)](https://github.com/ifiokjr/nixpkgs/blob/main/LICENSE)
