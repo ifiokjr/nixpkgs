@@ -6,7 +6,7 @@
 }:
 
 let
-  version = "0.1.6-nightly.20261030.3917";
+  version = "0.1.6-nightly.20261031.3977";
 in
 # Nightly channel of the same self-contained CLI archive. Both packages install
 # `bin/t3`, matching the other version tracks in this repo (pnpm-10/pnpm-11,
@@ -21,8 +21,8 @@ import ../t3code/package.nix {
   channel = "nightly";
   overrideVersion = version;
   t3codeHashes = {
-    "darwin-arm64" = "sha256-Xr0R4AY5ESq1QpmfSDTPxqOetYKuneiITSAoXHuZZWg=";
-    "linux-arm64" = "sha256-tRBMuo792noiqLIwd19hj8GpX9BbT8e1Ca2fCBpQg7s=";
-    "linux-x64" = "sha256-+9BMSyDO8rkJy/TPuCmiZyRAvP1Pez3Ywf+6RYo6G6Q=";
+    "darwin-arm64" = "sha256-PCS5f3X05SiodTWX8yjPbLDwx9Q38GAZ8sXuTwwV40Q=";
+    "linux-arm64" = "sha256-kfwtfqZRs2bXhi23kpGQzcW+tO4RPbElH+rxUDVBYks=";
+    "linux-x64" = "sha256-bcUXE7q0VOKbU/Xx7ng1C9Rzw6ofEGpWMmIb0QBUit4=";
   };
 }
