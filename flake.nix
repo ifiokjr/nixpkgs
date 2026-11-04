@@ -76,9 +76,13 @@
         patrol = self.patrol_cli;
         patrol-cli = self.patrol_cli;
         pina = pkgs.callPackage ./packages/pina/package.nix { };
-        pnpm = pkgs.callPackage ./packages/pnpm/package.nix { };
         pnpm-10 = pkgs.callPackage ./packages/pnpm-10/package.nix { };
         pnpm-11 = pkgs.callPackage ./packages/pnpm-11/package.nix { };
+        pnpm-12 = pkgs.callPackage ./packages/pnpm/package.nix { };
+        pnpm_10 = self.pnpm-10;
+        pnpm_11 = self.pnpm-11;
+        pnpm_12 = self.pnpm-12;
+        pnpm = self.pnpm_12;
         pnpm-standalone = pkgs.callPackage ./packages/pnpm-standalone/package.nix {
           pnpm = self.pnpm;
         };
