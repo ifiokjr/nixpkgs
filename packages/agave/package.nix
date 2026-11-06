@@ -2,4 +2,4 @@
   callPackage,
 }:
 
-callPackage ./agave-4_3/package.nix { }
+callPackage ./agave-4_4/package.nix { }

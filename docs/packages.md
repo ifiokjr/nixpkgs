@@ -8,7 +8,7 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 
 | Package                                                  | Version                     | Platforms                                   | Description                                                                          |
 | -------------------------------------------------------- | --------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------ |
-| agave, agave-4_3, solana                                 | 4.3.2                       | aarch64-darwin, x86_64-linux                | Solana validator client and CLI toolchain by Anza                                    |
+| agave, agave-4_4, solana                                 | 4.4.1                       | aarch64-darwin, x86_64-linux                | Solana validator client and CLI toolchain by Anza                                    |
 | agave-2_0                                                | 2.0.25                      | aarch64-darwin, x86_64-linux                | Solana validator client and CLI toolchain by Anza                                    |
 | agave-2_1                                                | 2.1.21                      | aarch64-darwin, x86_64-linux                | Solana validator client and CLI toolchain by Anza                                    |
 | agave-2_2                                                | 2.2.20                      | aarch64-darwin, x86_64-linux                | Solana validator client and CLI toolchain by Anza                                    |
@@ -18,7 +18,7 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 | agave-4_0                                                | 4.0.3                       | aarch64-darwin, x86_64-linux                | Solana validator client and CLI toolchain by Anza                                    |
 | agave-4_1                                                | 4.1.2                       | aarch64-darwin, x86_64-linux                | Solana validator client and CLI toolchain by Anza                                    |
 | agave-4_2                                                | 4.2.2                       | aarch64-darwin, x86_64-linux                | Solana validator client and CLI toolchain by Anza                                    |
-| agave-4_4                                                | 4.4.0                       | aarch64-darwin, x86_64-linux                | Solana validator client and CLI toolchain by Anza                                    |
+| agave-4_3                                                | 4.3.2                       | aarch64-darwin, x86_64-linux                | Solana validator client and CLI toolchain by Anza                                    |
 | all                                                      |                             |                                             |                                                                                      |
 | cargo-clean-all                                          | 0.6.6                       | aarch64-darwin, aarch64-linux, x86_64-linux | Recursively clean all Cargo projects in a directory that match the selected criteria |
 | cargo-interactive-update                                 | 0.6.2                       | aarch64-darwin, aarch64-linux, x86_64-linux | A cargo extension to update direct dependencies interactively                        |
@@ -50,8 +50,8 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 | pnpm-10, pnpm_10                                         | 10.34.9                     | aarch64-darwin, aarch64-linux, x86_64-linux | Fast, disk space efficient package manager (standalone, no Node.js dependency)       |
 | pnpm-11, pnpm_11                                         | 11.28.9                     | aarch64-darwin, aarch64-linux, x86_64-linux | Fast, disk space efficient package manager (standalone, no Node.js dependency) — v11 |
 | racket-minimal                                           | 9.3                         | aarch64-darwin, aarch64-linux, x86_64-linux | Programmable programming language (minimal distribution, pre-built)                  |
-| rive-cli                                                 | 1.8.0                       | aarch64-darwin, x86_64-linux                | Command-line tools for building Rive animation projects                              |
-| sbpf-linker                                              | 0.2.6                       | aarch64-darwin, aarch64-linux, x86_64-linux | Upstream BPF linker for SBPF V0/V3 programs                                          |
+| rive-cli                                                 | 1.9.0                       | aarch64-darwin, x86_64-linux                | Command-line tools for building Rive animation projects                              |
+| sbpf-linker                                              | 0.2.7                       | aarch64-darwin, aarch64-linux, x86_64-linux | Upstream BPF linker for SBPF V0/V3 programs                                          |
 | serverpod, serverpod-cli, serverpod_cli, serverpod_cli-4 | 4.0.4                       | aarch64-darwin, aarch64-linux, x86_64-linux | Command line tools for Serverpod                                                     |
 | serverpod_cli-3                                          | 3.4.13                      | aarch64-darwin, aarch64-linux, x86_64-linux | Command line tools for Serverpod (3.x track)                                         |
 | solana-verify                                            | 0.5.2                       | aarch64-darwin, x86_64-linux                | CLI tool for building verifiable Solana programs                                     |
@@ -60,8 +60,8 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 | t3code                                                   | 0.1.6                       | aarch64-darwin, aarch64-linux, x86_64-linux | Control surface for the coding agents running on your machine                        |
 | t3code-nightly                                           | 0.1.7-nightly.20261101.4016 | aarch64-darwin, aarch64-linux, x86_64-linux | Control surface for the coding agents running on your machine                        |
 | wait-for-them                                            | 0.5.1                       | aarch64-darwin, aarch64-linux, x86_64-linux | Wait until all provided host:port pairs are opened or HTTP URLs return 200           |
-| zed                                                      | 1.26.2                      | aarch64-darwin, aarch64-linux, x86_64-linux | High-performance, multiplayer code editor from the creators of Atom and Tree-sitter  |
-| zed-preview                                              | 1.27.0-pre                  | aarch64-darwin, aarch64-linux, x86_64-linux | High-performance, multiplayer code editor from the creators of Atom and Tree-sitter  |
+| zed                                                      | 1.27.0                      | aarch64-darwin, aarch64-linux, x86_64-linux | High-performance, multiplayer code editor from the creators of Atom and Tree-sitter  |
+| zed-preview                                              | 1.28.0-pre                  | aarch64-darwin, aarch64-linux, x86_64-linux | High-performance, multiplayer code editor from the creators of Atom and Tree-sitter  |
 | zoom                                                     | 7.2.5.90525                 | aarch64-darwin                              | Zoom video conferencing client                                                       |
 
 <!-- catalog:end -->
