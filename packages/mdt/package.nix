@@ -18,9 +18,9 @@ let
 
   hashes = {
     "aarch64-apple-darwin" = "sha256-syLo1zTddeJ4KVXyEXlnTzzPrQVftCo8yAbOfdK8gMw=";
-    "x86_64-apple-darwin" = "sha256-E0LQKz82cee3tHVO90702SgVl8xTrw6ULQiIzITdCZk=";
-    "aarch64-unknown-linux-musl" = "sha256-aTqnDJjhD9kz97xWKylqdGvdQvkG6KqMKOW0ZJZy7cQ=";
-    "x86_64-unknown-linux-musl" = "sha256-TGjhgFqgnrTTgA+33sXvtF8Og+CKIo5QkGFlYkYLe/4=";
+    "x86_64-apple-darwin" = "sha256-bZesdVxUUC/qkJyu6yFbvmFSoXc7uBnDR6ckXRc+/A8=";
+    "aarch64-unknown-linux-musl" = "sha256-ytnVEdeD69rOi8OYOy1noZTbWvaFWQSnH2DknUQpti8=";
+    "x86_64-unknown-linux-musl" = "sha256-5tC5SKs/8bI//KdAo3487vUIgjD9Wuak+sKSvFaVm6Y=";
   };
 in
 stdenv.mkDerivation {
