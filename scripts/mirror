@@ -379,7 +379,7 @@ def publish-source [summary_path: string, dry_run: bool] {
 	}
 
 	log-sub $"creating release ($mtag)"
-	let created = (^gh release create $mtag ...$files -R $MIRROR_REPO --title $"($summary.name) ($summary.version) (mirrored)" --notes $body --target main | complete)
+	let created = (^gh release create $mtag ...$files -R $MIRROR_REPO --title $"($summary.name) ($summary.version) mirrored" --notes $body --target main | complete)
 	if $created.exit_code != 0 {
 		delete-mirror-release $mtag
 		fail $"release creation failed for ($mtag): ($created.stderr | str trim)"
