@@ -3,7 +3,7 @@
 #
 # The script covers:
 # - Flake inputs (nix flake update → flake.lock)
-# - Versioned GitHub release packages (agave, codex-cli, deno, godot, kani, mdt, monochange, ollama, sbpf-linker, solana-verify, surfpool, zed, etc.)
+# - Versioned GitHub release packages (agave, codex-cli, deno, godot, kani, mbx, mdt, monochange, ollama, sbpf-linker, solana-verify, surfpool, zed, etc.)
 # - Versioned vendor-manifest packages (rive-cli)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
 # - Rolling URL packages (steam)
@@ -641,6 +641,7 @@ def update-versioned-keyed-hashes [
   latest_version: string,
   entries: list<record<key: string, url: string>>,
   dry_run: bool,
+  block?: string,
 ] {
   if not ($file | path exists) {
     fail $"missing file: ($file)"
@@ -666,7 +667,7 @@ def update-versioned-keyed-hashes [
   for entry in $entries {
     log-sub $"fetching ($entry.key)..."
     let new_hash = (prefetch-sri $entry.url)
-    $updated = (replace-key-hash $updated $entry.key $new_hash)
+    $updated = (replace-key-hash $updated $entry.key $new_hash $block)
   }
 
   $updated | save -f $file
@@ -1637,6 +1638,19 @@ def update-ironclaw [packages_dir: string, dry_run: bool] {
   update-versioned-keyed-hashes "ironclaw" $file $latest_version $entries $dry_run
 }
 
+def update-mbx [packages_dir: string, dry_run: bool] {
+  let latest_version = (github-latest-tag "jdx" "mr-boxington" | str replace --regex '^v' '')
+  let file = $"($packages_dir)/mbx/package.nix"
+  let entries = [
+    { key: "aarch64-darwin", url: $"https://github.com/jdx/mr-boxington/releases/download/v($latest_version)/mbx-aarch64-apple-darwin.tar.gz" }
+    { key: "x86_64-linux", url: $"https://github.com/jdx/mr-boxington/releases/download/v($latest_version)/mbx-x86_64-unknown-linux-musl.tar.gz" }
+    { key: "aarch64-linux", url: $"https://github.com/jdx/mr-boxington/releases/download/v($latest_version)/mbx-aarch64-unknown-linux-musl.tar.gz" }
+  ]
+  # package.nix keys both `asset` and `hashes` by system, so the rewrite has to
+  # be scoped to the `hashes` block.
+  update-versioned-keyed-hashes "mbx" $file $latest_version $entries $dry_run "hashes"
+}
+
 def update-mdt [packages_dir: string, dry_run: bool] {
   let latest_version = (github-latest-tag "ifiokjr" "mdt" | str replace --regex '^v' '')
   let file = $"($packages_dir)/mdt/package.nix"
@@ -2126,6 +2140,7 @@ def main [
     { name: "kani", run: {|| update-kani $packages_dir $dry_run } }
     { name: "ccase", run: {|| update-prebuilt-ccase $packages_dir $dry_run } }
     { name: "knope", run: {|| update-knope $packages_dir $dry_run } }
+    { name: "mbx", run: {|| update-mbx $packages_dir $dry_run } }
     { name: "mdt", run: {|| update-mdt $packages_dir $dry_run } }
     { name: "melos_6", run: {|| update-melos-6 $packages_dir $dry_run } }
     { name: "melos_7", run: {|| update-melos-7 $packages_dir $dry_run } }

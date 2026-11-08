@@ -37,6 +37,7 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [ironclaw](#ironclaw)                                                                                | <!-- {~v_ironclaw:"{{ v.ironclaw }}"} -->1.4.1<!-- {/v_ironclaw} -->                                                 | linux, macos               | Agent OS focused on privacy, security, and extensibility (NEAR AI)               |
 | [kani](#kani)                                                                                        | <!-- {~v_kani:"{{ v.kani }}"} -->0.68.0<!-- {/v_kani} -->                                                            | linux, macos               | Bit-precise model checker for Rust                                               |
 | [knope](#knope)                                                                                      | <!-- {~v_knope:"{{ v.knope }}"} -->0.23.2<!-- {/v_knope} -->                                                         | linux, macos               | Automate common development tasks (changelogs, releases, versioning)             |
+| [mbx](#mbx)                                                                                          | <!-- {~v_mbx:"{{ v.mbx }}"} -->1.29.2<!-- {/v_mbx} -->                                                               | linux, macos (arm64)       | Shared Cargo build cache reused across worktrees                                 |
 | [mdt](#mdt)                                                                                          | <!-- {~v_mdt:"{{ v.mdt }}"} -->0.9.8<!-- {/v_mdt} -->                                                                | linux, macos               | Update markdown content anywhere using comments as template tags                 |
 | [melos](#melos), [melos-cli](#melos)                                                                 | <!-- {~v_melos:"{{ v.melos_8 }}"} -->8.10.1<!-- {/v_melos} -->                                                       | linux, macos               | Manage Dart and Flutter monorepos (default = melos_8)                            |
 | [melos_6](#melos)                                                                                    | <!-- {~v_melos_6:"{{ v.melos_6 }}"} -->6.3.3<!-- {/v_melos_6} -->                                                    | linux, macos               | Melos pinned to the latest 6.x release                                           |
@@ -436,6 +437,16 @@ A developer workflow automation tool. Automates changelogs, releases, and versio
 - **License:** MIT
 - **Source:** <https://github.com/knope-dev/knope>
 - **Homepage:** <https://knope.tech>
+
+### mbx
+
+Shared build cache for Rust projects that reuses Cargo builds across worktrees. Pre-built binary from GitHub releases.
+
+The package also ships a `cargo` shim under `libexec/mbx` that routes Cargo invocations through mbx so their builds are cached. It is deliberately kept out of `bin/` so installing the package does not shadow Cargo; add `$out/libexec/mbx` to `PATH` in projects that want Cargo calls wrapped.
+
+- **Binary:** `mbx`
+- **License:** MIT
+- **Source:** <https://github.com/jdx/mr-boxington>
 
 ### mdt
 
