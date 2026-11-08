@@ -66,18 +66,28 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔄 stage upstream artifacts
-        run: nix shell nixpkgs#nushell -c nu scripts/mirror --prepare --source ${{ matrix.source }}
+        id: stage
+        run: |
+          nix shell nixpkgs#nushell -c nu scripts/mirror --prepare --source ${{ matrix.source }}
+          staged=$(find .mirror-staging -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+          echo "staged=$staged" >> "$GITHUB_OUTPUT"
+          echo "staged $staged new version(s)"
 
+      # When everything is already mirrored there is nothing to attest,
+      # publish or verify — the actions below require at least one subject.
       - name: 🧾 attest staged artifacts
+        if: steps.stage.outputs.staged != '0'
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: |
             .mirror-staging/**
 
       - name: 📦 publish mirror releases
+        if: steps.stage.outputs.staged != '0'
         run: nix shell nixpkgs#nushell -c nu scripts/mirror --publish
 
       - name: 🔍 verify attestations on the published assets
+        if: steps.stage.outputs.staged != '0'
         run: |
           set -euo pipefail
           # Attestations propagate through the API within moments; retry to
@@ -100,6 +110,7 @@ jobs:
       # the bucket named by the B2_BUCKET variable); GitHub releases stay the
       # fetch path regardless.
       - name: 🗄 copy artifacts to Backblaze B2
+        if: steps.stage.outputs.staged != '0'
         env:
           B2_KEY_ID: ${{ secrets.B2_KEY_ID }}
           B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
