@@ -8,7 +8,6 @@
   openssl,
   zlib,
   curl,
-  lttng-ust,
   stdenvNoCC,
 }:
 
@@ -70,10 +69,12 @@ stdenvNoCC.mkDerivation {
     openssl
     zlib
     curl
-    # dotnet's EventPipe tracing provider (libcoreclrtraceptprovider.so)
-    # links liblttng-ust directly.
-    lttng-ust
   ];
+
+  # The EventPipe tracing provider links liblttng-ust.so.0, built against
+  # lttng-ust 2.12; nixpkgs ships 2.13+ whose SONAME is .1. dotnet dlopens
+  # the provider and treats a missing one as tracing disabled.
+  autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.hostPlatform.isLinux [ "liblttng-ust.so.0" ];
 
   installPhase = ''
     runHook preInstall
