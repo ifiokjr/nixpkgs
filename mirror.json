@@ -37,7 +37,8 @@
         "solana-release-aarch64-apple-darwin.tar.bz2",
         "solana-release-x86_64-apple-darwin.tar.bz2",
         "solana-release-x86_64-unknown-linux-gnu.tar.bz2"
-      ]
+      ],
+      "prereleases": true
     },
     {
       "name": "platform-tools",
@@ -62,7 +63,10 @@
       "urlBase": "https://releases.rive.app/cli/v{version}",
       "tagTemplate": "v{version}",
       "versionPrefix": "v",
-      "assets": ["rive-macos-arm64.tar.gz", "rive-linux-x64.tar.gz"]
+      "assets": [
+        "rive-macos-arm64.tar.gz",
+        "rive-linux-x64.tar.gz"
+      ]
     }
   ]
 }

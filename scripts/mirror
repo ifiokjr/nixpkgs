@@ -169,6 +169,10 @@ def resolve-version [source: record] {
 	# Release lists are paginated newest-first and long-lived repos (agave)
 	# span several pages, so walk pages until every prefix has a match.
 	let prefixes = ($source | get -o trackPrefixes | default [$source.tagTemplate | str replace "{version}" ""])
+	# Match the updater's semantics per source: agave's track resolution
+	# allows prerelease-flagged releases (only drafts are excluded), so the
+	# mirror must mirror the same versions the updater pins.
+	let allow_prereleases = ($source | get -o prereleases | default false)
 	mut pending = $prefixes
 	mut matched = []
 	mut page = 1
@@ -179,7 +183,7 @@ def resolve-version [source: record] {
 		}
 		for prefix in $pending {
 			let with_assets = ($releases
-			| where {|r| ((not $r.draft) and (not $r.prerelease) and ($r.tag_name | str starts-with $prefix) and (release-has-assets $r $source.assets)) })
+			| where {|r| ((not $r.draft) and ($allow_prereleases or (not $r.prerelease)) and ($r.tag_name | str starts-with $prefix) and (release-has-assets $r $source.assets)) })
 			if ($with_assets | is-not-empty) {
 				let tag = ($with_assets | first | get tag_name)
 				# The release tag already carries the version prefix (v4.4.1);
