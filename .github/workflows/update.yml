@@ -225,6 +225,11 @@ jobs:
         # does not touch.
         run: nix shell nixpkgs#dprint -c nix run .#mdt -- update
 
+      - name: 📦 regenerate the package catalog
+        # A version bump changes docs/packages.md; without this the catalog
+        # freshness check in ci.yml fails on the update commit itself.
+        run: nix shell nixpkgs#nushell nixpkgs#dprint -c sh -c 'nu scripts/catalog && dprint fmt docs/packages.md'
+
       # mdt rewrites the version cells in readme.md but does not re-pad the
       # table columns, so a version whose length changes leaves the row
       # misaligned (this is how the agave-4_3 row broke dprint). Pushes made
