@@ -179,12 +179,13 @@ jobs:
         run: |
           set -euo pipefail
           run=("./dist/${PACKAGE}")
+          # /usr/bin/arch, not a coreutils `arch` that may shadow it on PATH.
           if [ -n "${ARCH}" ]; then
-            if ! arch "-${ARCH}" /usr/bin/true 2>/dev/null; then
+            if ! /usr/bin/arch "-${ARCH}" /usr/bin/true 2>/dev/null; then
               echo "::warning::cannot run ${ARCH} binaries on this runner; skipping the smoke test"
               exit 0
             fi
-            run=(arch "-${ARCH}" "./dist/${PACKAGE}")
+            run=(/usr/bin/arch "-${ARCH}" "./dist/${PACKAGE}")
           fi
           "${run[@]}" --version
           printf 'let  x=[1,2]\n' > smoke.swift

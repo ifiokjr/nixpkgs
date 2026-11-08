@@ -18,10 +18,10 @@ let
   # .github/workflows/build-swift-prebuilt.yml and attached to this repo's
   # `prebuilt/swift-format/<version>` release.
   hashes = {
-    "aarch64-apple-darwin" = lib.fakeHash;
-    "x86_64-apple-darwin" = lib.fakeHash;
-    "aarch64-unknown-linux-gnu" = lib.fakeHash;
-    "x86_64-unknown-linux-gnu" = lib.fakeHash;
+    "aarch64-apple-darwin" = "sha256-X/8ARCyDXTl75dS70A99qzh18+USw1LVdD6xvsglJxs=";
+    "x86_64-apple-darwin" = "sha256-ng20APUmniDgm0fmk6N2NV/c4LWeFGyBoBr3I9HRJ4w=";
+    "aarch64-unknown-linux-gnu" = "sha256-4wP75uAR3ojWwgYTvX0QZoogiNA5Odk67csSBpMA+4E=";
+    "x86_64-unknown-linux-gnu" = "sha256-5xog0rVNbFw9O3AuBlWotba+3pCLhkxSRzPFX0Wsa2c=";
   };
 in
 stdenv.mkDerivation {
