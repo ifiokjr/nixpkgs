@@ -60,6 +60,7 @@
         ironclaw = pkgs.callPackage ./packages/ironclaw/package.nix { };
         kani = pkgs.callPackage ./packages/kani/package.nix { };
         knope = pkgs.callPackage ./packages/knope/package.nix { };
+        mbx = pkgs.callPackage ./packages/mbx/package.nix { };
         mdt = pkgs.callPackage ./packages/mdt/package.nix { };
         melos_6 = pkgs.callPackage ./packages/melos_6/package.nix { };
         melos_7 = pkgs.callPackage ./packages/melos_7/package.nix { };
