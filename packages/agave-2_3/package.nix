@@ -38,4 +38,5 @@ import ../agave/common.nix {
     hashes
     ;
   pname = "agave-2_3";
+  mirrorBase = "https://github.com/ifiokjr/nixpkgs/releases/download/mirror";
 }

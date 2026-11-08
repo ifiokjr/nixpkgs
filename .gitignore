@@ -4,3 +4,4 @@ result-*
 .devenv/
 .mdt/
 .video_agent/
+.mirror-staging/

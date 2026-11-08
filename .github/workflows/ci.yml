@@ -243,6 +243,19 @@ jobs:
           nix shell nixpkgs#nushell nixpkgs#dprint -c sh -c 'nu scripts/catalog && dprint fmt docs/packages.md'
           git diff --exit-code docs/packages.md
 
+      - name: 🔍 check source-built packages have prebuilt releases
+        # Packages built from source (Rust/Dart) must have a prebuilt/<pkg>/<version>
+        # release so machines install the binary instead of recompiling; a
+        # missing release turns every consumer into a long local build. A new
+        # source-built package ships its release through the build-*-prebuilt
+        # workflows before (or together with) its first version pin. Warning
+        # only: the release list is reality, and new packages may lag.
+        run: |
+          output=$(nix shell nixpkgs#nushell -c nu scripts/prebuilt-check) || true
+          if [ -n "$output" ]; then
+            echo "::warning::source-built packages without a current prebuilt release: $output"
+          fi
+
       - name: 🔍 check mdt blocks
         # mdt.toml registers dprint as a formatter stage, so mdt needs it on
         # PATH to compare managed blocks against formatted output.

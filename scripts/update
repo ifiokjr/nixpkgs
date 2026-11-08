@@ -795,6 +795,69 @@ def update-rolling-single-hash [
 # the tarballs are still building on Buildkite, so a fresh release can be
 # missing assets for hours (v4.3.0-rc.1 initially shipped without the x86_64
 # macOS tarball).
+# Release-asset mirror: sources in mirror.json are fetched from this repo's
+# GitHub releases (tag mirror/<name>/<upstream-tag>) instead of upstream, so
+# upstream CDN outages (the 2026-11-08 GitHub release-CDN 504s) never reach a
+# build. The update-packages workflow mirrors a version before anything pins
+# it; when a mirror source exists but its release does not (yet), the bump is
+# refused rather than pinned to unverifiable URLs. Packages whose nix files
+# fetch from the mirror: agave (all tracks + platform-tools), ollama,
+# rive-cli.
+const MIRROR_REPO = "ifiokjr/nixpkgs"
+
+def load-mirror-config [] {
+  if ("mirror.json" | path exists) {
+    open mirror.json
+  } else {
+    { sources: [] }
+  }
+}
+
+def mirror-source [name: string] {
+  load-mirror-config | get -o sources | default [] | where {|s| $s.name == $name} | get -o 0
+}
+
+def mirror_base_url [] {
+  $"https://github.com/($MIRROR_REPO)/releases/download/mirror"
+}
+
+def mirror-release-exists [name: string, tag: string] {
+  let mtag = $"mirror/($name)/($tag)"
+  let found = (try {
+    github-api-get $"https://api.github.com/repos/($MIRROR_REPO)/releases/tags/($mtag)" | get -o tag_name
+  } catch {
+    ""
+  })
+  ($found | is-not-empty)
+}
+
+# The mirror release URL base for a mirrored source's version, or "" when the
+# source is not in mirror.json (keep fetching upstream). Fails when the
+# source is mirrored but this version has not been published yet.
+# True when the package file already pins the latest version. Mirrored
+# packages check this before touching the mirror: an up-to-date pin must not
+# fail just because a future version has not been mirrored yet.
+def version-is-current [file: string, latest_version: string] {
+  let current = (parse-capture (open $file --raw) 'version = "([^"]+)"')
+  $current == $latest_version
+}
+
+# The mirror release URL base for a mirrored source's version, or "" when the
+# source is not in mirror.json (keep fetching upstream). Fails when the
+# source is mirrored but this version has not been published yet — except in
+# a dry run, which reports intent instead of enforcing.
+def mirrored-base [name: string, tag: string, dry_run: bool] {
+  if (mirror-source $name) == null {
+    return ""
+  }
+  if not $dry_run {
+    if not (mirror-release-exists $name $tag) {
+      fail $"($name): waiting for the mirror release mirror/($name)/($tag) — the update-packages workflow mirrors versions before they are pinned"
+    }
+  }
+  $"(mirror_base_url)/($name)/($tag)"
+}
+
 def agave-required-assets [] {
   [
     "solana-release-aarch64-apple-darwin.tar.bz2"
@@ -803,12 +866,33 @@ def agave-required-assets [] {
   ]
 }
 
-def update-agave-package [packages_dir: string, package_name: string, latest_version: string, dry_run: bool] {
+def update-agave-package [
+  packages_dir: string
+  package_name: string
+  latest_version: string
+  dry_run: bool
+  mirror: bool = true, # beta tracks ship prereleases the mirror never carries
+] {
   let file = $"($packages_dir)/($package_name)/package.nix"
+  if (version-is-current $file $latest_version) {
+    log-ok $package_name $"up to date \(v($latest_version)\)"
+    update-agave-platform-tools $file $dry_run
+    return false
+  }
+  let base = if $mirror {
+    mirrored-base "agave" $"v($latest_version)" $dry_run
+  } else {
+    ""
+  }
+  let url_base = if $base == "" {
+    $"https://github.com/anza-xyz/agave/releases/download/v($latest_version)"
+  } else {
+    $base
+  }
   let entries = [
-    { key: "aarch64-apple-darwin", url: $"https://github.com/anza-xyz/agave/releases/download/v($latest_version)/solana-release-aarch64-apple-darwin.tar.bz2" }
-    { key: "x86_64-apple-darwin", url: $"https://github.com/anza-xyz/agave/releases/download/v($latest_version)/solana-release-x86_64-apple-darwin.tar.bz2" }
-    { key: "x86_64-unknown-linux-gnu", url: $"https://github.com/anza-xyz/agave/releases/download/v($latest_version)/solana-release-x86_64-unknown-linux-gnu.tar.bz2" }
+    { key: "aarch64-apple-darwin", url: $"($url_base)/solana-release-aarch64-apple-darwin.tar.bz2" }
+    { key: "x86_64-apple-darwin", url: $"($url_base)/solana-release-x86_64-apple-darwin.tar.bz2" }
+    { key: "x86_64-unknown-linux-gnu", url: $"($url_base)/solana-release-x86_64-unknown-linux-gnu.tar.bz2" }
   ]
   update-versioned-keyed-hashes $package_name $file $latest_version $entries $dry_run
   update-agave-platform-tools $file $dry_run
@@ -828,10 +912,16 @@ def update-agave-platform-tools [file: string, dry_run: bool] {
     return false
   }
 
+  let base = (mirrored-base "platform-tools" $pt_version $dry_run)
+  let url_base = if $base == "" {
+    $"https://github.com/anza-xyz/platform-tools/releases/download/($pt_version)"
+  } else {
+    $base
+  }
   let entries = [
-    { key: "aarch64-apple-darwin", url: $"https://github.com/anza-xyz/platform-tools/releases/download/($pt_version)/platform-tools-osx-aarch64.tar.bz2" }
-    { key: "x86_64-apple-darwin", url: $"https://github.com/anza-xyz/platform-tools/releases/download/($pt_version)/platform-tools-osx-x86_64.tar.bz2" }
-    { key: "x86_64-unknown-linux-gnu", url: $"https://github.com/anza-xyz/platform-tools/releases/download/($pt_version)/platform-tools-linux-x86_64.tar.bz2" }
+    { key: "aarch64-apple-darwin", url: $"($url_base)/platform-tools-osx-aarch64.tar.bz2" }
+    { key: "x86_64-apple-darwin", url: $"($url_base)/platform-tools-osx-x86_64.tar.bz2" }
+    { key: "x86_64-unknown-linux-gnu", url: $"($url_base)/platform-tools-linux-x86_64.tar.bz2" }
   ]
 
   if $dry_run {
@@ -863,7 +953,7 @@ def update-agave-beta-track [packages_dir: string, package_name: string, version
     github-latest-release-tag-with-prefix "anza-xyz" "agave" $"v($version_prefix).0-beta." (agave-required-assets)
     | str replace --regex '^v' ''
   )
-  update-agave-package $packages_dir $package_name $latest_version $dry_run
+  update-agave-package $packages_dir $package_name $latest_version $dry_run false
 }
 
 def update-agave [packages_dir: string, dry_run: bool] {
@@ -964,10 +1054,20 @@ def update-godot [packages_dir: string, dry_run: bool] {
 def update-ollama [packages_dir: string, dry_run: bool] {
   let latest_version = (github-latest-tag "ollama" "ollama" | str replace --regex '^v' '')
   let file = $"($packages_dir)/ollama/package.nix"
+  if (version-is-current $file $latest_version) {
+    log-ok "ollama" $"up to date \(v($latest_version)\)"
+    return false
+  }
+  let base = (mirrored-base "ollama" $"v($latest_version)" $dry_run)
+  let url_base = if $base == "" {
+    $"https://github.com/ollama/ollama/releases/download/v($latest_version)"
+  } else {
+    $base
+  }
   let entries = [
-    { key: "darwin", url: $"https://github.com/ollama/ollama/releases/download/v($latest_version)/Ollama-darwin.zip" }
-    { key: "linux-amd64", url: $"https://github.com/ollama/ollama/releases/download/v($latest_version)/ollama-linux-amd64.tar.zst" }
-    { key: "linux-arm64", url: $"https://github.com/ollama/ollama/releases/download/v($latest_version)/ollama-linux-arm64.tar.zst" }
+    { key: "darwin", url: $"($url_base)/Ollama-darwin.zip" }
+    { key: "linux-amd64", url: $"($url_base)/ollama-linux-amd64.tar.zst" }
+    { key: "linux-arm64", url: $"($url_base)/ollama-linux-arm64.tar.zst" }
   ]
   update-versioned-block-hashes "ollama" $file $latest_version $entries $dry_run
 }
@@ -2016,10 +2116,19 @@ def rive-latest-version [] {
 def update-rive-cli [packages_dir: string, dry_run: bool] {
   let latest_version = (rive-latest-version)
   let file = $"($packages_dir)/rive-cli/package.nix"
-  let base = $"https://releases.rive.app/cli/v($latest_version)"
+  if (version-is-current $file $latest_version) {
+    log-ok "rive-cli" $"up to date \(v($latest_version)\)"
+    return false
+  }
+  let base = (mirrored-base "rive-cli" $"v($latest_version)" $dry_run)
+  let url_base = if $base == "" {
+    $"https://releases.rive.app/cli/v($latest_version)"
+  } else {
+    $base
+  }
   let entries = [
-    { key: "macos-arm64", url: $"($base)/rive-macos-arm64.tar.gz" }
-    { key: "linux-x64", url: $"($base)/rive-linux-x64.tar.gz" }
+    { key: "macos-arm64", url: $"($url_base)/rive-macos-arm64.tar.gz" }
+    { key: "linux-x64", url: $"($url_base)/rive-linux-x64.tar.gz" }
   ]
   update-versioned-keyed-hashes "rive-cli" $file $latest_version $entries $dry_run
 }

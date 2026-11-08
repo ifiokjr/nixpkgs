@@ -1,0 +1,68 @@
+{
+  "//": "Upstream release artifacts mirrored to this repo's GitHub releases (tag mirror/<name>/<tag>) so rebuilds survive upstream CDN outages. The daily update workflow mirrors each source before running scripts/update, and scripts/update refuses to bump a version whose mirror release does not exist. Assets keep their exact upstream names plus a .sha256 sidecar; the CI job attests every artifact with actions/attest-build-provenance. Adding a package: one entry here plus a fetch URL that points at the mirror (see packages/ollama/package.nix).",
+  "sources": [
+    {
+      "name": "ollama",
+      "kind": "github-release",
+      "repo": "ollama/ollama",
+      "tagTemplate": "v{version}",
+      "versionPrefix": "v",
+      "assets": [
+        "Ollama-darwin.zip",
+        "ollama-linux-amd64.tar.zst",
+        "ollama-linux-arm64.tar.zst"
+      ],
+      "checksum": "sha256sum.txt"
+    },
+    {
+      "name": "agave",
+      "kind": "github-release",
+      "repo": "anza-xyz/agave",
+      "tagTemplate": "v{version}",
+      "versionPrefix": "v",
+      "trackPrefixes": [
+        "v2.0.",
+        "v2.1.",
+        "v2.2.",
+        "v2.3.",
+        "v3.0.",
+        "v3.1.",
+        "v4.0.",
+        "v4.1.",
+        "v4.2.",
+        "v4.3.",
+        "v4.4."
+      ],
+      "assets": [
+        "solana-release-aarch64-apple-darwin.tar.bz2",
+        "solana-release-x86_64-apple-darwin.tar.bz2",
+        "solana-release-x86_64-unknown-linux-gnu.tar.bz2"
+      ]
+    },
+    {
+      "name": "platform-tools",
+      "kind": "github-release",
+      "repo": "anza-xyz/platform-tools",
+      "tagTemplate": "{version}",
+      "versionPrefix": "",
+      "versionsFromPins": {
+        "glob": "packages/agave*/package.nix",
+        "field": "platformToolsVersion"
+      },
+      "assets": [
+        "platform-tools-osx-aarch64.tar.bz2",
+        "platform-tools-osx-x86_64.tar.bz2",
+        "platform-tools-linux-x86_64.tar.bz2"
+      ]
+    },
+    {
+      "name": "rive-cli",
+      "kind": "vendor-url",
+      "manifest": "https://releases.rive.app/cli/latest/manifest.json",
+      "urlBase": "https://releases.rive.app/cli/v{version}",
+      "tagTemplate": "v{version}",
+      "versionPrefix": "v",
+      "assets": ["rive-macos-arm64.tar.gz", "rive-linux-x64.tar.gz"]
+    }
+  ]
+}
