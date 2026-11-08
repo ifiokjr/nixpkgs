@@ -55,9 +55,10 @@ stdenvNoCC.mkDerivation {
   sourceRoot = ".";
 
   dontBuild = true;
-  # The darwin binaries are signed by Microsoft; stripping invalidates the
-  # signature.
-  dontStrip = stdenv.hostPlatform.isDarwin;
+  # Stripping breaks CoreCLR: without it the runtime dies with
+  # "Failed to load System.Private.CoreLib.dll (error code 0x8007000B)".
+  # The darwin binaries are additionally signed by Microsoft.
+  dontStrip = true;
 
   nativeBuildInputs = [
     makeWrapper
