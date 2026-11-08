@@ -1,0 +1,316 @@
+name: Build Swift Prebuilt Binary
+
+# swift-format publishes no release binaries, and nixpkgs builds it on top of a
+# from-source Swift compiler that cache.nixos.org does not always carry: when
+# the compiler misses the cache, every consumer compiles swiftc itself (well
+# over half an hour). This workflow builds swift-format once per version with
+# the official Swift toolchain and attaches the binaries to the
+# `prebuilt/<package>/<version>` release that packages/<package>/package.nix
+# fetches.
+#
+# - workflow_dispatch (run by scripts/update when upstream tags a new version)
+#   builds, publishes the release, and optionally rewrites package.nix.
+# - pull_request runs touching this workflow build and smoke-test every target
+#   for the version in package.nix without publishing anything.
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "Package to build"
+        required: true
+        type: choice
+        options:
+          - swift-format
+      version:
+        description: "Version to build (the upstream tag, e.g. 604.0.0)"
+        required: true
+        type: string
+      swift-version:
+        description: "Swift toolchain for the Linux builds (default: derived from the version, 604.x -> 6.4)"
+        required: false
+        type: string
+      update-package:
+        description: "Update package.nix after building (for automated updates)"
+        required: false
+        type: boolean
+        default: false
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/build-swift-prebuilt.yml
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Prepare build
+    runs-on: ubuntu-latest
+    outputs:
+      package: ${{ steps.config.outputs.package }}
+      repo: ${{ steps.config.outputs.repo }}
+      version: ${{ steps.config.outputs.version }}
+      swift: ${{ steps.config.outputs.swift }}
+      tag: ${{ steps.config.outputs.tag }}
+    steps:
+      - name: Checkout nixpkgs repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Configure package
+        id: config
+        env:
+          PACKAGE: ${{ inputs.package || 'swift-format' }}
+          VERSION: ${{ inputs.version }}
+          SWIFT_VERSION: ${{ inputs.swift-version }}
+        run: |
+          set -euo pipefail
+
+          case "${PACKAGE}" in
+            swift-format) REPO="swiftlang/swift-format" ;;
+            *) echo "::error::unknown package ${PACKAGE}"; exit 1 ;;
+          esac
+
+          # Pull requests have no inputs: build what package.nix pins.
+          if [ -z "${VERSION}" ]; then
+            VERSION=$(sed -n 's/.*version = "\([^"]*\)".*/\1/p' "packages/${PACKAGE}/package.nix" | head -n1)
+          fi
+          if ! [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::unexpected version '${VERSION}'"
+            exit 1
+          fi
+
+          # swift-format versions track the Swift release they ship with:
+          # 604.x is Swift 6.4, 510.x is Swift 5.10.
+          if [ -z "${SWIFT_VERSION}" ]; then
+            MAJOR="${VERSION%%.*}"
+            SWIFT_VERSION="${MAJOR:0:1}.$((10#${MAJOR:1}))"
+          fi
+
+          {
+            echo "package=${PACKAGE}"
+            echo "repo=${REPO}"
+            echo "version=${VERSION}"
+            echo "swift=${SWIFT_VERSION}"
+            echo "tag=prebuilt/${PACKAGE}/${VERSION}"
+          } >> "$GITHUB_OUTPUT"
+          echo "Building ${PACKAGE} ${VERSION} (${REPO}) with Swift ${SWIFT_VERSION}"
+
+  build:
+    name: Build ${{ matrix.target }}
+    needs: prepare
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04-arm
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            arch: arm64
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            arch: x86_64
+    runs-on: ${{ matrix.os }}
+    env:
+      PACKAGE: ${{ needs.prepare.outputs.package }}
+      TARGET: ${{ matrix.target }}
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ needs.prepare.outputs.repo }}
+          ref: ${{ needs.prepare.outputs.version }}
+          persist-credentials: false
+
+      # The official toolchain image, with the Swift runtime and Foundation
+      # linked statically: the binary then needs only glibc, libstdc++ and
+      # libgcc_s, which autoPatchelfHook points at the Nix store.
+      - name: Build (Linux)
+        if: runner.os == 'Linux'
+        env:
+          SWIFT_IMAGE: swift:${{ needs.prepare.outputs.swift }}-jammy
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v "$PWD:/src" -w /src \
+            -e PACKAGE -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
+            "$SWIFT_IMAGE" bash -euo pipefail -c '
+              swift --version
+              flags=(-c release --product "$PACKAGE" --static-swift-stdlib)
+              swift build "${flags[@]}"
+              bin="$(swift build "${flags[@]}" --show-bin-path)/$PACKAGE"
+              mkdir -p dist
+              cp "$bin" "dist/$PACKAGE"
+              strip "dist/$PACKAGE"
+              chown -R "$HOST_UID:$HOST_GID" dist .build
+            '
+          file "dist/${PACKAGE}"
+          ldd "dist/${PACKAGE}"
+
+      # Xcode's toolchain links against the Swift runtime and Foundation that
+      # ship with macOS, so the binary has no toolchain dependency.
+      - name: Build (macOS)
+        if: runner.os == 'macOS'
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          set -euo pipefail
+          swift --version
+          flags=(-c release --product "$PACKAGE" --arch "$ARCH")
+          swift build "${flags[@]}"
+          bin="$(swift build "${flags[@]}" --show-bin-path)/${PACKAGE}"
+          mkdir -p dist
+          cp "$bin" "dist/${PACKAGE}"
+          file "dist/${PACKAGE}"
+          otool -L "dist/${PACKAGE}"
+
+      # Runs on the bare runner, outside the toolchain image, so a missing
+      # runtime library fails here instead of in the Nix build. The x86_64
+      # macOS binary runs under Rosetta when the runner has it.
+      - name: Smoke test
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          set -euo pipefail
+          run=("./dist/${PACKAGE}")
+          # /usr/bin/arch, not a coreutils `arch` that may shadow it on PATH.
+          if [ -n "${ARCH}" ]; then
+            if ! /usr/bin/arch "-${ARCH}" /usr/bin/true 2>/dev/null; then
+              echo "::warning::cannot run ${ARCH} binaries on this runner; skipping the smoke test"
+              exit 0
+            fi
+            run=(/usr/bin/arch "-${ARCH}" "./dist/${PACKAGE}")
+          fi
+          "${run[@]}" --version
+          printf 'let  x=[1,2]\n' > smoke.swift
+          formatted=$("${run[@]}" format smoke.swift)
+          echo "${formatted}"
+          [ "${formatted}" = "let x = [1, 2]" ]
+
+      - name: Package
+        run: |
+          set -euo pipefail
+          cp LICENSE.txt dist/
+          archive="${PACKAGE}-${TARGET}.tar.gz"
+          tar -czf "${archive}" -C dist "${PACKAGE}" LICENSE.txt
+          shasum -a 256 "${archive}" > "${archive}.sha256"
+          cat "${archive}.sha256"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ needs.prepare.outputs.package }}-${{ matrix.target }}
+          path: |
+            *.tar.gz
+            *.sha256
+          if-no-files-found: error
+
+  release:
+    name: Create release and upload binaries
+    needs: [prepare, build]
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f | sort
+
+      - name: Create release and upload
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          name: ${{ needs.prepare.outputs.package }} ${{ needs.prepare.outputs.version }}
+          body: |
+            Prebuilt binaries for ${{ needs.prepare.outputs.package }} ${{ needs.prepare.outputs.version }}, built from https://github.com/${{ needs.prepare.outputs.repo }}/tree/${{ needs.prepare.outputs.version }}.
+
+            ## Platforms
+            - aarch64-apple-darwin (macOS ARM, Xcode toolchain)
+            - x86_64-apple-darwin (macOS Intel, Xcode toolchain)
+            - aarch64-unknown-linux-gnu (Linux ARM, Swift ${{ needs.prepare.outputs.swift }}, static Swift runtime)
+            - x86_64-unknown-linux-gnu (Linux x86, Swift ${{ needs.prepare.outputs.swift }}, static Swift runtime)
+
+            ## Usage
+            These binaries are built automatically for use with Nix packages.
+          files: |
+            artifacts/**/*.tar.gz
+            artifacts/**/*.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update-package:
+    name: Update package.nix
+    needs: [prepare, release]
+    if: github.event_name == 'workflow_dispatch' && inputs.update-package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout nixpkgs repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get release hashes and update package.nix
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGE: ${{ needs.prepare.outputs.package }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          FILE="packages/${PACKAGE}/package.nix"
+
+          echo "Fetching hashes for ${TAG}..."
+          ASSETS=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq '.assets[].name')
+
+          sed -i "s/version = \"[^\"]*\"/version = \"${VERSION}\"/" "${FILE}"
+
+          for PLATFORM in aarch64-apple-darwin x86_64-apple-darwin aarch64-unknown-linux-gnu x86_64-unknown-linux-gnu; do
+            ASSET_NAME="${PACKAGE}-${PLATFORM}.tar.gz"
+            if grep -qx "${ASSET_NAME}" <<< "${ASSETS}"; then
+              URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/${ASSET_NAME}"
+              echo "Computing hash for ${PLATFORM}..."
+              PREFETCH_HASH=$(nix-prefetch-url "${URL}" 2>/dev/null)
+              HASH=$(nix hash to-sri --type sha256 "${PREFETCH_HASH}" 2>/dev/null)
+              echo "${PLATFORM}: ${HASH}"
+
+              python3 -c 'import pathlib, re, sys; path = pathlib.Path(sys.argv[1]); platform = sys.argv[2]; hash_value = sys.argv[3]; text = path.read_text(); text = re.sub(r"\"" + re.escape(platform) + r"\" = (?:\"sha256-[^\"]*\"|lib\.fakeHash)", "\"" + platform + "\" = \"" + hash_value + "\"", text); path.write_text(text)' "${FILE}" "${PLATFORM}" "${HASH}"
+            else
+              echo "::warning::${ASSET_NAME} missing from ${TAG}; leaving its hash unchanged"
+            fi
+          done
+
+          echo "Updated ${FILE}"
+
+      - name: Commit and push changes
+        env:
+          PACKAGE: ${{ needs.prepare.outputs.package }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if [ -n "$(git diff --name-only)" ]; then
+            git add -A
+            git commit -m "chore(${PACKAGE}): update to ${VERSION}"
+            git push
+          else
+            echo "No changes detected."
+          fi
