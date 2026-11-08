@@ -8,6 +8,7 @@
   openssl,
   zlib,
   curl,
+  lttng-ust,
   stdenvNoCC,
 }:
 
@@ -69,6 +70,9 @@ stdenvNoCC.mkDerivation {
     openssl
     zlib
     curl
+    # dotnet's EventPipe tracing provider (libcoreclrtraceptprovider.so)
+    # links liblttng-ust directly.
+    lttng-ust
   ];
 
   installPhase = ''
