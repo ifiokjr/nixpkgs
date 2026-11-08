@@ -22,6 +22,12 @@
   # `cargo-build-sbf --version`, e.g. "v1.54".
   platformToolsVersion ? null,
   platformToolsHashes ? { },
+  # When set (the fork's mirror base), release tarballs are fetched from this
+  # repo's attested mirror releases (tag mirror/agave/<tag> and
+  # mirror/platform-tools/<tag>) instead of upstream, so upstream CDN outages
+  # never break builds. The mirror workflow publishes each version the
+  # updater pins; see mirror.json.
+  mirrorBase ? null,
 }:
 
 let
@@ -41,10 +47,22 @@ let
     }
     .${platformSuffix} or (throw "Unsupported platform for platform-tools: ${platformSuffix}");
 
+  releaseBase =
+    if mirrorBase != null then
+      "${mirrorBase}/agave/v${version}"
+    else
+      "https://github.com/anza-xyz/agave/releases/download/v${version}";
+
+  platformToolsBase =
+    if mirrorBase != null then
+      "${mirrorBase}/platform-tools/${platformToolsVersion}"
+    else
+      "https://github.com/anza-xyz/platform-tools/releases/download/${platformToolsVersion}";
+
   platformToolsSrc =
     if platformToolsVersion != null then
       fetchurl {
-        url = "https://github.com/anza-xyz/platform-tools/releases/download/${platformToolsVersion}/platform-tools-${platformToolsName}.tar.bz2";
+        url = "${platformToolsBase}/platform-tools-${platformToolsName}.tar.bz2";
         sha256 = platformToolsHashes.${platformSuffix} or lib.fakeSha256;
       }
     else
@@ -79,7 +97,7 @@ stdenv.mkDerivation {
   inherit pname version;
 
   src = fetchurl {
-    url = "https://github.com/anza-xyz/agave/releases/download/v${version}/solana-release-${platformSuffix}.tar.bz2";
+    url = "${releaseBase}/solana-release-${platformSuffix}.tar.bz2";
     sha256 = hashes.${platformSuffix} or lib.fakeSha256;
   };
 

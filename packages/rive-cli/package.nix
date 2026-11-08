@@ -31,7 +31,10 @@ stdenv.mkDerivation {
   inherit version;
 
   src = fetchurl {
-    url = "https://releases.rive.app/cli/v${version}/rive-${platformSuffix}.tar.gz";
+    # Fetched from this repo's release mirror (tag mirror/rive-cli/<tag>)
+    # rather than releases.rive.app so vendor-CDN outages never break builds;
+    # the mirror workflow publishes and attests each release (see mirror.json).
+    url = "https://github.com/ifiokjr/nixpkgs/releases/download/mirror/rive-cli/v${version}/rive-${platformSuffix}.tar.gz";
     hash = hashes.${platformSuffix} or (throw "rive-cli: no prebuilt for ${platformSuffix}");
   };
 

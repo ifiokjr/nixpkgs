@@ -5,15 +5,135 @@ on:
     - cron: "0 6 * * *"
   workflow_dispatch:
 
-# contents: read is the workflow-wide default; the update job requests the
-# writes it needs at job level (workflow-level is rejected by zizmor as overly
-# broad once a second job exists).
+# contents: read is the workflow-wide default; the mirror and update jobs
+# request the writes they need at job level (workflow-level is rejected by
+# zizmor as overly broad once a second job exists).
 permissions:
   contents: read
 
 jobs:
+  # Expand mirror.json into the matrix the mirror job runs over, so adding a
+  # source is a mirror.json entry and nothing else.
+  matrix:
+    name: read mirror sources
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      sources: ${{ steps.read.outputs.sources }}
+    steps:
+      - name: 📥 checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: 📋 list mirror sources
+        id: read
+        run: echo "sources=$(jq -c '[.sources[].name]' mirror.json)" >> "$GITHUB_OUTPUT"
+
+  # Mirror upstream release artifacts to this repo's GitHub releases before
+  # anything updates: every asset is downloaded, verified against upstream's
+  # own integrity data, attested with this repo's build provenance, and only
+  # then published at tag mirror/<name>/<tag>. A version bump can never point
+  # at bytes that were not mirrored first (scripts/update refuses to bump a
+  # version whose mirror release is missing).
+  mirror:
+    name: mirror ${{ matrix.source }}
+    needs: matrix
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        source: ${{ fromJson(needs.matrix.outputs.sources) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: write # create the mirror release and upload assets
+      attestations: write # record build provenance for the staged artifacts
+      id-token: write # OIDC identity for the attestation
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: 📥 checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: 🔧 install nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔄 stage upstream artifacts
+        id: stage
+        run: |
+          nix shell nixpkgs#nushell -c nu scripts/mirror --prepare --source ${{ matrix.source }}
+          staged=$(find .mirror-staging -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+          echo "staged=$staged" >> "$GITHUB_OUTPUT"
+          echo "staged $staged new version(s)"
+
+      # When everything is already mirrored there is nothing to attest,
+      # publish or verify — the actions below require at least one subject.
+      - name: 🧾 attest staged artifacts
+        if: steps.stage.outputs.staged != '0'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            .mirror-staging/**
+
+      - name: 📦 publish mirror releases
+        if: steps.stage.outputs.staged != '0'
+        run: nix shell nixpkgs#nushell -c nu scripts/mirror --publish
+
+      - name: 🔍 verify attestations on the published assets
+        if: steps.stage.outputs.staged != '0'
+        run: |
+          set -euo pipefail
+          # Attestations propagate through the API within moments; retry to
+          # absorb that lag instead of failing a healthy mirror.
+          for asset in .mirror-staging/*/*; do
+            case "$asset" in *.json|*.sha256) continue ;; esac
+            for _ in 1 2 3 4 5; do
+              if gh attestation verify "$asset" -R "$GITHUB_REPOSITORY"; then
+                echo "✅ $asset"
+                break
+              fi
+              echo "waiting for attestation of $asset…"
+              sleep 10
+            done
+            gh attestation verify "$asset" -R "$GITHUB_REPOSITORY"
+          done
+
+      # Backup copy of every mirrored artifact. Inactive until the repo has
+      # B2_KEY_ID / B2_APPLICATION_KEY secrets (an application key scoped to
+      # the bucket named by the B2_BUCKET variable); GitHub releases stay the
+      # fetch path regardless.
+      - name: 🗄 copy artifacts to Backblaze B2
+        if: steps.stage.outputs.staged != '0'
+        env:
+          B2_KEY_ID: ${{ secrets.B2_KEY_ID }}
+          B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+          B2_BUCKET: ${{ vars.B2_BUCKET }}
+        run: |
+          set -euo pipefail
+          if [ -z "$B2_KEY_ID" ] || [ -z "$B2_APPLICATION_KEY" ] || [ -z "$B2_BUCKET" ]; then
+            echo "B2 secrets or bucket not configured; skipping the backup copy."
+            exit 0
+          fi
+          pipx install "b2==5.0.2"
+          b2 authorize-account "$B2_KEY_ID" "$B2_APPLICATION_KEY"
+          for dir in .mirror-staging/*/; do
+            tag=$(basename "$dir")
+            b2 sync --noDelete "$dir" "b2://$B2_BUCKET/nixpkgs-mirror/$tag/"
+          done
+
   update:
     name: update packages
+    needs: mirror
+    # A single failed mirror source must not block updating the rest: the
+    # updater gates every mirrored package on its own mirror release.
+    if: ${{ !cancelled() && needs.mirror.result != 'cancelled' }}
     runs-on: ubuntu-latest
     # Bounded so a hung build or fetch cannot burn runner hours unnoticed.
     timeout-minutes: 180
@@ -115,6 +235,11 @@ jobs:
         # its own; the dprint fmt step below stays as a safety net for files mdt
         # does not touch.
         run: nix shell nixpkgs#dprint -c nix run .#mdt -- update
+
+      - name: 📦 regenerate the package catalog
+        # A version bump changes docs/packages.md; without this the catalog
+        # freshness check in ci.yml fails on the update commit itself.
+        run: nix shell nixpkgs#nushell nixpkgs#dprint -c sh -c 'nu scripts/catalog && dprint fmt docs/packages.md'
 
       # mdt rewrites the version cells in readme.md but does not re-pad the
       # table columns, so a version whose length changes leaves the row

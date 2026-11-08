@@ -316,6 +316,12 @@ First use of a source-built package (dylint, racket-minimal, the Dart CLIs) othe
   };
   ```
 
+## release mirror
+
+Some packages fetch prebuilt release artifacts whose hosts go down between releases (a GitHub release-CDN outage on 2026-11-08 broke every ollama fetch at once; `releases.rive.app` has had its own bad days). The mirrored sources in [mirror.json](mirror.json) are fetched from this repository's GitHub releases instead: the daily update workflow downloads each upstream release asset, verifies it against upstream's own checksums (or the asset digest GitHub records), attests it with this repository's build provenance (`gh attestation verify <asset> -R ifiokjr/nixpkgs`), and publishes it at tag `mirror/<name>/<upstream-tag>` with a `.sha256` sidecar per asset. The updater refuses to pin a version whose mirror release does not exist, so a bump never references bytes the mirror cannot serve — an upstream outage costs a delayed bump, not a broken rebuild. Everything is also copied to a Backblaze B2 bucket (the `B2_BUCKET` variable plus `B2_KEY_ID` / `B2_APPLICATION_KEY` secrets) as an off-GitHub backup copy.
+
+Mirrored today: ollama, agave (every stable track) and its platform-tools SDK, rive-cli. Adding a source is a `mirror.json` entry plus a fetch URL that points at the mirror — see `packages/ollama/package.nix`.
+
 ## package details
 
 ### agave

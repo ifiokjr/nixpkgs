@@ -1,0 +1,58 @@
+#!/usr/bin/env nu
+# Report Rust packages whose pinned version has no prebuilt release.
+#
+#   nu scripts/prebuilt-check
+#
+# Prints one "name version" pair per line for every packages/*/package.nix
+# that builds from source with buildRustPackage (the huge-build-time class:
+# machines should install the prebuilt binary, never recompile) and whose
+# prebuilt/<pkg>/<version> release is missing from this repo. Empty output
+# means every source-built pin is covered. ci.yml surfaces the output as a
+# warning; call it with --strict to fail instead.
+
+const MIRROR_REPO = "ifiokjr/nixpkgs"
+
+# Package directories that ship prebuilts through other mechanisms and must
+# not be flagged (kept as data so the list documents itself).
+const EXEMPT = []
+
+def prebuilt-release-exists [name: string, version: string] {
+	let result = (^gh release view $"prebuilt/($name)/($version)" -R $MIRROR_REPO --json tagName | complete)
+	$result.exit_code == 0
+}
+
+def main [
+	--repo-root: string = ".",
+	--strict, # exit 1 when any source-built package lacks its prebuilt release
+] {
+	cd ($repo_root | path expand)
+	if (which gh | is-empty) {
+		error make { msg: "Missing dependency: gh" }
+	}
+
+	let rust_packages = (glob "packages/*/package.nix"
+	| where {|file| (open $file --raw) =~ "buildRustPackage"}
+	| each {|file|
+		let name = ($file | path dirname | path basename)
+		let content = (open $file --raw)
+		let version = ($content | parse -r 'version = "([^"]+)"' | get -o 0?.capture0? | default "")
+		if ($version | is-empty) {
+			{ name: $name, version: "", missing: false }
+		} else {
+			{
+				name: $name
+				version: $version
+				missing: (not ($name in $EXEMPT) and (not (prebuilt-release-exists $name $version)))
+			}
+		}
+	})
+
+	let missing = ($rust_packages | where missing)
+	for row in $missing {
+		print $"($row.name) ($row.version)"
+	}
+
+	if $strict and ($missing | is-not-empty) {
+		exit 1
+	}
+}

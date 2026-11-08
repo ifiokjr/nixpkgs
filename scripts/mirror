@@ -1,0 +1,483 @@
+#!/usr/bin/env nu
+# Mirror upstream release artifacts to this repo's GitHub releases so rebuilds
+# survive upstream CDN outages (the 2026-11-08 GitHub release-CDN outage broke
+# every ollama fetch at once).
+#
+#   nu scripts/mirror --prepare                 # resolve + download + verify into .mirror-staging/
+#   nu scripts/mirror --publish                 # create the mirror releases from .mirror-staging/
+#   nu scripts/mirror --full                    # prepare + publish in one go (local runs: unattested)
+#   nu scripts/mirror --prepare --source ollama # one source only
+#
+# The source list lives in mirror.json. For every source, a release is created
+# at tag mirror/<name>/<upstream-tag> (e.g. mirror/ollama/v0.40.15) holding the
+# assets under their exact upstream names plus a .sha256 sidecar per asset.
+#
+# Attestations: `--prepare` only stages; the update-packages workflow attests
+# the staged files with actions/attest-build-provenance between prepare and
+# publish, so everything reachable at a mirror/ tag carries this repo's build
+# provenance ("attested only"). `--full` publishes without attesting and
+# prints a warning — use it only to bootstrap during an outage.
+#
+# Integrity: downloads are verified against the upstream checksum file when
+# the source declares one (ollama's sha256sum.txt), else against the digest
+# GitHub records for each release asset, else computed and recorded (the nix
+# hash pin in packages/*/package.nix stays the binding control).
+
+const RESET = "\e[0m"
+const BOLD = "\e[1m"
+const DIM = "\e[2m"
+const RED = "\e[31m"
+const GREEN = "\e[32m"
+const YELLOW = "\e[33m"
+const CYAN = "\e[36m"
+
+const MIRROR_REPO = "ifiokjr/nixpkgs"
+const STAGING_DIR = ".mirror-staging"
+
+def print-header [] {
+	print $"($BOLD)($CYAN)▶ mirror upstream release artifacts($RESET)"
+}
+
+def log-ok [name: string, message: string] {
+	print $"  ($GREEN)✔($RESET) ($name): ($message)"
+}
+
+def log-update [name: string, message: string] {
+	print $"  ($CYAN)◆($RESET) ($name): ($message)"
+}
+
+def log-fail [name: string, message: string] {
+	print $"  ($RED)✖($RESET) ($name): ($message)"
+}
+
+def log-sub [message: string] {
+	print $"    ($DIM)— ($message)($RESET)"
+}
+
+def fail [message: string] {
+	error make { msg: $message }
+}
+
+def check-deps [] {
+	for dep in [curl gh sha256sum] {
+		if (which $dep | is-empty) {
+			fail $"Missing dependency: ($dep)"
+		}
+	}
+}
+
+def github-headers [] {
+	let token = ($env | get -o GITHUB_TOKEN | default "")
+	if ($token | is-not-empty) {
+		[Authorization $"token ($token)"]
+	} else {
+		[]
+	}
+}
+
+def github-api-get [url: string] {
+	let headers = (github-headers)
+	let request = {||
+		if ($headers | is-empty) {
+			http get $url
+		} else {
+			http get -H $headers $url
+		}
+	}
+
+	let first = (try {
+		{ ok: true, data: (do $request), err: "" }
+	} catch {|err|
+		{ ok: false, data: null, err: ($err.msg | default "unknown error") }
+	})
+	if $first.ok {
+		return $first.data
+	}
+
+	sleep 2sec
+	let second = (try {
+		{ ok: true, data: (do $request), err: "" }
+	} catch {|err|
+		{ ok: false, data: null, err: ($err.msg | default "unknown error") }
+	})
+	if $second.ok {
+		return $second.data
+	}
+
+	fail $"GitHub API request failed after retries for ($url): ($second.err)"
+}
+
+# Download with curl (streams; nushell's http get buffers 2 GB artifacts in
+# memory). Retries cover the transient 5xxes that make mirroring worthwhile.
+def download [url: string, to: string] {
+	let result = (^curl -fL --retry 5 --retry-all-errors --connect-timeout 30 -o $to $url | complete)
+	if $result.exit_code != 0 {
+		fail $"download failed for ($url | path basename): ($result.stderr | str trim)"
+	}
+}
+
+def file-sha256 [path: string] {
+	let out = (^sha256sum $path | complete)
+	if $out.exit_code != 0 {
+		fail $"could not hash ($path | path basename)"
+	}
+	$out.stdout | split row " " | first
+}
+
+def mirror-tag [name: string, tag: string] {
+	$"mirror/($name)/($tag)"
+}
+
+# True when this repo already has the mirror release for the tag.
+def mirror-release-exists [tag: string] {
+	let result = (^gh release view $tag -R $MIRROR_REPO --json tagName | complete)
+	$result.exit_code == 0
+}
+
+def delete-mirror-release [tag: string] {
+	^gh release delete $tag -R $MIRROR_REPO --cleanup-tag --yes | complete
+}
+
+# Resolve the upstream version to mirror for one source.
+def resolve-version [source: record] {
+	if ($source | get -o versionsFromPins | default null) != null {
+		# Version comes from the package pins (platform-tools): mirror every
+		# unique pin found in the repo so any track bump is covered.
+		let pins = (glob ($source.versionsFromPins.glob)
+		| each {|file|
+			parse-capture-field (open $file --raw) $source.versionsFromPins.field
+		}
+		| where {|v| $v != null}
+		| uniq)
+		if ($pins | is-empty) {
+			fail $"no ($source.versionsFromPins.field) pins found for ($source.name)"
+		}
+		return $pins
+	}
+
+	if $source.kind == "vendor-url" {
+		let data = (http get $source.manifest)
+		let version = ($data | get -o version | default "")
+		if ($version | is-empty) {
+			fail $"($source.manifest) has no version field"
+		}
+		return [$version]
+	}
+
+	# github-release: the newest release matching any track prefix that has
+	# every required asset (mirrors the updater's asset-checked resolution).
+	# Release lists are paginated newest-first and long-lived repos (agave)
+	# span several pages, so walk pages until every prefix has a match.
+	let prefixes = ($source | get -o trackPrefixes | default [$source.tagTemplate | str replace "{version}" ""])
+	# Match the updater's semantics per source: agave's track resolution
+	# allows prerelease-flagged releases (only drafts are excluded), so the
+	# mirror must mirror the same versions the updater pins.
+	let allow_prereleases = ($source | get -o prereleases | default false)
+	mut pending = $prefixes
+	mut matched = []
+	mut page = 1
+	while (($page <= 20) and ($pending | is-not-empty)) {
+		let releases = (github-api-get $"https://api.github.com/repos/($source.repo)/releases?per_page=100&page=($page)")
+		if ($releases | is-empty) {
+			break
+		}
+		for prefix in $pending {
+			let with_assets = ($releases
+			| where {|r| ((not $r.draft) and ($allow_prereleases or (not $r.prerelease)) and ($r.tag_name | str starts-with $prefix) and (release-has-assets $r $source.assets)) })
+			if ($with_assets | is-not-empty) {
+				let tag = ($with_assets | first | get tag_name)
+				# The release tag already carries the version prefix (v4.4.1);
+				# the rest of the pipeline works with the bare version and
+				# re-applies the prefix through tagTemplate.
+				let version = if ($tag | str starts-with $source.versionPrefix) {
+					$tag | str replace $source.versionPrefix ""
+				} else {
+					$tag
+				}
+				$matched = ($matched | append $version)
+			}
+		}
+		$pending = ($pending | where {|p| not ($matched | any {|v| $"($source.versionPrefix)($v)" | str starts-with $p}) })
+		$page = ($page + 1)
+	}
+	if ($matched | is-empty) {
+		fail $"no upstream release with all assets found for ($source.name)"
+	}
+	$matched
+}
+
+def release-has-assets [release: record, assets: list<string>] {
+	let names = ($release.assets | get -o name | default [])
+	$assets | all {|asset| $names | any {|n| $n == $asset} }
+}
+
+# The version string inside a `field = "..."` line of a nix file, or null.
+def parse-capture-field [content: string, field: string] {
+	let pattern = ($field + ' = "([^"]+)"')
+	let match = ($content | parse -r $pattern)
+	if ($match | is-empty) {
+		null
+	} else {
+		$match | get 0.capture0
+	}
+}
+
+def upstream-tag [source: record, version: string] {
+	$source.tagTemplate | str replace "{version}" $version
+}
+
+def upstream-asset-url [source: record, version: string, asset: string] {
+	if $source.kind == "vendor-url" {
+		($source.urlBase | str replace "{version}" $version) + "/" + $asset
+	} else {
+		let tag = (upstream-tag $source $version)
+		$"https://github.com/($source.repo)/releases/download/($tag)/($asset)"
+	}
+}
+
+# Verify a downloaded asset against upstream's own integrity data. Returns
+# "checksum" (upstream checksum file), "digest" (GitHub asset digest), or
+# "computed" (recorded only).
+def verify-asset [source: record, version: string, tag: string, asset: string, path: string, checksums: table] {
+	let actual = (file-sha256 $path)
+
+	if ($checksums | is-not-empty) {
+		let expected = ($checksums | where {|row| $row.file == $asset} | get -o 0.sha256 | default "")
+		if ($expected | is-not-empty) {
+			if $expected != $actual {
+				fail $"checksum mismatch for ($asset): expected ($expected), got ($actual)"
+			}
+			return { status: "checksum", sha256: $actual }
+		}
+	}
+
+	# GitHub records a sha256 digest for every release asset; cross-check when
+	# the upstream release is on GitHub.
+	if $source.kind == "github-release" {
+		let release = (github-api-get $"https://api.github.com/repos/($source.repo)/releases/tags/($tag)")
+		let digest = ($release.assets
+		| where {|a| $a.name == $asset}
+		| get -o 0.digest
+		| default "")
+		if ($digest | is-not-empty) {
+			let expected = ($digest | str replace "sha256:" "")
+			if $expected != $actual {
+				fail $"digest mismatch for ($asset): expected ($expected), got ($actual)"
+			}
+			return { status: "digest", sha256: $actual }
+		}
+	}
+
+	{ status: "computed", sha256: $actual }
+}
+
+# Upstream checksum file parsed into {file, sha256} rows; empty when absent.
+def upstream-checksums [source: record, tag: string, stage: string] {
+	let name = ($source | get -o checksum | default null)
+	if $name == null {
+		return []
+	}
+	if $source.kind != "github-release" {
+		return []
+	}
+	let path = ($stage | path join $name)
+	download $"https://github.com/($source.repo)/releases/download/($tag)/($name)" $path
+	open $path --raw
+	| lines
+	| where {|line| not ($line | str trim | is-empty)}
+	| each {|line|
+		let parts = ($line | split row -n 2 " " | each {|p| $p | str trim})
+		{ sha256: ($parts | first), file: (($parts | last) | str replace "*" "") }
+	}
+}
+
+# --prepare: resolve the version, skip when already mirrored, download every
+# asset into the staging dir, verify, and record a summary for --publish.
+def prepare-source [source: record, dry_run: bool] {
+	let versions = (resolve-version $source)
+
+	for version in $versions {
+		let tag = (upstream-tag $source $version)
+		let mtag = (mirror-tag $source.name $tag)
+		let stage = ($STAGING_DIR | path join $"($source.name)-($tag)")
+
+		if (mirror-release-exists $mtag) {
+			log-ok $source.name $"($tag) already mirrored ($mtag)"
+			continue
+		}
+
+		log-update $source.name $"mirroring ($tag) → ($mtag)"
+		if $dry_run {
+			for asset in $source.assets {
+				log-sub $"would download ($asset)"
+			}
+			continue
+		}
+
+		mkdir $stage
+		let checksums = (upstream-checksums $source $tag $stage)
+		mut results = []
+		for asset in $source.assets {
+			log-sub $"downloading ($asset)"
+			let path = ($stage | path join $asset)
+			download (upstream-asset-url $source $version $asset) $path
+			let verdict = (verify-asset $source $version $tag $asset $path $checksums)
+			log-sub $"($asset) verified ($verdict.status)"
+			$results = ($results | append { asset: $asset, sha256: $verdict.sha256, verification: $verdict.status })
+		}
+
+		{
+			name: $source.name
+			version: $version
+			tag: $tag
+			mirrorTag: $mtag
+			repo: ($source | get -o repo | default null)
+			verification: ($results | get verification | uniq | str join ",")
+			assets: $results
+			stage: $stage
+		}
+		| to json
+		| save -f ($stage | path join "SUMMARY.json")
+
+		log-ok $source.name $"staged ($tag) in ($stage)"
+	}
+}
+
+# --publish: turn a staged download into the mirror release.
+def publish-source [summary_path: string, dry_run: bool] {
+	let summary = (open $summary_path)
+	let stage = $summary.stage
+	let mtag = $summary.mirrorTag
+
+	if (mirror-release-exists $mtag) {
+		log-ok $summary.name $"($mtag) already exists"
+		return
+	}
+
+	let sidecars = ($summary.assets
+	| each {|a|
+		let sidecar = ($stage | path join $"($a.asset).sha256")
+		$"($a.sha256)  ($a.asset)" | save -f $sidecar
+		$sidecar
+	})
+
+	let files = ($summary.assets | each {|a| $stage | path join $a.asset } | append $sidecars | append $summary_path)
+
+	let notes = [
+		"Mirrored upstream release artifacts so nix fetches survive upstream CDN outages."
+		""
+		$"- Upstream: ($summary.repo | default 'vendor release') at tag `($summary.tag)`"
+		$"- Verification: ($summary.verification)"
+		"- Attestations: build provenance from this repository (actions/attest-build-provenance); verify with `gh attestation verify <asset> -R ifiokjr/nixpkgs`"
+		""
+		"| asset | sha256 |"
+		"| --- | --- |"
+	]
+	let table = ($summary.assets | each {|a| $"| `($a.asset)` | `($a.sha256)` |" })
+	let mirrored_at = (date now | format date "%Y-%m-%dT%H:%M:%SZ")
+	let body = ($notes | append $table | append [""] | append $"Mirrored ($mirrored_at)" | str join "\n")
+
+	if $dry_run {
+		log-update $summary.name $"would create ($mtag) with ($files | length) files"
+		return
+	}
+
+	log-sub $"creating release ($mtag)"
+	let created = (^gh release create $mtag ...$files -R $MIRROR_REPO --title $"($summary.name) ($summary.version) mirrored" --notes $body --target main | complete)
+	if $created.exit_code != 0 {
+		delete-mirror-release $mtag
+		fail $"release creation failed for ($mtag): ($created.stderr | str trim)"
+	}
+	log-ok $summary.name $"published ($mtag)"
+}
+
+def load-sources [] {
+	let config = (open mirror.json)
+	$config.sources
+}
+
+def select-sources [sources: table, only: string] {
+	if ($only | is-empty) {
+		$sources
+	} else {
+		let picked = ($sources | where {|s| $s.name == $only})
+		if ($picked | is-empty) {
+			fail $"no source named ($only) in mirror.json"
+		}
+		$picked
+	}
+}
+
+def log-warn-full [] {
+	print $"  ($YELLOW)⚠ --full publishes WITHOUT attestations; let the update-packages workflow mirror when possible($RESET)"
+}
+
+
+def main [
+	--repo-root: string = ".",
+	--source: string = "", # one mirror.json source name; default: all
+	--prepare, # resolve, download, verify into .mirror-staging/
+	--publish, # create mirror releases from .mirror-staging/ summaries
+	--full, # prepare + publish (publishes unattested; intended for local bootstrap)
+	--dry-run, # print what would happen without touching anything
+] {
+	check-deps
+	let root = ($repo_root | path expand)
+	cd $root
+
+	if not ($"($root)/mirror.json" | path exists) {
+		fail $"mirror.json not found at ($root)/mirror.json"
+	}
+
+	print-header
+	let sources = (select-sources (load-sources) $source)
+
+	mut prepared = 0
+	mut published = 0
+	mut failed = 0
+
+	# try/catch bodies are closures, which cannot mutate outer variables, so
+	# the outcome is decided inside and the counters only move in the loop.
+	if $prepare or $full {
+		for source in $sources {
+			let ok = (try {
+				prepare-source $source $dry_run
+				true
+			} catch {|err|
+				log-fail $source.name $err.msg
+				false
+			})
+			if $ok {
+				$prepared = ($prepared + 1)
+			} else {
+				$failed = ($failed + 1)
+			}
+		}
+	}
+
+	if $publish or $full {
+		if $full and (not $dry_run) {
+			log-warn-full
+		}
+		let summaries = (glob $"($STAGING_DIR)/*/SUMMARY.json")
+		for summary_path in $summaries {
+			let ok = (try {
+				publish-source $summary_path $dry_run
+				true
+			} catch {|err|
+				log-fail ($summary_path | path dirname | path basename) $err.msg
+				false
+			})
+			if $ok {
+				$published = ($published + 1)
+			} else {
+				$failed = ($failed + 1)
+			}
+		}
+	}
+
+	print $"($BOLD)prepared ($prepared), published ($published), failed ($failed)($RESET)"
+	if $failed > 0 {
+		exit 1
+	}
+}
