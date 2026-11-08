@@ -65,6 +65,7 @@ Additional Nix packages not yet available in [nixpkgs](https://github.com/NixOS/
 | [serverpod_cli-4](#serverpod_cli)                                                                    | <!-- {~v_serverpod_cli_4:"{{ v.serverpod_cli_4 }}"} -->4.1.1<!-- {/v_serverpod_cli_4} -->                            | linux, macos               | Serverpod CLI 4.x track (default aliases resolve here)                           |
 | [steam](#steam)                                                                                      | <!-- {~v_steam:"{{ v.steam }}"} -->4.0<!-- {/v_steam} -->                                                            | macos                      | Steam video game digital distribution service                                    |
 | [surfpool](#surfpool)                                                                                | <!-- {~v_surfpool:"{{ v.surfpool }}"} -->1.7.0<!-- {/v_surfpool} -->                                                 | linux (x64), macos         | A drop-in replacement for solana-test-validator with mainnet state simulation    |
+| [swift-format](#swift-format)                                                                        | <!-- {~v_swift_format:"{{ v.swift_format }}"} -->604.0.0<!-- {/v_swift_format} -->                                   | linux, macos               | Format and lint Swift source code without compiling a Swift toolchain            |
 | [t3code](#t3code)                                                                                    | <!-- {~v_t3code:"{{ v.t3code }}"} -->0.1.6<!-- {/v_t3code} -->                                                       | linux, macos (arm64)       | Control surface for the coding agents running on your machine                    |
 | [t3code-nightly](#t3code)                                                                            | <!-- {~v_t3code_nightly:"{{ v.t3code_nightly }}"} -->0.1.7-nightly.20261101.4016<!-- {/v_t3code_nightly} -->         | linux, macos (arm64)       | T3 Code nightly channel (pre-release builds)                                     |
 | [wait-for-them](#wait-for-them)                                                                      | <!-- {~v_wait_for_them:"{{ v.wait_for_them }}"} -->0.5.1<!-- {/v_wait_for_them} -->                                  | linux (x64), macos (x64)   | Wait for TCP/HTTP endpoints to be ready before proceeding                        |
@@ -667,6 +668,16 @@ A drop-in replacement for solana-test-validator with mainnet state simulation. P
 - **Binary:** `surfpool`
 - **License:** Apache-2.0
 - **Source:** <https://github.com/txtx/surfpool>
+
+### swift-format
+
+Formatter and linter for Swift source code. Pre-built binary, so installing it never compiles a Swift toolchain: nixpkgs builds `swift-format` on top of `swiftc` from source, and when that compiler is missing from cache.nixos.org every consumer builds it locally (over half an hour on a GitHub runner).
+
+Upstream publishes no binaries, so [`build-swift-prebuilt.yml`](.github/workflows/build-swift-prebuilt.yml) builds each version once with the official Swift toolchain and attaches the archives to this repo's `prebuilt/swift-format/<version>` release. The Linux binaries link the Swift runtime and Foundation statically; the macOS binaries use the Swift runtime that ships with the OS. `scripts/update` triggers the workflow when upstream tags a new version, and the workflow rewrites the package's version and hashes once the release exists.
+
+- **Binary:** `swift-format`
+- **License:** Apache-2.0
+- **Source:** <https://github.com/swiftlang/swift-format>
 
 ### t3code
 

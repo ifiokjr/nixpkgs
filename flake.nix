@@ -98,6 +98,7 @@
         serverpod_cli = self.serverpod_cli-4;
         steam = pkgs.callPackage ./packages/steam/package.nix { };
         surfpool = pkgs.callPackage ./packages/surfpool/package.nix { };
+        swift-format = pkgs.callPackage ./packages/swift-format/package.nix { };
         t3code = pkgs.callPackage ./packages/t3code/package.nix { };
         t3code-nightly = pkgs.callPackage ./packages/t3code-nightly/package.nix { };
         wait-for-them = pkgs.callPackage ./packages/wait-for-them/package.nix { };

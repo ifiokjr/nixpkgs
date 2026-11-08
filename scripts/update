@@ -3,6 +3,7 @@
 #
 # The script covers:
 # - Flake inputs (nix flake update → flake.lock)
+# - Prebuilt packages built by this repo's CI (ccase, cargo-clean-all, swift-format, etc.)
 # - Versioned GitHub release packages (agave, codex-cli, deno, godot, kani, mbx, mdt, monochange, ollama, sbpf-linker, solana-verify, surfpool, zed, etc.)
 # - Versioned vendor-manifest packages (rive-cli)
 # - Homebrew-cask versioned packages (gpg-suite, nordvpn, zoom)
@@ -1890,12 +1891,22 @@ def update-rolling-steam [packages_dir: string, dry_run: bool] {
 
 # Prebuilt binary packages
 # These packages use binaries built by our CI and hosted in this repo.
-# Instead of updating hashes directly, we trigger the build-rust-prebuilt workflow.
+# Instead of updating hashes directly, we trigger the workflow that builds them:
+# build-rust-prebuilt for Rust crates, build-swift-prebuilt for Swift tools.
 
-const PREBUILT_PACKAGES = ["ccase" "pina" "cargo-clean-all" "cargo-interactive-update"]
+const PREBUILT_PACKAGES = ["ccase" "pina" "cargo-clean-all" "cargo-interactive-update" "swift-format"]
+const SWIFT_PREBUILT_PACKAGES = ["swift-format"]
 
 def is-prebuilt-package [package: string] {
   $PREBUILT_PACKAGES | any {|p| $p == $package }
+}
+
+def prebuilt-workflow [package: string] {
+  if ($SWIFT_PREBUILT_PACKAGES | any {|p| $p == $package }) {
+    "build-swift-prebuilt.yml"
+  } else {
+    "build-rust-prebuilt.yml"
+  }
 }
 
 def trigger-prebuilt-build [package: string, version: string, dry_run: bool] {
@@ -1903,13 +1914,14 @@ def trigger-prebuilt-build [package: string, version: string, dry_run: bool] {
     return false
   }
 
+  let workflow = (prebuilt-workflow $package)
   log-sub "triggering prebuilt binary build..."
   if $dry_run {
-    log-sub "would trigger: gh workflow run build-rust-prebuilt.yml -f package=($package) -f version=($version) -f update-package=true"
+    log-sub $"would trigger: gh workflow run ($workflow) -f package=($package) -f version=($version) -f update-package=true"
     return true
   }
 
-  let result = (^gh workflow run build-rust-prebuilt.yml -f $"package=($package)" -f $"version=($version)" -f "update-package=true" | complete)
+  let result = (^gh workflow run $workflow -f $"package=($package)" -f $"version=($version)" -f "update-package=true" | complete)
   if $result.exit_code != 0 {
     log-warn "failed to trigger prebuilt build workflow"
     log-warn $result.stderr
@@ -2152,6 +2164,13 @@ def update-prebuilt-ccase [packages_dir: string, dry_run: bool] {
   update-prebuilt-package $packages_dir "ccase" $latest_version "stringcase" "ccase" $dry_run
 }
 
+# swift-format tags are bare versions (604.0.0); releases/latest skips the
+# dated prerelease tags upstream also publishes.
+def update-prebuilt-swift-format [packages_dir: string, dry_run: bool] {
+  let latest_version = (github-latest-tag "swiftlang" "swift-format")
+  update-prebuilt-package $packages_dir "swift-format" $latest_version "swiftlang" "swift-format" $dry_run
+}
+
 # Runner
 
 def run-step [name: string, updater: closure] {
@@ -2272,6 +2291,7 @@ def main [
     { name: "serverpod_cli-4", run: {|| update-serverpod-cli-4 $packages_dir $dry_run } }
     { name: "steam", run: {|| update-rolling-steam $packages_dir $dry_run } }
     { name: "surfpool", run: {|| update-surfpool $packages_dir $dry_run } }
+    { name: "swift-format", run: {|| update-prebuilt-swift-format $packages_dir $dry_run } }
     { name: "t3code", run: {|| update-t3code $packages_dir $dry_run } }
     { name: "t3code-nightly", run: {|| update-t3code-nightly $packages_dir $dry_run } }
     { name: "wait-for-them", run: {|| update-rust-wait-for-them $root $packages_dir $dry_run } }
