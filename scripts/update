@@ -1052,6 +1052,35 @@ def update-godot [packages_dir: string, dry_run: bool] {
   update-versioned-keyed-hashes "godot" $file $latest_version $entries $dry_run
 }
 
+# The .NET SDK tracks Microsoft's 8.0 LTS band. The channel release metadata
+# carries the version and every platform tarball's URL in one document; the
+# metadata sha512 stays the upstream integrity anchor and the SRI hash pinned
+# here remains the binding download check.
+def update-dotnet [packages_dir: string, dry_run: bool] {
+  let data = (http get "https://builds.dotnet.microsoft.com/dotnet/release-metadata/8.0/releases.json")
+  let latest_version = ($data | get releases.0.sdks.0.version)
+  let files = ($data | get releases.0.sdks.0.files)
+  let file = $"($packages_dir)/dotnet-sdk/package.nix"
+  let entries = (
+    [
+      { key: "osx-arm64" }
+      { key: "osx-x64" }
+      { key: "linux-arm64" }
+      { key: "linux-x64" }
+    ]
+    | each {|entry|
+        let meta = ($files
+        | where {|f| $f.rid == $entry.key and ($f.name | str ends-with ".tar.gz")}
+        | get -o 0)
+        if $meta == null {
+          fail $"dotnet-sdk: release metadata has no tarball for ($entry.key)"
+        }
+        { key: $entry.key, url: $meta.url }
+      }
+  )
+  update-versioned-keyed-hashes "dotnet-sdk" $file $latest_version $entries $dry_run
+}
+
 def update-ollama [packages_dir: string, dry_run: bool] {
   let latest_version = (github-latest-tag "ollama" "ollama" | str replace --regex '^v' '')
   let file = $"($packages_dir)/ollama/package.nix"
@@ -2260,6 +2289,7 @@ def main [
     { name: "cargo-interactive-update", run: {|| update-prebuilt-cargo-interactive $packages_dir $dry_run } }
     { name: "codex-cli", run: {|| update-codex $packages_dir $dry_run } }
     { name: "deno", run: {|| update-deno $packages_dir $dry_run } }
+    { name: "dotnet-sdk", run: {|| update-dotnet $packages_dir $dry_run } }
     { name: "dylint", run: {|| update-dylint $packages_dir $dry_run } }
     { name: "godot", run: {|| update-godot $packages_dir $dry_run } }
     { name: "herdr", run: {|| update-herdr $packages_dir $dry_run } }

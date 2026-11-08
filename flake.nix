@@ -49,6 +49,7 @@
         ccase = pkgs.callPackage ./packages/ccase/package.nix { };
         codex-cli = pkgs.callPackage ./packages/codex-cli/package.nix { };
         deno = pkgs.callPackage ./packages/deno/package.nix { };
+        dotnet-sdk = pkgs.callPackage ./packages/dotnet-sdk/package.nix { };
         dylint = pkgs.callPackage ./packages/dylint/package.nix { };
         flutter_launcher_icons = pkgs.callPackage ./packages/flutter_launcher_icons/package.nix { };
         flutter-launcher-icons = self.flutter_launcher_icons;
