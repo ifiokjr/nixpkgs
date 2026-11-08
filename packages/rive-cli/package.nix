@@ -11,7 +11,7 @@
 }:
 
 let
-  version = "1.9.1";
+  version = "1.9.2";
 
   platformSuffix =
     {
@@ -22,8 +22,8 @@ let
       or (throw "rive-cli: unsupported platform ${stdenv.hostPlatform.system}");
 
   hashes = {
-    "macos-arm64" = "sha256-qUAQilIidnd1rq0zylUxs2bcuZC1g0boV8HLwrxZuzo=";
-    "linux-x64" = "sha256-ypP/CRuevkGKmnDAwnArXEpwVMAVb8hTg1UCbblnzQ8=";
+    "macos-arm64" = "sha256-Hr6naRTPSG37qJMoMbsvVtHryPEQEiRrGVK8QAupNjI=";
+    "linux-x64" = "sha256-5gZTAjCtjdxIadGt5N4Qxf+z505EdFM5wicBjmXquws=";
   };
 in
 stdenv.mkDerivation {
