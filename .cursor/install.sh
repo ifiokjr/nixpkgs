@@ -23,8 +23,12 @@ fi
 hash -r
 
 mkdir -p "${HOME}/.config/nix"
+# devenv.cachix.org holds the prebuilt devenv CLI (and mirrors cache.nixos.org).
+# The public key is the one documented at https://devenv.sh/binary-caching/
 cat >"${HOME}/.config/nix/nix.conf" <<'EOF'
 experimental-features = nix-command flakes
+extra-substituters = https://devenv.cachix.org
+extra-trusted-public-keys = devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=
 EOF
 
 # The official installer appends this itself. Keep the guard so a partial
@@ -51,3 +55,14 @@ nix build --no-link \
 	nixpkgs#jq \
 	nixpkgs#actionlint \
 	nixpkgs#zizmor
+
+# devenv lives in the user profile so `nix profile install` can be repeated.
+# Skip the install once the binary is there; always refresh the /usr/local/bin
+# symlink so non-login shells find it. Login shells already see
+# ~/.nix-profile/bin via nix.sh.
+if [ ! -x "${HOME}/.nix-profile/bin/devenv" ]; then
+	nix profile install nixpkgs#devenv
+fi
+if [ -x "${HOME}/.nix-profile/bin/devenv" ]; then
+	sudo ln -sfn "${HOME}/.nix-profile/bin/devenv" /usr/local/bin/devenv
+fi
