@@ -6,7 +6,7 @@
 }:
 
 let
-  version = "1.29.2";
+  version = "1.30.0";
   tag = "v${version}";
   system = stdenv.hostPlatform.system;
 
@@ -21,9 +21,9 @@ let
     .${system} or (throw "mbx: unsupported system ${system}");
 
   hashes = {
-    "aarch64-darwin" = "sha256-YhziNdjyQcWjcoygPTS5hk9Gb06LMwfYptcQGiSnGmA=";
-    "x86_64-linux" = "sha256-YL4/+7TXFBiCftKGhsd2uGvbuATt1Dc5sdv83xYvvLU=";
-    "aarch64-linux" = "sha256-vXkErt/3ikiwM5q4784MO4ZQXAt3/mOWRQTa4vhDudY=";
+    "aarch64-darwin" = "sha256-1blXIWyLYcLfkcnnqvX+vUXsdCdKYNNxTr4xbtwURUM=";
+    "x86_64-linux" = "sha256-tSOpMk1Q/UNONV/Hpa9fcVXWKFTdalp0Fz1SZV8WjUU=";
+    "aarch64-linux" = "sha256-kAhEuYD549r3eNOKGQRigcw14HEIqcghvv72EwhG3x8=";
   };
 in
 stdenv.mkDerivation {
