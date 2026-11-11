@@ -16,7 +16,7 @@
 # tracks the 8.0 LTS band via the updater (scripts/update).
 
 let
-  version = "8.0.427";
+  version = "8.0.428";
 
   platformSuffix =
     {
@@ -29,10 +29,10 @@ let
       or (throw "dotnet-sdk: unsupported platform ${stdenv.hostPlatform.system}");
 
   hashes = {
-    "osx-arm64" = "sha256-B9nqS0Q7toWeUJ7GY+luo2EvLuHEknZZhSHrgDcLx3Y=";
-    "osx-x64" = "sha256-BizDMqZsUQ7uv7Wdh2ewhRvj46H7Qvx12ppJLQZqPS8=";
-    "linux-arm64" = "sha256-4zn2PkDZbgzaOCYzzlPSCgzn19nBd9IBnBad/1F4i2s=";
-    "linux-x64" = "sha256-nypSq4J/FTC5crQffF0hHCGhbqizIXsoRhkfdG9iYUk=";
+    "osx-arm64" = "sha256-TOBKtSTy4XZQan269yAg9RmK8DKoz2hVc94/qcK/I2s=";
+    "osx-x64" = "sha256-b2uvKFWY4jg6Xc1OA/RVm6g46LC/FhasGndvZsAm6HE=";
+    "linux-arm64" = "sha256-N/yfLJXgIWLRHdXJmUybsqEsUxexoaEp7lloIFzJQoU=";
+    "linux-x64" = "sha256-b4tk75ZEsRvKtnSOv+wIjSrkho3yYgS7I1TDraDwnL4=";
   };
 
   linuxLibs = lib.makeLibraryPath [
