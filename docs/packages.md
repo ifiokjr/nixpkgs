@@ -23,7 +23,7 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 | cargo-clean-all                                          | 0.6.6                       | aarch64-darwin, aarch64-linux, x86_64-linux | Recursively clean all Cargo projects in a directory that match the selected criteria |
 | cargo-interactive-update                                 | 0.6.2                       | aarch64-darwin, aarch64-linux, x86_64-linux | A cargo extension to update direct dependencies interactively                        |
 | ccase                                                    | 0.5.1                       | aarch64-darwin, aarch64-linux, x86_64-linux | Command line interface to convert strings into any case                              |
-| codex-cli                                                | 0.167.1                     | aarch64-darwin, aarch64-linux, x86_64-linux | OpenAI Codex CLI - AI coding assistant for the terminal                              |
+| codex-cli                                                | 0.167.2                     | aarch64-darwin, aarch64-linux, x86_64-linux | OpenAI Codex CLI - AI coding assistant for the terminal                              |
 | deno                                                     | 2.9.8                       | aarch64-darwin, aarch64-linux, x86_64-linux | A modern runtime for JavaScript and TypeScript                                       |
 | dotnet-sdk                                               | 8.0.428                     | aarch64-darwin, aarch64-linux, x86_64-linux | Prebuilt .NET SDK (Microsoft official binaries)                                      |
 | dylint                                                   | 6.4.0                       | aarch64-darwin, aarch64-linux, x86_64-linux | Dylint tools for running Rust lints and building Dylint libraries                    |
@@ -63,8 +63,8 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 | t3code                                                   | 0.1.6                       | aarch64-darwin, aarch64-linux, x86_64-linux | Control surface for the coding agents running on your machine                        |
 | t3code-nightly                                           | 0.1.7-nightly.20261101.4016 | aarch64-darwin, aarch64-linux, x86_64-linux | Control surface for the coding agents running on your machine                        |
 | wait-for-them                                            | 0.5.1                       | aarch64-darwin, aarch64-linux, x86_64-linux | Wait until all provided host:port pairs are opened or HTTP URLs return 200           |
-| zed                                                      | 1.27.0                      | aarch64-darwin, aarch64-linux, x86_64-linux | High-performance, multiplayer code editor from the creators of Atom and Tree-sitter  |
-| zed-preview                                              | 1.28.0-pre                  | aarch64-darwin, aarch64-linux, x86_64-linux | High-performance, multiplayer code editor from the creators of Atom and Tree-sitter  |
+| zed                                                      | 1.28.1                      | aarch64-darwin, aarch64-linux, x86_64-linux | High-performance, multiplayer code editor from the creators of Atom and Tree-sitter  |
+| zed-preview                                              | 1.29.1-pre                  | aarch64-darwin, aarch64-linux, x86_64-linux | High-performance, multiplayer code editor from the creators of Atom and Tree-sitter  |
 | zoom                                                     | 7.2.5.90525                 | aarch64-darwin                              | Zoom video conferencing client                                                       |
 
 <!-- catalog:end -->
