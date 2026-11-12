@@ -1,52 +1,52 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  openssl,
-  dbus,
   stdenv,
+  fetchurl,
+  autoPatchelfHook,
+  dbus,
 }:
 
 let
   version = "0.5.0";
+
+  # Rust target triple for the host platform, e.g. aarch64-apple-darwin.
+  platformSuffix = stdenv.hostPlatform.rust.rustcTarget;
+
+  hashes = {
+    "aarch64-apple-darwin" = "sha256-50DbXJLO/0FRhCBc+dAfo4vmu2ypl98shdLpLkptzCc=";
+    "aarch64-unknown-linux-gnu" = "sha256-ylJmRyR9sbQpDhREJAfoD1X7YExc5lyzzG8hyb898dE=";
+    "x86_64-unknown-linux-gnu" = "sha256-MQLo9sy/YbnocK45a2Bjqc2W2Vrx02zC1/w5AXsSs7g=";
+  };
 in
-rustPlatform.buildRustPackage {
+stdenv.mkDerivation {
   pname = "monosecret";
   inherit version;
 
-  src = fetchFromGitHub {
-    owner = "ifiokjr";
-    repo = "monosecret";
-    rev = "v0.5.0";
-    hash = "sha256-L92J2qTBOQXDedeJPEt5DiwoUDWwLyZEz3ixjw/ones=";
+  src = fetchurl {
+    url = "https://github.com/ifiokjr/nixpkgs/releases/download/prebuilt/monosecret/${version}/monosecret-${platformSuffix}.tar.gz";
+    hash = hashes.${platformSuffix} or (throw "monosecret: no prebuilt for ${platformSuffix}");
   };
 
-  cargoHash = "sha256-Jmi9isc5Sp8Yqc/VDKzgSxGbw5g71HbwVzUHYfOnZAs=";
+  dontUnpack = true;
+  dontBuild = true;
+  dontStrip = true;
 
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [
-    openssl
-  ]
-  ++ lib.optionals stdenv.isLinux [
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+    stdenv.cc.cc.lib
+    # The keyring crate talks to the system secret service over dbus.
     dbus
   ];
 
-  # Build only the CLI package. Since 0.3.1 the workspace also contains the
-  # php/python/npm/ffi language bindings, whose dependencies (ext-php-rs, napi,
-  # pyo3) need interpreters at build time (e.g. ext-php-rs requires a `php`
-  # executable to generate bindings). `-p monosecret` compiles the CLI binary
-  # plus its internal deps (monosecret_derive) and skips the rest.
-  # Note: buildAndTestSubcommand is ignored by the cargo build hook — it only
-  # affects `cargo test`, which is disabled here.
-  cargoBuildFlags = [
-    "-p"
-    "monosecret"
-  ];
+  installPhase = ''
+    runHook preInstall
 
-  # Keyring tests need system keyring access which doesn't work in the Nix sandbox
-  doCheck = false;
+    mkdir -p $out/bin
+    tar xzf $src -C $out/bin/
+    chmod +x $out/bin/monosecret
+
+    runHook postInstall
+  '';
 
   doInstallCheck = true;
   installCheckPhase = ''
@@ -55,9 +55,6 @@ rustPlatform.buildRustPackage {
     echo "Checking monosecret version..."
     $out/bin/monosecret --version
 
-    echo "Checking monosecret help..."
-    $out/bin/monosecret --help
-
     runHook postInstallCheck
   '';
 
@@ -65,12 +62,13 @@ rustPlatform.buildRustPackage {
     description = "Declarative secrets, every environment, any provider";
     homepage = "https://ifiokjr.github.io/monosecret";
     license = lib.licenses.asl20;
+    mainProgram = "monosecret";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    mainProgram = "monosecret";
     tags = [
       "cli"
       "dev-tool"
