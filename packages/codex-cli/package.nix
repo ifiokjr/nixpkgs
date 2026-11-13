@@ -6,7 +6,7 @@
 }:
 
 let
-  version = "0.167.2";
+  version = "0.169.0";
   tag = "rust-v${version}";
 
   # Upstream Linux binaries are statically linked against musl; the Rust
@@ -18,10 +18,10 @@ let
       stdenv.hostPlatform.rust.rustcTarget;
 
   hashes = {
-    "aarch64-apple-darwin" = "sha256-dREWO3oBUrzw4SKQkr0lRf3M/2T8jZKtfG4B8MpGgd8=";
-    "x86_64-apple-darwin" = "sha256-DPdx52pYcFnw7gDHMbC3ZbWGNV5r0EzeSQ67BZY71oo=";
-    "aarch64-unknown-linux-musl" = "sha256-7YH6LH0glomvBhtvMF7VVCGN6SocLEAZFCso9m+mSt0=";
-    "x86_64-unknown-linux-musl" = "sha256-gkboRsVQ6iEZf8xAZ7wnDcqJXpTqQu1qKC5vTgElsV8=";
+    "aarch64-apple-darwin" = "sha256-f0xJyAuuHQtONHrPzfEfqjR12Hrl5lpesSYdPDWBRe4=";
+    "x86_64-apple-darwin" = "sha256-aivgWnXsuI+SuvPmmIzm774daDQbaNrDrlBcS4u85HU=";
+    "aarch64-unknown-linux-musl" = "sha256-l7l9h+6gdcXLdwnH9hVqRRYip2Z5U+zaQOAnZjcZbz8=";
+    "x86_64-unknown-linux-musl" = "sha256-mvTXUfzhg/rt6mKUN9UlLb9FjusEEwz0+XvoRGIeqYU=";
   };
 in
 stdenv.mkDerivation {
