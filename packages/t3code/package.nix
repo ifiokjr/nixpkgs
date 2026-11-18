@@ -54,10 +54,18 @@ stdenv.mkDerivation {
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ stdenv.cc.cc.lib ];
 
-  # Linux archives ship musl variants of the native addons next to the glibc
-  # ones, selected at runtime by `detect-libc`; their `libc.so` never resolves
-  # against a glibc target.
-  autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.hostPlatform.isLinux [ "libc.so" ];
+  # Linux archives ship musl builds of the native addons next to the glibc
+  # ones. `detect-libc` picks one at runtime, so the musl copies are never
+  # loaded on a glibc system. Older addons NEEDED `libc.so`; newer ones
+  # (ffi-rs, koffi) NEEDED `libc.musl-<arch>.so.1`. Neither resolves here.
+  # `libvulkan.so.1` belongs to the optional ggml transcription backend. The
+  # CPU backend is what runs when no Vulkan ICD is installed, same as the
+  # other optional host libraries in this repo (libcuda, liblttng-ust).
+  autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.hostPlatform.isLinux [
+    "libc.so"
+    "libc.musl-*.so.*"
+    "libvulkan.so.1"
+  ];
 
   installPhase = ''
     runHook preInstall
