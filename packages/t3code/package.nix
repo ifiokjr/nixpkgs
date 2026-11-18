@@ -8,15 +8,15 @@
   # Keyed by the upstream release asset suffix; the updater rewrites this
   # record alongside `version`.
   t3codeHashes ? {
-    "darwin-arm64" = "sha256-UMXf0+g3h8GCKZo32zVTloNGkE59x5NrKgEGHb/PkOs=";
-    "linux-arm64" = "sha256-twjwWSAHdvUGI6dmhUhB5A7aC7Z2FCEc+LaQkpXOINo=";
-    "linux-x64" = "sha256-fPMdqQ3uQfUk3VtnnrttQEY3yl2dxv2LwBlRHVe7d+Y=";
+    "darwin-arm64" = "sha256-dx5aIJ/6iB5AmrOz05UA29V+EXaqpJ3oHOB7s+YtXug=";
+    "linux-arm64" = "sha256-X/vSJPU9D4JyeYJTR6fr9aesmK1cE0fUdAnzCqKh5CU=";
+    "linux-x64" = "sha256-m+qdNqIXKZoK+IDow0e1Nu1qmi9b8yimldF01jYoxeg=";
   },
 }:
 
 let
   pname = if channel == "nightly" then "t3code-nightly" else "t3code";
-  version = "0.1.6";
+  version = "0.1.10";
   resolvedVersion = if overrideVersion == null then version else overrideVersion;
 
   # Upstream ships no Intel macOS CLI archive; the desktop app is the supported
