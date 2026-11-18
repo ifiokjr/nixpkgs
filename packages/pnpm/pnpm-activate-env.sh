@@ -36,7 +36,52 @@ trim() {
 }
 
 shell_quote() {
-	printf '%s' "$(printf '%s' "$1" | sed "s/'/'\\''/g")"
+	local value="$1"
+	local quoted=""
+	local chunk
+
+	# Apostrophes become '\'' using only parameter expansion. The install
+	# checks invoke this with a PATH of the Node bin plus /usr/bin:/bin, and
+	# the Linux sandbox has no sed there.
+	while [ -n "$value" ]; do
+		case "$value" in
+		\'*)
+			quoted="${quoted}'\\''"
+			value="${value#\'}"
+			;;
+		*)
+			chunk="${value%%\'*}"
+			quoted="${quoted}${chunk}"
+			value="${value#"$chunk"}"
+			;;
+		esac
+	done
+
+	printf '%s' "$quoted"
+}
+
+# Parent of a path, without `dirname`. Same restricted PATH as shell_quote:
+# a missing dirname makes the substitution empty, callers swallow the
+# failure with `|| true`, and the walk never reaches `/`.
+parent_dir() {
+	local dir="${1%/}"
+
+	case "$dir" in
+	"" | "/")
+		printf '/\n'
+		;;
+	*/*)
+		dir="${dir%/*}"
+		if [ -z "$dir" ]; then
+			printf '/\n'
+		else
+			printf '%s\n' "$dir"
+		fi
+		;;
+	*)
+		printf '.\n'
+		;;
+	esac
 }
 
 path_has_entry() {
@@ -54,6 +99,7 @@ is_sourced() {
 
 find_workspace_file() {
 	local search_dir="$PWD"
+	local next_dir
 
 	while :; do
 		for filename in pnpm-workspace.yaml pnpm-workspace.yml; do
@@ -67,12 +113,17 @@ find_workspace_file() {
 			return 1
 		fi
 
-		search_dir="$(dirname "$search_dir")"
+		next_dir="$(parent_dir "$search_dir")"
+		if [ "$next_dir" = "$search_dir" ]; then
+			return 1
+		fi
+		search_dir="$next_dir"
 	done
 }
 
 find_package_json() {
 	local search_dir="$PWD"
+	local next_dir
 
 	while :; do
 		if [ -f "${search_dir}/package.json" ]; then
@@ -84,12 +135,17 @@ find_package_json() {
 			return 1
 		fi
 
-		search_dir="$(dirname "$search_dir")"
+		next_dir="$(parent_dir "$search_dir")"
+		if [ "$next_dir" = "$search_dir" ]; then
+			return 1
+		fi
+		search_dir="$next_dir"
 	done
 }
 
 find_nvmrc() {
 	local search_dir="$PWD"
+	local next_dir
 
 	while :; do
 		if [ -f "${search_dir}/.nvmrc" ]; then
@@ -101,7 +157,11 @@ find_nvmrc() {
 			return 1
 		fi
 
-		search_dir="$(dirname "$search_dir")"
+		next_dir="$(parent_dir "$search_dir")"
+		if [ "$next_dir" = "$search_dir" ]; then
+			return 1
+		fi
+		search_dir="$next_dir"
 	done
 }
 
@@ -262,7 +322,11 @@ resolve_pnpm_bin() {
 		return 0
 	fi
 
-	script_dir="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+	case "${BASH_SOURCE[0]}" in
+	*/*) script_dir="${BASH_SOURCE[0]%/*}" ;;
+	*) script_dir="." ;;
+	esac
+	script_dir="$(CDPATH= cd -- "$script_dir" && pwd -P)"
 	if [ -x "${script_dir}/pnpm" ]; then
 		printf '%s\n' "${script_dir}/pnpm"
 		return 0
@@ -351,6 +415,7 @@ emit_export_script() {
 	local quoted_pnpm_home
 	local quoted_global_bin
 	local quoted_node_bin
+	local export_body
 
 	if [ "$PNPM_ACTIVATE_USE_RUNTIME" = "1" ]; then
 		global_bin="${pnpm_home}/bin"
@@ -363,7 +428,9 @@ emit_export_script() {
 	printf '__pnpm_activate_pnpm_home=%s\n' "$quoted_pnpm_home"
 	printf '__pnpm_activate_global_bin=%s\n' "$quoted_global_bin"
 	printf '__pnpm_activate_node_bin=%s\n' "$quoted_node_bin"
-	cat <<'EOF'
+	# `read` is a builtin. `cat` is not on the restricted PATH the install
+	# checks use inside the Linux sandbox.
+	IFS= read -r -d '' export_body <<'EOF' || true
 export PNPM_HOME="${__pnpm_activate_pnpm_home}"
 __pnpm_activate_old_path="${PATH:-}"
 PATH=""
@@ -385,6 +452,7 @@ else
 fi
 unset __pnpm_activate_pnpm_home __pnpm_activate_global_bin __pnpm_activate_node_bin __pnpm_activate_old_path __pnpm_activate_path_entry
 EOF
+	printf '%s' "$export_body"
 }
 
 apply_path() {
