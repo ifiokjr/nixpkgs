@@ -1,0 +1,4 @@
+{
+  "name": "nixpkgs",
+  "install": "bash .cursor/install.sh"
+}
