@@ -6,16 +6,16 @@
 }:
 
 let
-  version = "0.24.0";
+  version = "0.25.0";
 
   # Rust target triple for the host platform, e.g. aarch64-apple-darwin.
   platformSuffix = stdenv.hostPlatform.rust.rustcTarget;
 
   hashes = {
-    "aarch64-apple-darwin" = "sha256-LbuP4zBVmOlxL4uO7wwKQL0eF1x/M9Fq6/3bme5vujI=";
-    "x86_64-apple-darwin" = "sha256-TeY4/drVyIwEmPzMg2pY7c0xy4Qoxhu1MSw2rzmEfwk=";
-    "x86_64-unknown-linux-gnu" = "sha256-ySEkJuidUryY9q5wF82BnGgRLS5gyseXYUtEX4sp/ME=";
-    "aarch64-unknown-linux-gnu" = "sha256-aIsgS4ELuc5jDUJoe4GHXKnG/L0cD7U1AAn39zeIsv8=";
+    "aarch64-apple-darwin" = "sha256-upknPYwsFhedLPjOyKMvgitf2QnWs6cF3/HaOrzstgw=";
+    "x86_64-apple-darwin" = "sha256-z5GLGO2j+vmq9nQwHmBMRjt7k5oYHjMoqjCvR1nlsdk=";
+    "x86_64-unknown-linux-gnu" = "sha256-BHMQ3qlPzH2muBs5Rf/k5+JPG1QO3j3KvYhKBWEj+rs=";
+    "aarch64-unknown-linux-gnu" = "sha256-QyKIH5/sbtjNFOcZuqmqE++hmNQVmxY1DSp+Cs15vnI=";
   };
 in
 stdenv.mkDerivation {
