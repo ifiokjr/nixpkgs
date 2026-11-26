@@ -58,13 +58,13 @@ This flake exposes packages through both `packages.${system}` and `overlays.defa
 | serverpod_cli-3                                          | 3.4.13                       | aarch64-darwin, aarch64-linux, x86_64-linux | Command line tools for Serverpod (3.x track)                                         |
 | solana-verify                                            | 0.5.2                        | aarch64-darwin, x86_64-linux                | CLI tool for building verifiable Solana programs                                     |
 | steam                                                    | 4.0                          | aarch64-darwin                              | Video game digital distribution service                                              |
-| surfpool                                                 | 1.7.0                        | aarch64-darwin, x86_64-linux                | A drop-in replacement for solana-test-validator with mainnet state simulation        |
+| surfpool                                                 | 1.8.0                        | aarch64-darwin, x86_64-linux                | A drop-in replacement for solana-test-validator with mainnet state simulation        |
 | swift-format                                             | 604.0.0                      | aarch64-darwin, aarch64-linux, x86_64-linux | Formatting technology for Swift source code                                          |
 | t3code                                                   | 0.1.12                       | aarch64-darwin, aarch64-linux, x86_64-linux | Control surface for the coding agents running on your machine                        |
-| t3code-nightly                                           | 0.1.13-nightly.20261125.5245 | aarch64-darwin, aarch64-linux, x86_64-linux | Control surface for the coding agents running on your machine                        |
+| t3code-nightly                                           | 0.1.13-nightly.20261125.5258 | aarch64-darwin, aarch64-linux, x86_64-linux | Control surface for the coding agents running on your machine                        |
 | wait-for-them                                            | 0.5.1                        | aarch64-darwin, aarch64-linux, x86_64-linux | Wait until all provided host:port pairs are opened or HTTP URLs return 200           |
-| zed                                                      | 1.29.3                       | aarch64-darwin, aarch64-linux, x86_64-linux | High-performance, multiplayer code editor from the creators of Atom and Tree-sitter  |
-| zed-preview                                              | 1.30.2-pre                   | aarch64-darwin, aarch64-linux, x86_64-linux | High-performance, multiplayer code editor from the creators of Atom and Tree-sitter  |
+| zed                                                      | 1.30.2                       | aarch64-darwin, aarch64-linux, x86_64-linux | High-performance, multiplayer code editor from the creators of Atom and Tree-sitter  |
+| zed-preview                                              | 1.31.0-pre                   | aarch64-darwin, aarch64-linux, x86_64-linux | High-performance, multiplayer code editor from the creators of Atom and Tree-sitter  |
 | zoom                                                     | 7.2.5.90525                  | aarch64-darwin                              | Zoom video conferencing client                                                       |
 
 <!-- catalog:end -->
